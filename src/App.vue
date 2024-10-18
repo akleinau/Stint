@@ -3,7 +3,9 @@ import DataInput from './components/data-input.vue'
 </script>
 
 <template>
-  <h1>Stint says Hi!</h1>
+  <div class="d-flex align-center justify-center">
+    <h1>STINT - Stories about Interactions</h1>
+  </div>
   <DataInput msg="Vite + Vue" />
 </template>
 
