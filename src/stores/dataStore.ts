@@ -58,6 +58,19 @@ export const useDataStore = defineStore({
             this.influence_scores = influence_scores
             console.log(influence_scores)
 
+        },
+
+        reset() {
+            this.data = []
+            this.feature_names = []
+            this.target_feature = ""
+            this.data_summary = {min: 0, max: 0, mean: 0}
+            this.non_target_features = []
+            this.interacting_features = []
+            this.instance = {}
+            this.instance_averages = {}
+            this.instance_subsets = {}
+            this.influence_scores = []
         }
     },
 })

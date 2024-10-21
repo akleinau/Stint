@@ -18,6 +18,10 @@ const update_vis = () => {
       .attr("height", 500)
 
   let data = dataStore.influence_scores
+  if (data.length === 0) {
+    return
+  }
+
   const min = Math.min(0, dataStore.data_summary.min)
   const max = dataStore.data_summary.max
   const scale = d3.scaleLinear().domain([min, max]).range([0, 500])
