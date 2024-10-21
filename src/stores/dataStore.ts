@@ -9,7 +9,7 @@ export const useDataStore = defineStore({
         data_summary: {} as { min: number, max: number, mean: number },
         non_target_features: [] as string[],
         interacting_features: [] as string[],
-        instance: {} as { [key: string]: any },
+        instance: {} as { [key: string]: number },
         instance_averages: {} as { [key: string]: { value: number, average: number, size: number } },
         instance_subsets: {} as { [key: string]: Set<number> },
         influence_scores: [] as { feature: string, score: number, size: number, value: number, instance_value: number }[],

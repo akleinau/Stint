@@ -8,7 +8,7 @@ const dataStore = useDataStore()
 
 const files = ref(null)
 const instance_nr = ref(26)
-const isCustomInstance = ref(false)
+const isCustomInstance = ref(true)
 const isCustomDataset = ref(false)
 
 const make_numeric = (data: any) => {
@@ -144,12 +144,12 @@ const explain = () => {
       <!-- Instance -->
       <div class="d-flex flex-column align-center justify-center" v-if="dataStore.target_feature !== ''">
         <v-btn-toggle v-model="isCustomInstance" class="mt-3" @update:model-value="instance_selected">
-          <v-btn :value="false">select instance</v-btn>
           <v-btn :value="true">custom instance</v-btn>
+          <v-btn :value="false">select instance</v-btn>
         </v-btn-toggle>
         <div v-if="isCustomInstance" class="pb-5">
           <div v-for="key in dataStore.interacting_features" class="mt-3 w-100">
-            <v-text-field v-model="dataStore.instance[key]" class="px-5 w-100" :label="key"
+            <v-text-field v-model.number="dataStore.instance[key]" class="px-5 w-100" :label="key" type="number"
                           variant="underlined" hide-details clearable density="compact" single-line>
               <template v-slot:prepend-inner>
                 <div class="d-flex">
