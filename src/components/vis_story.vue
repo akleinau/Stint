@@ -29,6 +29,9 @@ const update_vis = () => {
 
   min.value = Math.min(0, dataStore.data_summary.min)
   max.value = dataStore.data_summary.max
+  const spacing = 0.01* (dataStore.data_summary.max - dataStore.data_summary.min)
+  min.value = Math.min(d3.min(data, d => d.value), dataStore.data_summary.mean)  - spacing
+  max.value = Math.max(d3.max(data, d => d.value), dataStore.data_summary.mean)  + spacing
   scale.value = d3.scaleLinear().domain([min.value, max.value]).range([0, 500])
 
   // add axis
@@ -66,19 +69,20 @@ const add_bars = (data) => {
   let svg = d3.select("svg")
 
   // draw bars
-  svg.selectAll("rect")
+  svg.selectAll(".bars")
       .data(data)
       .enter()
       .append("rect")
       .transition()
       .attr("x", d => d.score < 0 ? scale.value(d.value): scale.value(d.value - d.score))
       .attr("y", (d, i) => i * (bar_height+10))
+      .attr("class", "bars")
       .attr("width", d => scale.value(Math.abs(d.score)) - scale.value(0))
       .attr("height", bar_height)
-      .attr("fill", d => d.score < 0 ? "red" : "blue")
+      .attr("fill", d => d.score < 0 ? "crimson" : "darkslateblue")
 
   // draw value lines, vertically
-  svg.selectAll("line_vertical")
+  svg.selectAll(".line_vertical")
       .data(data)
       .join("line")
       .transition()
@@ -86,19 +90,22 @@ const add_bars = (data) => {
       .attr("y1", (d, i) => i * (bar_height+10))
       .attr("x2", d => scale.value(d.value))
       .attr("y2", (d, i) => (i+1) * (bar_height+10) + bar_height)
+      .attr("class", "line_vertical")
       .attr("stroke", "grey")
       .attr("stroke-width", 2)
 
 
   // add text (feature = instance_value)
-  svg.selectAll("text_feature_names")
+  svg.selectAll(".text_feature_names")
       .data(data)
       .join("text")
       .transition()
       .attr("x", 500)
       .attr("y", (d, i) => i * (bar_height+10) + bar_height/2)
+      .attr("class", "text_feature_names")
       .text((d, i) => d.feature + " = " + d.instance_value )
       .style("font-size", "12px")
+      .style("font-family", "Verdana")
       .style("text-anchor", "start")
       .style("color", "black")
 }
