@@ -4,11 +4,11 @@ import VisStory from './components/vis_story.vue'
 </script>
 
 <template>
-  <div class="d-flex align-center justify-center">
+  <div class="d-flex flex-column align-center justify-center">
     <h1>STINT - Stories about Interactions</h1>
+    <DataInput />
+    <VisStory />
   </div>
-  <DataInput />
-  <VisStory />
 </template>
 
 <style scoped>

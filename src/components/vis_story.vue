@@ -6,7 +6,7 @@ import {useDataStore} from "../stores/dataStore";
 const dataStore = useDataStore()
 
 // watch dataStore.influence_scores
-watch (() => dataStore.influence_scores, (newVal, _) => {
+watch (() => dataStore.influence_scores, (_) => {
   update_vis()
 })
 
@@ -82,7 +82,7 @@ const update_vis = () => {
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
     <h3 class="pt-5" v-if="dataStore.influence_scores.length>0">Your Story</h3>
-    <div id="container" class="px-5 pt-5"/>
+    <div id="container" class="px-5 pt-5 w-50"/>
   </div>
 </template>
 
