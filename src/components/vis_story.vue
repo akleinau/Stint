@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as d3 from "d3";
-import {ref, watch} from 'vue'
+import {ref, useTemplateRef, watch} from 'vue'
 import {useDataStore} from "../stores/dataStore";
 
 const dataStore = useDataStore()
@@ -10,15 +10,16 @@ watch (() => dataStore.influence_scores, (_) => {
   update_vis()
 })
 
+//refs
+const container = useTemplateRef('container')
+
 const min = ref<number>(0)
 const max = ref<number>(1)
 const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, 500]))
 const bar_height = 20
 
 const update_vis = () => {
-  let container = document.getElementById("container")
-  container.innerHTML = ""
-  let svg = d3.select(container).append("svg")
+  let svg = d3.create("svg")
       .attr("width", 1000)
       .attr("height", 500)
 
@@ -49,14 +50,19 @@ const update_vis = () => {
       .attr("stroke", "black")
       .attr("stroke-width", 2)
 
-  slowly_add_bars(data)
+  d3.select(container.value).selectAll("*").remove()
+  d3.select(container.value).node().append(svg.node())
+
+  slowly_add_bars(data, svg)
+
+
 
 }
 
-const slowly_add_bars = (data) => {
+const slowly_add_bars = (data, svg) => {
   let i = 1
   let interval = setInterval(() => {
-    add_bars(data.slice(0, i))
+    add_bars(data.slice(0, i), svg)
     i++
     if (i > data.length) {
       clearInterval(interval)
@@ -64,9 +70,7 @@ const slowly_add_bars = (data) => {
   }, 1000)
 }
 
-const add_bars = (data) => {
-
-  let svg = d3.select("svg")
+const add_bars = (data, svg) => {
 
   // draw bars
   svg.selectAll(".bars")
@@ -116,7 +120,7 @@ const add_bars = (data) => {
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
     <h3 class="pt-5" v-if="dataStore.influence_scores.length>0">Your Story</h3>
-    <div id="container" class="px-5 pt-5 w-50"/>
+    <div ref="container" class="px-5 pt-5 w-50"/>
   </div>
 </template>
 

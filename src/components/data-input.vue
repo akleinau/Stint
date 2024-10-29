@@ -3,8 +3,12 @@ import {ref, onMounted} from 'vue'
 import * as d3 from "d3";
 
 import {useDataStore} from "../stores/dataStore.ts";
+import {useFeatureStore} from "../stores/feature_store.ts";
+
+import DistributionVis from "../visualizations/distribution-vis.vue";
 
 const dataStore = useDataStore()
+const featureStore = useFeatureStore()
 
 const files = ref(null)
 const instance_nr = ref(26)
@@ -71,6 +75,7 @@ const set_data = (data: any) => {
   data = add_id(data)
   dataStore.feature_names = data.columns
   dataStore.data = data
+  featureStore.set_features(data)
 }
 
 const target_selected = (col: string) => {
@@ -179,6 +184,11 @@ const explain = () => {
                           :items="dataStore.non_target_features"
                           multiple
                           @update:modelValue="interacting_features_selected"/>
+        </div>
+        <div>
+          <div v-for="key in dataStore.interacting_features" >
+            <DistributionVis :feature_name="key" />
+          </div>
         </div>
         <div v-if="dataStore.interacting_features.length !== 0" class="mt-1">
           <v-btn @click="explain" class="bg-blue">Explain</v-btn>
