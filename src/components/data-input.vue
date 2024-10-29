@@ -127,7 +127,7 @@ const explain = () => {
       </v-btn-toggle>
       <div v-if="isCustomDataset" class="w-50">
         <div class="d-flex align-center justify-center w-100">
-          <div class="mt-3 w-50">
+          <div class="mt-3 w-75">
             <v-file-input label="Choose CSV file" v-model="files"
                           accept=".csv"
                           @update:modelValue="uploaded"></v-file-input>
@@ -178,17 +178,17 @@ const explain = () => {
       </div>
 
       <!-- Interacting features -->
-      <div class="d-flex flex-column align-center justify-center w-50">
-        <div v-if="dataStore.target_feature !== ''" class="mt-1 w-100">
+      <div class="d-flex flex-column align-center justify-center w-100">
+        <div v-if="dataStore.target_feature !== ''" class="mt-1 w-50">
           <v-autocomplete v-model="dataStore.interacting_features" class="px-5" label="Select interacting features"
                           :items="dataStore.non_target_features"
                           multiple
                           @update:modelValue="interacting_features_selected"/>
         </div>
         <div>
-          <div v-for="key in dataStore.interacting_features" >
-            <DistributionVis :feature_name="key" />
-          </div>
+        <div v-for="key in dataStore.interacting_features" >
+          <DistributionVis :feature_name="key" />
+        </div>
         </div>
         <div v-if="dataStore.interacting_features.length !== 0" class="mt-1">
           <v-btn @click="explain" class="bg-blue">Explain</v-btn>

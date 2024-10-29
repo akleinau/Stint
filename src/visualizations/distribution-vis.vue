@@ -123,7 +123,7 @@ const update_vis = () => {
 
 <template>
   <div class="d-flex justify-end">
-    {{feature_name}} = {{instance_value}}
+    <div class="mt-2"> {{feature_name}} = {{instance_value}} </div>
     <div  ref="container"></div>
   </div>
 </template>

@@ -13,6 +13,7 @@ export const useDataStore = defineStore({
         instance_averages: {} as { [key: string]: { value: number, average: number, size: number } },
         instance_subsets: {} as { [key: string]: Set<number> },
         influence_scores: [] as { feature: string, score: number, size: number, value: number, instance_value: number }[],
+        storyIsVisible: false,
     }),
     actions: {
         calculate_instance_averages() {

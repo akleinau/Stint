@@ -21,7 +21,7 @@ const bar_height = 20
 const update_vis = () => {
   let svg = d3.create("svg")
       .attr("width", 1000)
-      .attr("height", 500)
+      .attr("height", 200)
 
   let data = dataStore.influence_scores
   if (data.length === 0) {
@@ -55,19 +55,25 @@ const update_vis = () => {
 
   slowly_add_bars(data, svg)
 
-
-
 }
 
 const slowly_add_bars = (data, svg) => {
+  let finished = false
   let i = 1
   let interval = setInterval(() => {
     add_bars(data.slice(0, i), svg)
     i++
-    if (i > data.length) {
+    if (i > data.length && !finished) {
+      finished = true
+    }
+    else if (finished) {
       clearInterval(interval)
+      dataStore.storyIsVisible = true
     }
   }, 1000)
+
+
+
 }
 
 const add_bars = (data, svg) => {
