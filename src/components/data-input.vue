@@ -6,6 +6,7 @@ import {useDataStore} from "../stores/dataStore.ts";
 import {useFeatureStore} from "../stores/feature_store.ts";
 
 import DistributionVis from "../visualizations/distribution-vis.vue";
+import AbnormalVis from "../visualizations/abnormal-vis.vue";
 
 const dataStore = useDataStore()
 const featureStore = useFeatureStore()
@@ -188,6 +189,7 @@ const explain = () => {
         <div>
         <div v-for="key in dataStore.interacting_features" >
           <DistributionVis :feature_name="key" />
+          <AbnormalVis :feature_name="key" />
         </div>
         </div>
         <div v-if="dataStore.interacting_features.length !== 0" class="mt-1">

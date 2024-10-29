@@ -1,0 +1,92 @@
+<script setup lang="ts">
+import * as d3 from "d3";
+import {useTemplateRef, onMounted, ref, watch} from 'vue'
+import {useFeatureStore} from "../stores/feature_store.ts";
+import {useDataStore} from "../stores/dataStore.ts";
+
+const featureStore = useFeatureStore()
+const dataStore = useDataStore()
+
+//refs
+const container = useTemplateRef('container')
+let instance_value = ref(0)
+
+//props
+const props = defineProps(['feature_name'])
+
+onMounted(() => {
+  instance_value.value = dataStore.instance[props.feature_name]
+  update_vis()
+})
+
+const update_vis = () => {
+  const bins = featureStore.get_feature_bins(props.feature_name)
+  const max_count = d3.max(bins.map(d => d.count))
+  const full_count = d3.sum(bins.map(d => d.count))
+  const instance_bin_index = featureStore.get_instance_bin_index(props.feature_name, instance_value.value)
+  const instance_bin_count = bins[instance_bin_index].count
+
+  const instance_abnormality = instance_bin_count / max_count
+
+  const svg_width = 500
+
+  let svg = d3.create("svg")
+      .attr("width", svg_width + 20)
+      .attr("height", 60)
+      .attr("viewBox",[-10, 0, svg_width + 20, 60])
+
+  let abnormal_xaxis = d3.scaleLinear()
+      .domain([1, 0])
+      .range([0, svg_width])
+
+  // create box
+  svg.append("rect")
+      .attr("x", abnormal_xaxis(1))
+      .attr("y", 0)
+      .attr("width", abnormal_xaxis(0))
+      .attr("height", 30)
+      .attr("fill", "white")
+      .attr("opacity", 0.5)
+      .attr("stroke", "black")
+
+  // create line for instance
+  svg.append("line")
+      .attr("x1", abnormal_xaxis(instance_abnormality))
+      .attr("y1", 0)
+      .attr("x2", abnormal_xaxis(instance_abnormality))
+      .attr("y2", 30)
+      .attr("stroke", "black")
+      .attr("stroke-width", 2)
+
+  // add "normal" text left
+  svg.append("text")
+      .attr("x", abnormal_xaxis(1))
+      .attr("y", 45)
+      .text("normal")
+      .style("fill", "grey")
+
+  // add "abnormal" text right
+  svg.append("text")
+      .attr("x", abnormal_xaxis(0))
+      .attr("y", 45)
+      .text("abnormal")
+      .style("text-anchor", "end")
+      .style("fill", "crimson")
+
+
+  d3.select(container.value).selectAll("*").remove()
+  d3.select(container.value).node().append(svg.node())
+
+}
+
+</script>
+
+<template>
+  <div class="d-flex justify-end">
+    <div  ref="container"></div>
+  </div>
+</template>
+
+<style scoped>
+
+</style>

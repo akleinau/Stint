@@ -98,10 +98,11 @@ const update_vis = () => {
   }
 
   let axis = svg.append("g")
-      .attr("transform", "translate(0, " + (rect_height +5) + ")")
+      .attr("transform", "translate(0, " + (rect_height) + ")")
       .style("font-size", "12px")
+      .style("color", "grey")
       .call(xAxis)
-  axis.selectAll(".domain") //remove the axis line
+  axis.selectAll(".domain, line") //remove the axis line
       .remove()
 
   // add a line for the instance value
@@ -110,7 +111,7 @@ const update_vis = () => {
       .attr("y1", 0)
       .attr("x2", x(instance_value.value))
       .attr("y2", rect_height+10)
-      .attr("stroke", "red")
+      .attr("stroke", "seagreen")
       .attr("stroke-width", 4)
 
 
