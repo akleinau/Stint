@@ -9,23 +9,26 @@ const dataStore = useDataStore()
 
 //refs
 const container = useTemplateRef('container')
+let instance_value = ref(0)
 
 //props
 const props = defineProps(['feature_name'])
 
 onMounted(() => {
+  instance_value.value = dataStore.instance[props.feature_name]
   update_vis()
 })
 
 const update_vis = () => {
   const bins = featureStore.get_feature_bins(props.feature_name)
-  const instance_value = dataStore.instance[props.feature_name]
-  const instance_bin_index = featureStore.get_instance_bin_index(props.feature_name, instance_value)
+  const full_count = d3.sum(bins.map(d => d.count))
+
+  const svg_width = 500
 
   let svg = d3.create("svg")
-      .attr("width", 1020)
+      .attr("width", svg_width + 20)
       .attr("height", 60)
-      .attr("viewBox",[-10, 0, 1020, 60])
+      .attr("viewBox",[-10, 0, svg_width + 20, 60])
 
   // add a distribution heatmap over the counts of the bins
   const max_count = d3.max(bins.map(d => d.count))
@@ -35,15 +38,15 @@ const update_vis = () => {
       .domain([0, max_count])
       .range(["white", "navy"])
 
-  const rect_width = 1000 / bins.length
+  const rect_width = svg_width / bins.length
   const rect_height = 30
 
   const x = d3.scaleLinear()
       .domain([feature_min, feature_max])
-      .range([rect_width/2, 1000-rect_width/2])
+      .range([rect_width/2, svg_width-rect_width/2])
 
 
-  //add rectangles
+  //add rectangles with text
   let bin_elements = svg.selectAll(".bin_elements")
       .data(bins)
       .enter()
@@ -72,11 +75,10 @@ const update_vis = () => {
       .attr("alignment-baseline", "middle")
       .attr("fill", d => d.count > max_count/2 ? "white" : "black")
       .style("opacity", "0")
-      .text(d => d.count)
+      .text(d => ((d.count/full_count)*100).toFixed(1) + "%")
 
   bin_elements
       .on("mouseover", (event, d) => {
-        console.log(event)
         d3.select(event.target.parentNode).selectAll("text")
             .style("opacity", "1")
       })
@@ -104,9 +106,9 @@ const update_vis = () => {
 
   // add a line for the instance value
   svg.append("line")
-      .attr("x1", x(instance_value))
+      .attr("x1", x(instance_value.value))
       .attr("y1", 0)
-      .attr("x2", x(instance_value))
+      .attr("x2", x(instance_value.value))
       .attr("y2", rect_height+10)
       .attr("stroke", "red")
       .attr("stroke-width", 4)
@@ -120,8 +122,10 @@ const update_vis = () => {
 </script>
 
 <template>
-  {{feature_name}}
-  <div  ref="container"></div>
+  <div class="d-flex justify-end">
+    {{feature_name}} = {{instance_value}}
+    <div  ref="container"></div>
+  </div>
 </template>
 
 <style scoped>
