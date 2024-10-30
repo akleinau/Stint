@@ -2,6 +2,7 @@
 import DataInput from './components/data-input.vue'
 import VisStory from './components/vis_story.vue'
 import OpenEnded from './components/open-ended.vue'
+import DataOverview from './components/data_overview.vue'
 </script>
 
 <template>
@@ -15,6 +16,7 @@ import OpenEnded from './components/open-ended.vue'
       <v-card-text>
 
         <DataInput/>
+        <DataOverview/>
         <VisStory/>
       </v-card-text>
 

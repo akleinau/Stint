@@ -5,9 +5,6 @@ import * as d3 from "d3";
 import {useDataStore} from "../stores/dataStore.ts";
 import {useFeatureStore} from "../stores/feature_store.ts";
 
-import DistributionVis from "../visualizations/distribution-vis.vue";
-import AbnormalVis from "../visualizations/abnormal-vis.vue";
-
 const dataStore = useDataStore()
 const featureStore = useFeatureStore()
 
@@ -108,13 +105,6 @@ const interacting_features_selected = (cols: string[]) => {
   dataStore.interacting_features = cols
 }
 
-const explain = () => {
-  console.log("Explain")
-  console.log(dataStore.instance)
-  dataStore.calculate_instance_averages()
-  dataStore.calculate_sorted_influence_scores()
-}
-
 </script>
 
 <template>
@@ -185,15 +175,6 @@ const explain = () => {
                           :items="dataStore.non_target_features"
                           multiple
                           @update:modelValue="interacting_features_selected"/>
-        </div>
-        <div>
-        <div v-for="key in dataStore.interacting_features" >
-          <DistributionVis :feature_name="key" />
-          <AbnormalVis :feature_name="key" />
-        </div>
-        </div>
-        <div v-if="dataStore.interacting_features.length !== 0" class="mt-1">
-          <v-btn @click="explain" class="bg-blue">Explain</v-btn>
         </div>
       </div>
     </div>

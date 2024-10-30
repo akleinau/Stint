@@ -82,7 +82,7 @@ const update_vis = () => {
 </script>
 
 <template>
-  <div class="d-flex justify-end">
+  <div class="d-flex justify-center">
     <div  ref="container"></div>
   </div>
 </template>

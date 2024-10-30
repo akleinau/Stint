@@ -23,7 +23,7 @@ const update_vis = () => {
   const bins = featureStore.get_feature_bins(props.feature_name)
   const full_count = d3.sum(bins.map(d => d.count))
 
-  const svg_width = 500
+  const svg_width = 400
 
   let svg = d3.create("svg")
       .attr("width", svg_width + 20)
@@ -36,7 +36,7 @@ const update_vis = () => {
   const feature_max = d3.max(bins.map(d => d.max == undefined ? d.value : d.max))
   const color = d3.scaleLinear<string>()
       .domain([0, max_count])
-      .range(["white", "navy"])
+      .range(["white", "black"])
 
   const rect_width = svg_width / bins.length
   const rect_height = 30
@@ -90,7 +90,7 @@ const update_vis = () => {
   // add x-axis with padding
   const xAxis = d3.axisBottom(x)
 
-  if (bins.length < 4) {
+  if (bins.length <= 4) {
     xAxis.tickValues(bins.map(d => d.value))
   }
   else {
@@ -123,8 +123,8 @@ const update_vis = () => {
 </script>
 
 <template>
-  <div class="d-flex justify-end">
-    <div class="mt-2"> {{feature_name}} = {{instance_value}} </div>
+  <div class="d-flex justify-center ml-15">
+    <span class="text-grey-darken-1">Distribution: </span>
     <div  ref="container"></div>
   </div>
 </template>
