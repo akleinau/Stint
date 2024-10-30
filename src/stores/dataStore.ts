@@ -12,7 +12,6 @@ export const useDataStore = defineStore({
         instance: {} as { [key: string]: number },
         instance_averages: {} as { [key: string]: { value: number, average: number, size: number } },
         instance_subsets: {} as { [key: string]: Set<number> },
-        influence_scores: [] as { feature: string, score: number, size: number, value: number, instance_value: number }[],
         storyIsVisible: false,
     }),
     actions: {
@@ -30,37 +29,6 @@ export const useDataStore = defineStore({
             }
         },
 
-        calculate_sorted_influence_scores() {
-            // first sort features by main effect
-            const sorted_features = this.interacting_features.sort((a, b) => {
-                return Math.abs(this.instance_averages[b].average) - Math.abs(this.instance_averages[a].average)
-            })
-            console.log(sorted_features)
-
-            // then calculate influence scores
-            let id_subset = new Set() as Set<number>
-            let influence_scores = [] as { feature: string, score: number, size: number, value: number, instance_value: number }[]
-            let previous_value = this.data_summary.mean
-            let i = 0
-            for (const feature of sorted_features) {
-                if (i === 0) {
-                    id_subset = this.instance_subsets[feature]
-                } else {
-                    id_subset = new Set([...id_subset].filter(x => this.instance_subsets[feature].has(x)))
-                }
-                let subset = this.data.filter((_, i) => id_subset.has(i))
-                let average = subset.reduce((acc, d) => acc + d[this.target_feature], 0) / subset.length
-                let score = average - previous_value
-                previous_value = average
-                influence_scores.push({feature: feature, score: score, size: subset.length, value: average, instance_value: this.instance[feature]})
-                i++
-            }
-
-            this.influence_scores = influence_scores
-            console.log(influence_scores)
-
-        },
-
         reset() {
             this.data = []
             this.feature_names = []
@@ -71,7 +39,6 @@ export const useDataStore = defineStore({
             this.instance = {}
             this.instance_averages = {}
             this.instance_subsets = {}
-            this.influence_scores = []
         }
     },
 })

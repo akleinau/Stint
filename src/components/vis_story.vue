@@ -2,11 +2,13 @@
 import * as d3 from "d3";
 import {ref, useTemplateRef, watch} from 'vue'
 import {useDataStore} from "../stores/dataStore";
+import {useInfluenceStore} from "../stores/influence_store.ts";
 
 const dataStore = useDataStore()
+const influenceStore = useInfluenceStore()
 
 // watch dataStore.influence_scores
-watch (() => dataStore.influence_scores, (_) => {
+watch (() => influenceStore.influence_scores, (_) => {
   update_vis()
 })
 
@@ -23,7 +25,7 @@ const update_vis = () => {
       .attr("width", 1000)
       .attr("height", 200)
 
-  let data = dataStore.influence_scores
+  let data = influenceStore.influence_scores
   if (data.length === 0) {
     return
   }
@@ -122,7 +124,7 @@ const add_bars = (data, svg) => {
 
 const explain = () => {
   dataStore.calculate_instance_averages()
-  dataStore.calculate_sorted_influence_scores()
+  influenceStore.calculate_sorted_influence_scores()
 }
 
 
@@ -133,7 +135,7 @@ const explain = () => {
     <div v-if="dataStore.interacting_features.length !== 0" class="mt-1">
       <v-btn @click="explain" class="bg-blue">Explain</v-btn>
     </div>
-    <h3 class="pt-5" v-if="dataStore.influence_scores.length>0">Your Story</h3>
+    <h3 class="pt-5" v-if="influenceStore.influence_scores.length>0">Your Story</h3>
     <div ref="container" class="px-5 pt-5 w-50"/>
   </div>
 </template>
