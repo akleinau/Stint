@@ -14,6 +14,10 @@ const toggle_details = (key: string) => {
   show_details.value = show_details.value === key ? "" : key
 }
 
+const hasCorrelations = (key: string) => {
+  return Object.values(dataStore.correlations[key]).some((v: number) => Math.abs(v) > 0.2)
+}
+
 </script>
 
 <template>
@@ -28,6 +32,15 @@ const toggle_details = (key: string) => {
       <div v-if="show_details === key" class="mb-5 bg-grey-lighten-4 mx-5">
         <v-divider class="mb-2"></v-divider>
         <DistributionVis :feature_name="key"/>
+        <div  class="d-flex mb-2 justify-center">
+          <span v-if="hasCorrelations(key) ">Correlations: </span>
+          <span v-else>(No correlations)</span>
+          <span v-for="(corr, other_feature) in dataStore.correlations[key]">
+            <v-chip class="mx-2" v-if="Math.abs(corr) > 0.2">
+              {{ other_feature }}: {{ corr.toFixed(2) }}
+            </v-chip>
+          </span>
+        </div>
         <v-divider></v-divider>
       </div>
     </div>
