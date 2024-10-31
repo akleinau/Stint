@@ -33,8 +33,8 @@ const update_vis = async () => {
   min.value = Math.min(0, dataStore.data_summary.min)
   max.value = dataStore.data_summary.max
   const spacing = 0.01* (dataStore.data_summary.max - dataStore.data_summary.min)
-  min.value = dataStore.data_summary.min - spacing
-  max.value = dataStore.data_summary.max + spacing
+  min.value = dataStore.data_summary.min - spacing - dataStore.data_summary.mean
+  max.value = dataStore.data_summary.max + spacing - dataStore.data_summary.mean
   scale.value = d3.scaleLinear().domain([min.value, max.value]).range([0, 500])
 
   // add axis
@@ -45,9 +45,9 @@ const update_vis = async () => {
 
   // add black vertical line at 0
   svg.append("line")
-      .attr("x1", scale.value(dataStore.data_summary.mean))
+      .attr("x1", scale.value(0))
       .attr("y1", 0)
-      .attr("x2", scale.value(dataStore.data_summary.mean))
+      .attr("x2", scale.value(0))
       .attr("y2", data.length * (bar_height+10) + (influenceStore.influence_scores.length * 20))
       .attr("stroke", "black")
       .attr("stroke-width", 2)
@@ -119,7 +119,6 @@ const add_bars = (data, svg, offset) => {
 }
 
 const explain = () => {
-  dataStore.calculate_instance_averages()
   influenceStore.calculate_influences()
 }
 

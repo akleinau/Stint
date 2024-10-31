@@ -84,6 +84,7 @@ const target_selected = (col: string) => {
   summary.mean = dataStore.data.map((d: any) => d[col]).reduce((a: number, b: number) => a + b) / dataStore.data.length
   summary.min = Math.min(...dataStore.data.map((d: any) => d[col]))
   summary.max = Math.max(...dataStore.data.map((d: any) => d[col]))
+  summary.std = d3.deviation(dataStore.data.map((d: any) => d[col]))
   dataStore.data_summary = summary
 
 }
