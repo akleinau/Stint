@@ -19,11 +19,16 @@ const min = ref<number>(0)
 const max = ref<number>(1)
 const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, 500]))
 const bar_height = 20
+const spacing_between_groups = 15
+const spacing_inside_group = 5
 
 const update_vis = async () => {
+
+  const height = influenceStore.influence_scores.length * 20 + influenceStore.influence_scores.flat().length * (bar_height+10)
+
   let svg = d3.create("svg")
       .attr("width", 1000)
-      .attr("height", 200)
+      .attr("height", height)
 
   let data = influenceStore.influence_scores.flat()
   if (data.length === 0) {
@@ -40,7 +45,7 @@ const update_vis = async () => {
   // add axis
   let axis = d3.axisBottom(scale.value)
   svg.append("g")
-      .attr("transform", "translate(0, " + (data.length * (bar_height+10) + (influenceStore.influence_scores.length * 20)) + ")")
+      .attr("transform", "translate(0, " + (height -20) + ")")
       .call(axis)
 
   // add black vertical line at 0
@@ -48,7 +53,7 @@ const update_vis = async () => {
       .attr("x1", scale.value(0))
       .attr("y1", 0)
       .attr("x2", scale.value(0))
-      .attr("y2", data.length * (bar_height+10) + (influenceStore.influence_scores.length * 20))
+      .attr("y2", height -20)
       .attr("stroke", "black")
       .attr("stroke-width", 2)
 
@@ -59,7 +64,7 @@ const update_vis = async () => {
   for (let i = 0; i < influenceStore.influence_scores.length; i++) {
     let group = influenceStore.influence_scores[i]
     await slowly_add_bars(group, svg, offset)
-    offset += (group.length * (bar_height+10) + 10)
+    offset += (group.length * (bar_height+spacing_inside_group) + spacing_between_groups)
   }
 
   dataStore.storyIsVisible = true
@@ -83,7 +88,7 @@ const add_bars = (data, svg, offset) => {
       .append("rect")
       .transition()
       .attr("x", d => d.score < 0 ? scale.value(d.value): scale.value(d.value - d.score))
-      .attr("y", (d, i) => i * (bar_height+10) + offset)
+      .attr("y", (d, i) => i * (bar_height+spacing_inside_group) + offset)
       .attr("class", "bars" + offset)
       .attr("width", d => scale.value(Math.abs(d.score)) - scale.value(0))
       .attr("height", bar_height)
@@ -95,9 +100,9 @@ const add_bars = (data, svg, offset) => {
       .join("line")
       .transition()
       .attr("x1", d => scale.value(d.value))
-      .attr("y1", (d, i) => i * (bar_height+10) + offset)
+      .attr("y1", (d, i) => i * (bar_height+spacing_inside_group) + offset)
       .attr("x2", d => scale.value(d.value))
-      .attr("y2", (d, i) => (i+1) * (bar_height+10) + offset + bar_height)
+      .attr("y2", (d, i) => (i+1) * (bar_height+spacing_inside_group) + offset + bar_height)
       .attr("class", "line_vertical" + offset)
       .attr("stroke", "grey")
       .attr("stroke-width", 2)
@@ -109,7 +114,7 @@ const add_bars = (data, svg, offset) => {
       .join("text")
       .transition()
       .attr("x", 500)
-      .attr("y", (d, i) => i * (bar_height+10) + bar_height/2 + offset)
+      .attr("y", (d, i) => i * (bar_height+spacing_inside_group) + bar_height/2 + offset)
       .attr("class", "text_feature_names" + offset)
       .text((d, i) => d.feature + " = " + d.instance_value )
       .style("font-size", "12px")

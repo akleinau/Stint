@@ -40,7 +40,6 @@ export const useInfluenceStore = defineStore({
             const subset = useDataStore().data.filter((_, i) => instance_subset.has(i))
             let average = subset.reduce((acc, d) => acc + d[useDataStore().target_feature], 0) / subset.length
             average -= useDataStore().data_summary.mean
-            console.log(feature1, feature2, average, this.main_effects[feature1].average + this.main_effects[feature2].average)
             return Math.abs(average - this.main_effects[feature1].average - this.main_effects[feature2].average)
         },
 
