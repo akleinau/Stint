@@ -1,21 +1,52 @@
 import {defineStore} from "pinia";
 import {useDataStore} from "./dataStore";
 
+interface InfluenceScore {
+    feature: string,
+    score: number,
+    size: number,
+    value: number,
+    instance_value: number
+}
+
 export const useInfluenceStore = defineStore({
     id: 'influence',
     state: () => ({
-        influence_scores: [] as { feature: string, score: number, size: number, value: number, instance_value: number }[],
+        influence_scores: [] as InfluenceScore[][],
+        main_effects: {} as { [key: string]: number },
 
     }),
     actions: {
 
-        calculate_sorted_influence_scores() {
+        calculate_main_effects() {
+            const dataStore = useDataStore()
+            let main_effects = {} as { [key: string]: number }
+            for (const feature of dataStore.interacting_features) {
+                const instance_value = dataStore.instance[feature]
+                const similar_instances = dataStore.data.filter((d) => d[feature] === instance_value)
+                const sum = similar_instances.reduce((acc, d) => acc + d[dataStore.target_feature], 0)
+                const size = similar_instances.length
+                main_effects[feature] = sum / size
+            }
+        },
+
+        calculate_groups() {
+            const dataStore = useDataStore()
+            this.calculate_main_effects()
+            this.influence_scores = []
+            //for (const feature of dataStore.interacting_features) {
+            //    this.influence_scores.push(this.calculate_group_influence_scores([feature]))
+            //}
+            this.influence_scores.push(this.calculate_group_influence_scores(dataStore.interacting_features))
+
+        },
+
+        calculate_group_influence_scores(group: string[]) : InfluenceScore[]{
             const dataStore = useDataStore()
             // first sort features by main effect
-            const sorted_features = dataStore.interacting_features.sort((a, b) => {
+            const sorted_features = group.sort((a, b) => {
                 return Math.abs(dataStore.instance_averages[b].average) - Math.abs(dataStore.instance_averages[a].average)
             })
-            console.log(sorted_features)
 
             // then calculate influence scores
             let id_subset = new Set() as Set<number>
@@ -36,8 +67,7 @@ export const useInfluenceStore = defineStore({
                 i++
             }
 
-            this.influence_scores = influence_scores
-            console.log(influence_scores)
+            return influence_scores
 
         },
 

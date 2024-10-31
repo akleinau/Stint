@@ -25,7 +25,7 @@ const update_vis = () => {
       .attr("width", 1000)
       .attr("height", 200)
 
-  let data = influenceStore.influence_scores
+  let data = influenceStore.influence_scores.flat()
   if (data.length === 0) {
     return
   }
@@ -33,14 +33,14 @@ const update_vis = () => {
   min.value = Math.min(0, dataStore.data_summary.min)
   max.value = dataStore.data_summary.max
   const spacing = 0.01* (dataStore.data_summary.max - dataStore.data_summary.min)
-  min.value = Math.min(d3.min(data, d => d.value), dataStore.data_summary.mean)  - spacing
-  max.value = Math.max(d3.max(data, d => d.value), dataStore.data_summary.mean)  + spacing
+  min.value = dataStore.data_summary.min - spacing
+  max.value = dataStore.data_summary.max + spacing
   scale.value = d3.scaleLinear().domain([min.value, max.value]).range([0, 500])
 
   // add axis
   let axis = d3.axisBottom(scale.value)
   svg.append("g")
-      .attr("transform", "translate(0, " + (data.length * (bar_height+10)) + ")")
+      .attr("transform", "translate(0, " + (data.length * (bar_height+10) + (influenceStore.influence_scores.length * 20)) + ")")
       .call(axis)
 
   // add black vertical line at 0
@@ -48,22 +48,28 @@ const update_vis = () => {
       .attr("x1", scale.value(dataStore.data_summary.mean))
       .attr("y1", 0)
       .attr("x2", scale.value(dataStore.data_summary.mean))
-      .attr("y2", data.length * (bar_height+10))
+      .attr("y2", data.length * (bar_height+10) + (influenceStore.influence_scores.length * 20))
       .attr("stroke", "black")
       .attr("stroke-width", 2)
 
   d3.select(container.value).selectAll("*").remove()
   d3.select(container.value).node().append(svg.node())
 
-  slowly_add_bars(data, svg)
+  let offset = 0
+  for (let i = 0; i < influenceStore.influence_scores.length; i++) {
+    let group = influenceStore.influence_scores[i]
+    slowly_add_bars(group, svg, offset)
+    offset += (group.length * (bar_height+10) + 10)
+  }
+
 
 }
 
-const slowly_add_bars = (data, svg) => {
+const slowly_add_bars = (data, svg, offset) => {
   let finished = false
   let i = 1
   let interval = setInterval(() => {
-    add_bars(data.slice(0, i), svg)
+    add_bars(data.slice(0, i), svg, offset)
     i++
     if (i > data.length && !finished) {
       finished = true
@@ -78,43 +84,43 @@ const slowly_add_bars = (data, svg) => {
 
 }
 
-const add_bars = (data, svg) => {
+const add_bars = (data, svg, offset) => {
 
   // draw bars
-  svg.selectAll(".bars")
+  svg.selectAll(".bars" + offset)
       .data(data)
       .enter()
       .append("rect")
       .transition()
       .attr("x", d => d.score < 0 ? scale.value(d.value): scale.value(d.value - d.score))
-      .attr("y", (d, i) => i * (bar_height+10))
-      .attr("class", "bars")
+      .attr("y", (d, i) => i * (bar_height+10) + offset)
+      .attr("class", "bars" + offset)
       .attr("width", d => scale.value(Math.abs(d.score)) - scale.value(0))
       .attr("height", bar_height)
       .attr("fill", d => d.score < 0 ? "crimson" : "darkslateblue")
 
   // draw value lines, vertically
-  svg.selectAll(".line_vertical")
-      .data(data)
+  svg.selectAll(".line_vertical" + offset)
+      .data(data.slice(0,-1))
       .join("line")
       .transition()
       .attr("x1", d => scale.value(d.value))
-      .attr("y1", (d, i) => i * (bar_height+10))
+      .attr("y1", (d, i) => i * (bar_height+10) + offset)
       .attr("x2", d => scale.value(d.value))
-      .attr("y2", (d, i) => (i+1) * (bar_height+10) + bar_height)
-      .attr("class", "line_vertical")
+      .attr("y2", (d, i) => (i+1) * (bar_height+10) + offset + bar_height)
+      .attr("class", "line_vertical" + offset)
       .attr("stroke", "grey")
       .attr("stroke-width", 2)
 
 
   // add text (feature = instance_value)
-  svg.selectAll(".text_feature_names")
+  svg.selectAll(".text_feature_names" + offset)
       .data(data)
       .join("text")
       .transition()
       .attr("x", 500)
-      .attr("y", (d, i) => i * (bar_height+10) + bar_height/2)
-      .attr("class", "text_feature_names")
+      .attr("y", (d, i) => i * (bar_height+10) + bar_height/2 + offset)
+      .attr("class", "text_feature_names" + offset)
       .text((d, i) => d.feature + " = " + d.instance_value )
       .style("font-size", "12px")
       .style("font-family", "Verdana")
@@ -124,7 +130,7 @@ const add_bars = (data, svg) => {
 
 const explain = () => {
   dataStore.calculate_instance_averages()
-  influenceStore.calculate_sorted_influence_scores()
+  influenceStore.calculate_groups()
 }
 
 
