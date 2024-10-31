@@ -20,7 +20,7 @@ const max = ref<number>(1)
 const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, 500]))
 const bar_height = 20
 
-const update_vis = () => {
+const update_vis = async () => {
   let svg = d3.create("svg")
       .attr("width", 1000)
       .attr("height", 200)
@@ -58,30 +58,20 @@ const update_vis = () => {
   let offset = 0
   for (let i = 0; i < influenceStore.influence_scores.length; i++) {
     let group = influenceStore.influence_scores[i]
-    slowly_add_bars(group, svg, offset)
+    await slowly_add_bars(group, svg, offset)
     offset += (group.length * (bar_height+10) + 10)
   }
+
+  dataStore.storyIsVisible = true
 
 
 }
 
-const slowly_add_bars = (data, svg, offset) => {
-  let finished = false
-  let i = 1
-  let interval = setInterval(() => {
+const slowly_add_bars = async (data, svg, offset) => {
+  for (let i = 1; i <= data.length; i++){
     add_bars(data.slice(0, i), svg, offset)
-    i++
-    if (i > data.length && !finished) {
-      finished = true
-    }
-    else if (finished) {
-      clearInterval(interval)
-      dataStore.storyIsVisible = true
-    }
-  }, 1000)
-
-
-
+    await new Promise(r => setTimeout(r, 1000))
+  }
 }
 
 const add_bars = (data, svg, offset) => {
@@ -130,7 +120,7 @@ const add_bars = (data, svg, offset) => {
 
 const explain = () => {
   dataStore.calculate_instance_averages()
-  influenceStore.calculate_groups()
+  influenceStore.calculate_influences()
 }
 
 

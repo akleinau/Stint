@@ -58,7 +58,6 @@ export const useDataStore = defineStore({
                     this.correlations[feature][other_feature] = correlation
                 }
             }
-            console.log(this.correlations)
         },
 
         calculate_correlation(feature1: string, feature2: string): number {

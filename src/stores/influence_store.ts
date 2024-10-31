@@ -13,31 +13,46 @@ export const useInfluenceStore = defineStore({
     id: 'influence',
     state: () => ({
         influence_scores: [] as InfluenceScore[][],
-        main_effects: {} as { [key: string]: number },
 
     }),
     actions: {
 
-        calculate_main_effects() {
-            const dataStore = useDataStore()
-            let main_effects = {} as { [key: string]: number }
-            for (const feature of dataStore.interacting_features) {
-                const instance_value = dataStore.instance[feature]
-                const similar_instances = dataStore.data.filter((d) => d[feature] === instance_value)
-                const sum = similar_instances.reduce((acc, d) => acc + d[dataStore.target_feature], 0)
-                const size = similar_instances.length
-                main_effects[feature] = sum / size
-            }
-        },
-
         calculate_groups() {
             const dataStore = useDataStore()
-            this.calculate_main_effects()
+            let groups = [] as string[][]
+
+            //first copy the interacting features and sort them by main effect
+            let features = [...dataStore.interacting_features]
+            features.sort((a, b) => {
+                return Math.abs(dataStore.instance_averages[a].average) - Math.abs(dataStore.instance_averages[b].average)
+            })
+
+            //then go through them and either add them to a previous group when they interact, or create a new group
+            for (const feature of features) {
+                let added = false
+                for (const group of groups) {
+
+                    // group highly correlated features together
+                    if (group.some(f => dataStore.correlations[f][feature] > 0.5)) {
+                        group.push(feature)
+                        added = true
+                        break
+                    }
+                }
+                if (!added) {
+                    groups.push([feature])
+                }
+            }
+
+            return groups
+        },
+
+        calculate_influences() {
             this.influence_scores = []
-            //for (const feature of dataStore.interacting_features) {
-            //    this.influence_scores.push(this.calculate_group_influence_scores([feature]))
-            //}
-            this.influence_scores.push(this.calculate_group_influence_scores(dataStore.interacting_features))
+            let groups = this.calculate_groups()
+            for (const g of groups) {
+                this.influence_scores.push(this.calculate_group_influence_scores(g))
+            }
 
         },
 
@@ -45,7 +60,7 @@ export const useInfluenceStore = defineStore({
             const dataStore = useDataStore()
             // first sort features by main effect
             const sorted_features = group.sort((a, b) => {
-                return Math.abs(dataStore.instance_averages[b].average) - Math.abs(dataStore.instance_averages[a].average)
+                return Math.abs(dataStore.instance_averages[a].average) - Math.abs(dataStore.instance_averages[b].average)
             })
 
             // then calculate influence scores
