@@ -17,17 +17,17 @@ const container = useTemplateRef('container')
 
 const min = ref<number>(0)
 const max = ref<number>(1)
-const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, 500]))
+const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, 800]))
 const bar_height = 20
 const spacing_between_groups = 15
 const spacing_inside_group = 5
 
-const update_vis = async () => {
+const update_vis = async (isSlow:boolean=true) => {
 
-  const height = influenceStore.groups.length * 20 + dataStore.interacting_features.length * (bar_height+10)
+  const height = influenceStore.groups.length * 20 + d3.sum(influenceStore.groups.map(g => g.get_nr_bars())) * (bar_height+10)
 
   let svg = d3.create("svg")
-      .attr("width", 1000)
+      .attr("width", 750)
       .attr("height", height)
 
   let data = influenceStore.groups.flat()
@@ -64,16 +64,25 @@ const update_vis = async () => {
   for (let i = 0; i < influenceStore.groups.length; i++) {
     let group: Group = influenceStore.groups[i]
     if (group.type == "interaction") {
-          await vis_interaction_group(group.get_features(), svg, offset)
+          await vis_interaction_group(group, svg, offset, isSlow)
     }
     else if (group.type == "correlation") {
-          await vis_correlation_group([group], svg, offset)
+          await vis_correlation_group(group, svg, offset, isSlow)
     }
     else if (group.type == "single") {
-          await vis_single_group(group.get_features(), svg, offset)
+          await vis_single_group(group, svg, offset, isSlow)
     }
 
-    offset += (group.get_nr_features() * (bar_height+spacing_inside_group) + spacing_between_groups)
+    await sleep(200)
+    //retrieve the bars using the offset and toggle group.isOpen on click
+    svg.selectAll(".bars" + offset)
+        .on("click", () => {
+          group.isOpen = !group.isOpen
+          update_vis(isSlow=false)
+        })
+        .style("cursor", "pointer")
+
+    offset += (group.get_nr_bars() * (bar_height+spacing_inside_group) + spacing_between_groups)
   }
 
   dataStore.storyIsVisible = true
@@ -85,10 +94,50 @@ const sleep = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const vis_interaction_group = async (data, svg, offset) => {
-  for (let i = 1; i <= data.length; i++){
-    _vis_interaction_group_direct(data.slice(0, i), svg, offset)
-    await sleep(1000)
+const vis_interaction_group = async (group: Group, svg: any, offset:number, isSlow:boolean) => {
+  if (group.isOpen) {
+    if (isSlow) {
+      for (let i = 1; i <= group.get_nr_features(); i++) {
+        _vis_interaction_group_direct(group.get_features().slice(0, i), svg, offset)
+        await sleep(800)
+      }
+    }
+    else {
+      _vis_interaction_group_direct(group.get_features(), svg, offset)
+    }
+  }
+  else {
+    _vis_interaction_group_direct([group], svg, offset)
+    if (isSlow) {
+      await sleep(800)
+    }
+  }
+}
+
+const vis_correlation_group = async (group: Group, svg: any, offset:number, isSlow:boolean) => {
+  if (group.isOpen) {
+    if (isSlow) {
+      for (let i = 1; i <= group.get_nr_features(); i++){
+        _vis_interaction_group_direct(group.get_features().slice(0, i), svg, offset)
+        await sleep(1000)
+      }
+    }
+    else {
+      _vis_interaction_group_direct(group.get_features(), svg, offset)
+    }
+  }
+  else {
+    _vis_interaction_group_direct([group], svg, offset)
+    if (isSlow) {
+      await sleep(800)
+    }
+  }
+}
+
+const vis_single_group = async (group: Group, svg: any, offset:number, isSlow:boolean) => {
+    _vis_interaction_group_direct(group.get_features(), svg, offset)
+  if (isSlow) {
+    await sleep(800)
   }
 }
 
@@ -126,7 +175,7 @@ const _vis_interaction_group_direct = (data, svg, offset) => {
       .data(data)
       .join("text")
       .transition()
-      .attr("x", 500)
+      .attr("x", 520)
       .attr("y", (d, i) => i * (bar_height+spacing_inside_group) + bar_height/2 + offset)
       .attr("class", "text_feature_names" + offset)
       .text((d, i) => d.label )
@@ -134,20 +183,6 @@ const _vis_interaction_group_direct = (data, svg, offset) => {
       .style("font-family", "Verdana")
       .style("text-anchor", "start")
       .style("color", "black")
-}
-
-const vis_correlation_group = async (data, svg, offset) => {
-  for (let i = 1; i <= data.length; i++){
-    _vis_interaction_group_direct(data.slice(0, i), svg, offset)
-    await sleep(1000)
-  }
-}
-
-const vis_single_group = async (data, svg, offset) => {
-  for (let i = 1; i <= data.length; i++){
-    _vis_interaction_group_direct(data.slice(0, i), svg, offset)
-    await sleep(1000)
-  }
 }
 
 const explain = () => {
@@ -163,7 +198,7 @@ const explain = () => {
       <v-btn @click="explain" class="bg-blue">Explain</v-btn>
     </div>
     <h3 class="pt-5" v-if="influenceStore.groups.length>0">Your Story</h3>
-    <div ref="container" class="px-5 pt-5 w-50"/>
+    <div ref="container" class="px-5 pt-5"/>
   </div>
 </template>
 

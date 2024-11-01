@@ -23,6 +23,7 @@ export class Group implements GroupInterface, InfluenceScore{
     value: number = 0
     label: string = ""
     size: number = 0
+    isOpen: boolean = true
     constructor(features: (Feature)[], type: string) {
         this.features = features
         this.type = type
@@ -71,6 +72,13 @@ export class Group implements GroupInterface, InfluenceScore{
 
     get_nr_features() {
         return this.features.length
+    }
+
+    get_nr_bars() {
+        if (this.isOpen) {
+            return this.get_nr_features()
+        }
+        return 1
     }
 
     get_features() {
@@ -167,6 +175,7 @@ export const useInfluenceStore = defineStore({
                         if (group.features.some(f => dataStore.correlations[f.feature][feature] > 0.5)) {
                             group.add_feature(new Feature(feature))
                             group.type = "correlation"
+                            group.isOpen = false
                             added = true
                             break
                         }
