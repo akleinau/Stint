@@ -8,7 +8,7 @@ const dataStore = useDataStore()
 const influenceStore = useInfluenceStore()
 
 // watch dataStore.influence_scores
-watch (() => influenceStore.influence_scores, (_) => {
+watch (() => influenceStore.groups, (_) => {
   update_vis()
 })
 
@@ -24,13 +24,13 @@ const spacing_inside_group = 5
 
 const update_vis = async () => {
 
-  const height = influenceStore.influence_scores.length * 20 + influenceStore.influence_scores.flat().length * (bar_height+10)
+  const height = influenceStore.groups.length * 20 + dataStore.interacting_features.length * (bar_height+10)
 
   let svg = d3.create("svg")
       .attr("width", 1000)
       .attr("height", height)
 
-  let data = influenceStore.influence_scores.flat()
+  let data = influenceStore.groups.flat()
   if (data.length === 0) {
     return
   }
@@ -61,10 +61,19 @@ const update_vis = async () => {
   d3.select(container.value).node().append(svg.node())
 
   let offset = 0
-  for (let i = 0; i < influenceStore.influence_scores.length; i++) {
-    let group = influenceStore.influence_scores[i]
-    await slowly_add_bars(group, svg, offset)
-    offset += (group.length * (bar_height+spacing_inside_group) + spacing_between_groups)
+  for (let i = 0; i < influenceStore.groups.length; i++) {
+    let group = influenceStore.groups[i]
+    if (group.type == "interaction") {
+          await vis_interaction_group(group.scores, svg, offset)
+    }
+    else if (group.type == "correlation") {
+          await vis_correlation_group(group.scores, svg, offset)
+    }
+    else if (group.type == "single") {
+          await vis_single_group(group.scores, svg, offset)
+    }
+
+    offset += (group.scores.length * (bar_height+spacing_inside_group) + spacing_between_groups)
   }
 
   dataStore.storyIsVisible = true
@@ -72,14 +81,18 @@ const update_vis = async () => {
 
 }
 
-const slowly_add_bars = async (data, svg, offset) => {
+const sleep = (ms) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const vis_interaction_group = async (data, svg, offset) => {
   for (let i = 1; i <= data.length; i++){
-    add_bars(data.slice(0, i), svg, offset)
-    await new Promise(r => setTimeout(r, 1000))
+    _vis_interaction_group_direct(data.slice(0, i), svg, offset)
+    await sleep(1000)
   }
 }
 
-const add_bars = (data, svg, offset) => {
+const _vis_interaction_group_direct = (data, svg, offset) => {
 
   // draw bars
   svg.selectAll(".bars" + offset)
@@ -116,11 +129,25 @@ const add_bars = (data, svg, offset) => {
       .attr("x", 500)
       .attr("y", (d, i) => i * (bar_height+spacing_inside_group) + bar_height/2 + offset)
       .attr("class", "text_feature_names" + offset)
-      .text((d, i) => d.feature + " = " + d.instance_value )
+      .text((d, i) => d.label )
       .style("font-size", "12px")
       .style("font-family", "Verdana")
       .style("text-anchor", "start")
       .style("color", "black")
+}
+
+const vis_correlation_group = async (data, svg, offset) => {
+  for (let i = 1; i <= data.length; i++){
+    _vis_interaction_group_direct(data.slice(0, i), svg, offset)
+    await sleep(1000)
+  }
+}
+
+const vis_single_group = async (data, svg, offset) => {
+  for (let i = 1; i <= data.length; i++){
+    _vis_interaction_group_direct(data.slice(0, i), svg, offset)
+    await sleep(1000)
+  }
 }
 
 const explain = () => {
@@ -135,7 +162,7 @@ const explain = () => {
     <div v-if="dataStore.interacting_features.length !== 0" class="mt-1">
       <v-btn @click="explain" class="bg-blue">Explain</v-btn>
     </div>
-    <h3 class="pt-5" v-if="influenceStore.influence_scores.length>0">Your Story</h3>
+    <h3 class="pt-5" v-if="influenceStore.groups.length>0">Your Story</h3>
     <div ref="container" class="px-5 pt-5 w-50"/>
   </div>
 </template>
