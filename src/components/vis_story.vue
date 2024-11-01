@@ -2,7 +2,7 @@
 import * as d3 from "d3";
 import {ref, useTemplateRef, watch} from 'vue'
 import {useDataStore} from "../stores/dataStore";
-import {useInfluenceStore} from "../stores/influence_store.ts";
+import {Group, useInfluenceStore} from "../stores/influence_store.ts";
 
 const dataStore = useDataStore()
 const influenceStore = useInfluenceStore()
@@ -62,18 +62,18 @@ const update_vis = async () => {
 
   let offset = 0
   for (let i = 0; i < influenceStore.groups.length; i++) {
-    let group = influenceStore.groups[i]
+    let group: Group = influenceStore.groups[i]
     if (group.type == "interaction") {
-          await vis_interaction_group(group.scores, svg, offset)
+          await vis_interaction_group(group.get_influence_scores(), svg, offset)
     }
     else if (group.type == "correlation") {
-          await vis_correlation_group(group.scores, svg, offset)
+          await vis_correlation_group(group.get_influence_scores(), svg, offset)
     }
     else if (group.type == "single") {
-          await vis_single_group(group.scores, svg, offset)
+          await vis_single_group(group.get_influence_scores(), svg, offset)
     }
 
-    offset += (group.scores.length * (bar_height+spacing_inside_group) + spacing_between_groups)
+    offset += (group.get_influence_scores().length * (bar_height+spacing_inside_group) + spacing_between_groups)
   }
 
   dataStore.storyIsVisible = true
