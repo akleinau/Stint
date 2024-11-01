@@ -64,16 +64,16 @@ const update_vis = async () => {
   for (let i = 0; i < influenceStore.groups.length; i++) {
     let group: Group = influenceStore.groups[i]
     if (group.type == "interaction") {
-          await vis_interaction_group(group.get_influence_scores(), svg, offset)
+          await vis_interaction_group(group.get_features(), svg, offset)
     }
     else if (group.type == "correlation") {
-          await vis_correlation_group(group.get_influence_scores(), svg, offset)
+          await vis_correlation_group([group], svg, offset)
     }
     else if (group.type == "single") {
-          await vis_single_group(group.get_influence_scores(), svg, offset)
+          await vis_single_group(group.get_features(), svg, offset)
     }
 
-    offset += (group.get_influence_scores().length * (bar_height+spacing_inside_group) + spacing_between_groups)
+    offset += (group.get_nr_features() * (bar_height+spacing_inside_group) + spacing_between_groups)
   }
 
   dataStore.storyIsVisible = true

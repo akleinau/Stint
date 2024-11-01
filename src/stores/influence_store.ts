@@ -15,17 +15,27 @@ interface GroupInterface {
     get_name(): string,
 }
 
-export class Group implements GroupInterface{
+export class Group implements GroupInterface, InfluenceScore{
     features: (Feature)[] = []
     type: string = ""
     ids: Set<number> = new Set()
+    score: number = 0
+    value: number = 0
+    label: string = ""
+    size: number = 0
     constructor(features: (Feature)[], type: string) {
         this.features = features
         this.type = type
-        this.ids = new Set()
-        for (const feature of this.features) {
+        this.ids = new Set([...features[0].get_ids()])
+        for (const feature of this.features.slice(1)) {
             this.ids = new Set([...this.ids].filter(x => feature.get_ids().has(x)))
         }
+
+        this.score = this.get_score()
+        this.value = this.score
+        this.size = this.get_size()
+        this.label = this.get_name()
+
     }
 
     add_feature(feature: Feature) {
@@ -36,10 +46,11 @@ export class Group implements GroupInterface{
 
         feature.set_new_influence(score, average)
         this.features.push(feature)
-    }
 
-    get_influence_scores() {
-        return useInfluenceStore().calculate_group_influence_scores(this)
+        this.score = average
+        this.value = average
+        this.size = this.get_size()
+        this.label = this.get_name()
     }
 
     get_score() {
@@ -58,20 +69,28 @@ export class Group implements GroupInterface{
         return this.get_ids().size
     }
 
+    get_nr_features() {
+        return this.features.length
+    }
+
+    get_features() {
+        return this.features
+    }
+
 }
 
-class Feature implements GroupInterface{
+class Feature implements GroupInterface, InfluenceScore{
     feature: string = ""
     score: number = 0
     value: number = 0
     size: number = 0
-    name: string = ""
+    label: string = ""
     constructor(feature: string) {
         this.feature = feature
         this.score = useInfluenceStore().main_effects[feature].average
         this.value = this.score
         this.size = useInfluenceStore().main_effects[feature].size
-        this.name = feature + " = " + useDataStore().instance[this.feature]
+        this.label = feature + " = " + useDataStore().instance[this.feature]
     }
 
     set_new_influence(score: number, value: number) {
@@ -92,7 +111,7 @@ class Feature implements GroupInterface{
     }
 
     get_name() {
-        return this.name
+        return this.label
     }
 
 }
@@ -177,64 +196,6 @@ export const useInfluenceStore = defineStore({
         calculate_influences() {
             this.calculate_main_effects()
             this.groups = this.calculate_groups()
-
-        },
-
-        calculate_group_influence_scores(group: Group) : InfluenceScore[]{
-            if (group.type == "single") {
-                return this.calculate_group_single_score(group)
-            }
-            else if (group.type == "correlation") {
-                return this.calculate_group_correlation_score(group)
-            }
-            else if (group.type == "interaction") {
-                return this.calculate_group_interaction_scores(group)
-            }
-            return []
-        },
-
-        calculate_group_single_score(group: Group) : InfluenceScore[]{
-            let influence_scores = [] as InfluenceScore[]
-            for (const feature of group.features) {
-                influence_scores.push({label: feature.get_name(), score: feature.get_score(), size: feature.get_size(), value: feature.get_score() })
-            }
-
-            return influence_scores
-        },
-
-        calculate_group_correlation_score(group: Group) : InfluenceScore[]{
-            // only considers first feature
-            let influence_scores = [] as InfluenceScore[]
-            let feature = group.features[0]
-            influence_scores.push({label: group.get_name(), score: feature.get_score(), size: feature.get_size(), value: feature.get_score()})
-            return influence_scores
-        },
-
-        calculate_group_interaction_scores(group: Group) : InfluenceScore[]{
-            // first sort features by main effect
-            const sorted_features = group.features.sort((a, b) => {
-                return Math.abs(b.get_score()) - Math.abs(a.get_score())
-            })
-
-            // then calculate influence scores
-            let id_subset = new Set() as Set<number>
-            let influence_scores = [] as InfluenceScore[]
-            let previous_value = 0
-            let i = 0
-            for (const feature of sorted_features) {
-                if (i === 0) {
-                    id_subset = feature.get_ids()
-                } else {
-                    id_subset = new Set([...id_subset].filter(x => feature.get_ids().has(x)))
-                }
-                let average = this.get_average_influence(id_subset)
-                let score = average - previous_value
-                previous_value = average
-                influence_scores.push({label: feature.get_name(), score: score, size: id_subset.size, value: average})
-                i++
-            }
-
-            return influence_scores
 
         },
 
