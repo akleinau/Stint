@@ -99,7 +99,7 @@ export const useFeatureStore = defineStore({
                 const bins = this.feature_bins[feature] as bin_discrete[]
                 return bins.findIndex((bin) => bin.value === value)
             }
-        }
+        },
 
     }
 });

@@ -20,13 +20,8 @@ onMounted(() => {
 })
 
 const update_vis = () => {
-  const bins = featureStore.get_feature_bins(props.feature_name)
-  const max_count = d3.max(bins.map(d => d.count))
-  const full_count = d3.sum(bins.map(d => d.count))
-  const instance_bin_index = featureStore.get_instance_bin_index(props.feature_name, instance_value.value)
-  const instance_bin_count = bins[instance_bin_index].count
 
-  const instance_abnormality = instance_bin_count / max_count
+  const instance_abnormality = dataStore.feature_abnormality[props.feature_name]
 
   const svg_width = 500
 

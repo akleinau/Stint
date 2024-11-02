@@ -6,44 +6,83 @@ const dataStore = useDataStore()
 
 import AbnormalVis from "../visualizations/abnormal-vis.vue";
 import DistributionVis from "../visualizations/distribution-vis.vue";
-import {ref} from "vue";
+import {ref, watch} from "vue";
+import DetailedFeatureView from "./detailed_feature_view.vue";
 
 let show_details = ref<string>("")
+let show_details_background = ref<string>("")
+let background_features = ref<string[]>([])
+let focus_features = ref<string[]>([])
 
 const toggle_details = (key: string) => {
   show_details.value = show_details.value === key ? "" : key
 }
 
-const hasCorrelations = (key: string) => {
-  return Object.values(dataStore.correlations[key]).some((v: number) => Math.abs(v) > 0.2)
+const toggle_details_background = (key: string) => {
+  show_details_background.value = show_details_background.value === key ? "" : key
 }
+
+//watch dataStore.interacting_features
+watch(() => dataStore.interacting_features, () => {
+  show_details.value = ""
+  background_features.value = []
+  focus_features.value = []
+  const abnormal_boundary = 0.5
+
+  dataStore.calculate_abnormality()
+
+  for (let feature of dataStore.interacting_features) {
+    if (dataStore.feature_abnormality[feature] < abnormal_boundary) {
+      focus_features.value.push(feature)
+    } else {
+      background_features.value.push(feature)
+    }
+  }
+
+})
 
 </script>
 
 <template>
   <div class="d-flex justify-center flex-column">
-    <div v-for="key in dataStore.interacting_features">
+
+    <div class="d-flex justify-center mb-5">
+      <v-btn class="bg-blue">Data Overview</v-btn>
+    </div>
+
+    <!-- background features -->
+    <div  class="d-flex justify-center mb-3">
+      <div v-for="key in background_features" class="pa-1">
+        <v-chip @click="toggle_details_background(key)" :variant="show_details_background == key? 'elevated' : 'tonal' ">
+          {{key}} = {{dataStore.instance[key]}}
+        </v-chip>
+      </div>
+    </div>
+    <div v-if="show_details_background !== ''">
+      <DetailedFeatureView :feature="show_details_background" :show_abnormal="true"/>
+      <div class="d-flex justify-center mb-5">
+        <v-btn @click="toggle_details_background('')" density="compact" icon="mdi-chevron-up" variant="tonal"></v-btn>
+      </div>
+    </div>
+
+
+
+    <!-- focus features -->
+    <div v-for="key in focus_features">
       <div class="d-flex justify-center">
         <div class="d-flex mt-2 justify-end" style="width:150px"> {{ key }} = {{ dataStore.instance[key] }}</div>
         <AbnormalVis :feature_name="key"/>
         <v-btn @click="toggle_details(key)" density="compact"
                :icon="show_details == key? 'mdi-chevron-up' :'mdi-chevron-down'"> </v-btn>
       </div>
-      <div v-if="show_details === key" class="mb-5 bg-grey-lighten-4 mx-5">
-        <v-divider class="mb-2"></v-divider>
-        <DistributionVis :feature_name="key"/>
-        <div  class="d-flex mb-2 justify-center">
-          <span v-if="hasCorrelations(key) ">Correlations: </span>
-          <span v-else>(No correlations)</span>
-          <span v-for="(corr, other_feature) in dataStore.correlations[key]">
-            <v-chip class="mx-2" v-if="Math.abs(corr) > 0.2">
-              {{ other_feature }}: {{ corr.toFixed(2) }}
-            </v-chip>
-          </span>
-        </div>
-        <v-divider></v-divider>
-      </div>
+
+      <!-- detailed view -->
+      <DetailedFeatureView v-if="show_details == key" :feature="key" :show_abnormal="false"/>
+
+
     </div>
+
+
   </div>
 </template>
 

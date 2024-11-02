@@ -1,4 +1,6 @@
 import {defineStore} from 'pinia'
+import * as d3 from 'd3'
+import {useFeatureStore} from './feature_store'
 
 export interface CorrelationMap {
     [key: string]: number // feature name -> correlation value
@@ -15,7 +17,8 @@ export const useDataStore = defineStore({
         interacting_features: [] as string[],
         instance: {} as { [key: string]: number },
         storyIsVisible: false,
-        correlations: {} as { [key: string]: CorrelationMap} // feature name -> CorrelationMap
+        correlations: {} as { [key: string]: CorrelationMap}, // feature name -> CorrelationMap
+        feature_abnormality: {} as { [key: string]: number } // feature name -> abnormality value
     }),
     actions: {
 
@@ -52,6 +55,20 @@ export const useDataStore = defineStore({
             const denominator1 = Math.sqrt(values1.reduce((acc, v) => acc + (v - mean1) ** 2, 0))
             const denominator2 = Math.sqrt(values2.reduce((acc, v) => acc + (v - mean2) ** 2, 0))
             return numerator / (denominator1 * denominator2)
+        },
+
+        calculate_abnormality() {
+            const featureStore = useFeatureStore()
+            this.feature_abnormality = {}
+            for (let feature of this.interacting_features) {
+                  const bins = featureStore.get_feature_bins(feature)
+                  const max_count = d3.max(bins.map(d => d.count))
+                  //const full_count = d3.sum(bins.map(d => d.count))
+                  const instance_bin_index = featureStore.get_instance_bin_index(feature, this.instance[feature])
+                  const instance_bin_count = bins[instance_bin_index].count
+
+                  this.feature_abnormality[feature] = instance_bin_count / max_count
+            }
         }
     },
 })
