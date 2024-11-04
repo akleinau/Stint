@@ -10,13 +10,18 @@ interface InfluenceScore {
 
 interface GroupInterface {
     get_ids(): Set<number>,
+
     get_score(): number,
+
     get_size(): number,
+
     get_name(): string,
+
+    set_parent(parent: Group): void,
 }
 
-export class Group implements GroupInterface, InfluenceScore{
-    features: (Feature)[] = []
+export class Group implements GroupInterface, InfluenceScore {
+    features: (Feature | Group)[] = []
     type: string = ""
     ids: Set<number> = new Set()
     score: number = 0
@@ -24,8 +29,15 @@ export class Group implements GroupInterface, InfluenceScore{
     label: string = ""
     size: number = 0
     isOpen: boolean = true
+    parent: Group | null = null
+
     constructor(features: (Feature)[], type: string) {
         this.features = features
+        for (const feature of this.features) {
+            feature.set_parent(this)
+        }
+
+
         this.type = type
         this.ids = new Set([...features[0].get_ids()])
         for (const feature of this.features.slice(1)) {
@@ -36,7 +48,12 @@ export class Group implements GroupInterface, InfluenceScore{
         this.value = this.score
         this.size = this.get_size()
         this.label = this.get_name()
+        this.parent = null
 
+    }
+
+    set_parent(parent: Group) {
+        this.parent = parent
     }
 
     add_feature(feature: Feature) {
@@ -47,6 +64,7 @@ export class Group implements GroupInterface, InfluenceScore{
 
         feature.set_new_influence(score, average)
         this.features.push(feature)
+        feature.set_parent(this)
 
         this.score = average
         this.value = average
@@ -58,8 +76,8 @@ export class Group implements GroupInterface, InfluenceScore{
         return useInfluenceStore().get_average_influence(this.get_ids())
     }
 
-    get_name() {
-        return this.features.map(f => f.feature).join(", ")
+    get_name() : string {
+        return this.features.map(f => f.get_name()).join(", ")
     }
 
     get_ids() {
@@ -85,20 +103,100 @@ export class Group implements GroupInterface, InfluenceScore{
         return this.features
     }
 
+    vis_group(crawler: any, i: number, length: number, updater: any) {
+
+        if (this.isOpen && this.get_nr_features() > 1) {
+            let initial_offset = crawler.offset
+            for (let j = 0; j < this.get_nr_features(); j++) {
+                this.features[j].vis_group(crawler, j, this.get_nr_features(), updater)
+            }
+            let final_offset = crawler.offset
+
+            // add a rectangle around the group
+            crawler.layers[0].append("rect")
+                .on("click", () => {
+                    this.isOpen = !this.isOpen
+                    updater.value += 1
+                })
+                .attr("x", 0)
+                .attr("y", initial_offset)
+                .attr("width", 500)
+                .attr("height", final_offset - initial_offset)
+                .attr("fill", "#CCCCCC")
+                .style("opacity", 0.2)
+                .style("cursor", "pointer")
+
+        } else {
+
+            let d = this
+
+            crawler.svg.attr("height", crawler.offset + crawler.bar_height + crawler.spacing_inside_group)
+
+            // draw bars
+            crawler.layers[1].append("rect")
+                .on("click", () => {
+                    this.isOpen = !this.isOpen
+                    updater.value += 1
+                })
+                .transition()
+                .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
+                .attr("y", crawler.offset)
+                .attr("class", "bars" + crawler.offset)
+                .attr("width", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0))
+                .attr("height", crawler.bar_height)
+                .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
+
+                .style("cursor", "pointer")
+
+            if (i < length - 1) {
+                // draw value lines, vertically
+                crawler.layers[1].append("line")
+                    .attr("x1", crawler.scale.value(d.value))
+                    .attr("y1", crawler.offset)
+                    .attr("x2", crawler.scale.value(d.value))
+                    .attr("y2", crawler.offset + 2 * crawler.bar_height)
+                    .attr("class", "line_vertical" + crawler.offset)
+                    .attr("stroke", "grey")
+                    .attr("stroke-width", 2)
+            }
+
+            crawler.layers[1].append("text")
+                .attr("x", 520)
+                .attr("y", crawler.offset + crawler.bar_height / 2)
+                .text(d.label)
+                .attr("class", "text_feature_names" + crawler.offset)
+                .style("font-size", "12px")
+                .style("font-family", "Verdana")
+                .style("text-anchor", "start")
+                .style("color", "black")
+
+
+            crawler.offset += crawler.bar_height + crawler.spacing_inside_group
+        }
+
+    }
+
 }
 
-class Feature implements GroupInterface, InfluenceScore{
+class Feature implements GroupInterface, InfluenceScore {
     feature: string = ""
     score: number = 0
     value: number = 0
     size: number = 0
     label: string = ""
+    parent: Group | null = null
+
     constructor(feature: string) {
         this.feature = feature
         this.score = useInfluenceStore().main_effects[feature].average
         this.value = this.score
         this.size = useInfluenceStore().main_effects[feature].size
         this.label = feature + " = " + useDataStore().instance[this.feature]
+        this.parent = null
+    }
+
+    set_parent(parent: Group) {
+        this.parent = parent
     }
 
     set_new_influence(score: number, value: number) {
@@ -120,6 +218,54 @@ class Feature implements GroupInterface, InfluenceScore{
 
     get_name() {
         return this.label
+    }
+
+    vis_group(crawler: any, i: number, length: number, updater: any) {
+
+        let d = this
+
+        crawler.svg.attr("height", crawler.offset + crawler.bar_height + crawler.spacing_inside_group)
+
+        // draw bars
+        crawler.layers[1].append("rect")
+            .on("click", () => {
+                if (this.parent != null) {
+                    this.parent.isOpen = !this.parent.isOpen
+                    updater.value += 1
+                }
+            })
+            .style("cursor", this.parent != null ? "pointer" : "default")
+            .transition()
+            .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
+            .attr("y", crawler.offset)
+            .attr("class", "bars" + crawler.offset)
+            .attr("width", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0))
+            .attr("height", crawler.bar_height)
+            .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
+
+        if (i < length - 1) {
+            // draw value lines, vertically
+            crawler.layers[1].append("line")
+                .attr("x1", crawler.scale.value(d.value))
+                .attr("y1", crawler.offset)
+                .attr("x2", crawler.scale.value(d.value))
+                .attr("y2", crawler.offset + 2 * crawler.bar_height + crawler.spacing_inside_group)
+                .attr("class", "line_vertical" + crawler.offset)
+                .attr("stroke", "grey")
+                .attr("stroke-width", 2)
+        }
+
+        crawler.layers[1].append("text")
+            .attr("x", 520)
+            .attr("y", crawler.offset + crawler.bar_height / 2)
+            .text(d.label)
+            .attr("class", "text_feature_names" + crawler.offset)
+            .style("font-size", "12px")
+            .style("font-family", "Verdana")
+            .style("text-anchor", "start")
+            .style("color", "black")
+
+        crawler.offset += crawler.bar_height + crawler.spacing_inside_group
     }
 
 }
@@ -170,8 +316,7 @@ export const useInfluenceStore = defineStore({
                 for (const group of groups) {
 
                     // group highly correlated features together
-                    if (group.type == "single" || group.type == "correlation")
-                    {
+                    if (group.type == "single" || group.type == "correlation") {
                         if (group.features.some(f => dataStore.correlations[f.feature][feature] > 0.5)) {
                             group.add_feature(new Feature(feature))
                             group.type = "correlation"
@@ -209,7 +354,7 @@ export const useInfluenceStore = defineStore({
         },
 
         get_average_influence(ids: Set<number>): number {
-            let subset =  useDataStore().data.filter((_, i) => ids.has(i))
+            let subset = useDataStore().data.filter((_, i) => ids.has(i))
             let average = subset.reduce((acc, d) => acc + d[useDataStore().target_feature], 0) / subset.length
             let center = useDataStore().data_summary.mean
             return average - center
