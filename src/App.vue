@@ -7,7 +7,7 @@ import DataOverview from './components/data_overview.vue'
 
 <template>
   <div id="app">
-    <v-card class="w-50 mt-5 h-100" style="margin:auto">
+    <v-card class="mt-5 h-100" style="margin:auto; width:900px">
       <v-card-item>
         <v-card-title class="d-flex flex-column align-center">
           <h1 class="mt-5">STINT - Stories about Interactions</h1>

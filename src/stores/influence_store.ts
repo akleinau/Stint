@@ -107,6 +107,10 @@ export class Group extends GroupClass {
     }
 
     get_name() : string {
+        if (this.type == "correlation") {
+            return this.features[0].get_name() + " (...)"
+        }
+
         return this.features.map(f => f.get_name()).join(", ")
     }
 
@@ -263,10 +267,16 @@ const add_value_line = (crawler: any, d: any, isLast: boolean) => {
 }
 
 const add_feature_names = (crawler: any, d: any) => {
+
+    let name = d.get_name()
+    if (name.length > 20) {
+        name = name.slice(0, 30) + "..."
+    }
+
     crawler.layers[1].append("text")
             .attr("x", 520)
             .attr("y", crawler.offset + crawler.bar_height / 2)
-            .text(d.get_name())
+            .text(name)
             .attr("class", "text_feature_names" + crawler.offset)
             .style("font-size", "12px")
             .style("font-family", "Verdana")

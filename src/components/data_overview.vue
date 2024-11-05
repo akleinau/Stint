@@ -24,6 +24,15 @@ const toggle_details_background = (key: string) => {
 
 //watch dataStore.interacting_features
 watch(() => dataStore.interacting_features, () => {
+  update()
+})
+
+// also watch dataStore.instance
+watch(() => dataStore.instance, () => {
+  update()
+})
+
+const update = () => {
   show_details.value = ""
   background_features.value = []
   focus_features.value = []
@@ -38,8 +47,7 @@ watch(() => dataStore.interacting_features, () => {
       background_features.value.push(feature)
     }
   }
-
-})
+}
 
 </script>
 
@@ -51,7 +59,7 @@ watch(() => dataStore.interacting_features, () => {
     </div>
 
     <!-- background features -->
-    <div  class="d-flex justify-center mb-3">
+    <div  class="d-flex justify-center mb-3 flex-wrap">
       <div v-for="key in background_features" class="pa-1">
         <v-chip @click="toggle_details_background(key)" :variant="show_details_background == key? 'elevated' : 'tonal' ">
           {{key}} = {{dataStore.instance[key]}}

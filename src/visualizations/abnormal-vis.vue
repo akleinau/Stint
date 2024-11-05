@@ -19,6 +19,12 @@ onMounted(() => {
   update_vis()
 })
 
+//watch dataStore.instance
+watch(() => dataStore.instance[props.feature_name], () => {
+  instance_value.value = dataStore.instance[props.feature_name]
+  update_vis()
+})
+
 const update_vis = () => {
 
   const instance_abnormality = dataStore.feature_abnormality[props.feature_name]

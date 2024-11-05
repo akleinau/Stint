@@ -24,10 +24,10 @@ const hasCorrelations = (key: string) => {
         </div>
         <DistributionVis :feature_name="props.feature"/>
         <div  class="d-flex mb-2 justify-center">
-          <span v-if="hasCorrelations(props.feature) ">Correlations: </span>
+          <span v-if="hasCorrelations(props.feature)" class="text-grey-darken-1">Correlations: </span>
           <span v-else>(No correlations)</span>
           <span v-for="(corr, other_feature) in dataStore.correlations[props.feature]">
-            <v-chip class="mx-2" v-if="Math.abs(corr) > 0.2">
+            <v-chip class="mx-2" v-if="Math.abs(corr) > 0.2" variant="outlined">
               {{ other_feature }}: {{ corr.toFixed(2) }}
             </v-chip>
           </span>

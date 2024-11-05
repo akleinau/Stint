@@ -86,6 +86,7 @@ const target_selected = (col: string) => {
   summary.max = Math.max(...dataStore.data.map((d: any) => d[col]))
   summary.std = d3.deviation(dataStore.data.map((d: any) => d[col]))
   dataStore.data_summary = summary
+  interacting_features_selected(dataStore.non_target_features)
 
 }
 
@@ -172,7 +173,7 @@ const interacting_features_selected = (cols: string[]) => {
 
       <!-- Interacting features -->
       <div class="d-flex flex-column align-center justify-center w-100">
-        <div v-if="dataStore.target_feature !== ''" class="mt-1 w-50">
+        <div v-if="dataStore.target_feature !== ''" class="mt-1 w-100">
           <v-autocomplete v-model="dataStore.interacting_features" class="px-5" label="Select interacting features"
                           :items="dataStore.non_target_features"
                           multiple
