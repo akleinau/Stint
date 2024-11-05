@@ -28,21 +28,22 @@ export class Group implements GroupInterface, InfluenceScore {
     value: number = 0
     label: string = ""
     size: number = 0
-    isOpen: boolean = true
+    isOpen: boolean = false
     parent: Group | null = null
 
-    constructor(features: (Feature)[], type: string) {
+    constructor(features: (Feature| Group)[], type: string) {
+        //first sort the features by score
+        features.sort((a, b) => a.get_score() - b.get_score())
         this.features = features
         for (const feature of this.features) {
             feature.set_parent(this)
         }
 
+        this.calculate_ids()
+        this.score = useInfluenceStore().get_average_influence(this.get_ids())
 
         this.type = type
-        this.ids = new Set([...features[0].get_ids()])
-        for (const feature of this.features.slice(1)) {
-            this.ids = new Set([...this.ids].filter(x => feature.get_ids().has(x)))
-        }
+
 
         this.score = this.get_score()
         this.value = this.score
@@ -52,28 +53,48 @@ export class Group implements GroupInterface, InfluenceScore {
 
     }
 
+    calculate_ids() {
+        this.ids = new Set([...this.features[0].get_ids()])
+        for (const feature of this.features.slice(1)) {
+            this.ids = new Set([...this.ids].filter(x => feature.get_ids().has(x)))
+        }
+    }
+
     set_parent(parent: Group) {
         this.parent = parent
     }
 
-    add_feature(feature: Feature) {
-        const previous_value = this.get_score()
+    push(feature: Feature | Group) {
+        const previous_score = this.get_score()
         this.ids = new Set([...this.ids].filter(x => feature.get_ids().has(x)))
-        const average = this.get_score()
-        const score = average - previous_value
+        const new_score = useInfluenceStore().get_average_influence(this.get_ids())
+        const difference = new_score - previous_score
 
-        feature.set_new_influence(score, average)
         this.features.push(feature)
+        feature.set_new_influence(difference, new_score)
         feature.set_parent(this)
 
-        this.score = average
-        this.value = average
+        this.score = new_score
+        this.value = new_score
         this.size = this.get_size()
         this.label = this.get_name()
     }
 
+    set_new_influence(score: number, value: number) {
+        this.score = score
+        this.value = value
+    }
+
     get_score() {
-        return useInfluenceStore().get_average_influence(this.get_ids())
+        return this.score
+    }
+
+    calculate_interaction_effect(feature: Feature | Group) {
+        let our_score = this.get_score()
+        let their_score = feature.get_score()
+        let combined_ids = new Set([...this.get_ids()].filter(x => feature.get_ids().has(x)))
+        let combined_score = useInfluenceStore().get_average_influence(combined_ids)
+        return Math.abs(combined_score - our_score - their_score)
     }
 
     get_name() : string {
@@ -305,42 +326,49 @@ export const useInfluenceStore = defineStore({
         calculate_groups() {
             const dataStore = useDataStore()
             let groups = [] as Group[]
+            let features = dataStore.interacting_features
 
-            //first copy the interacting features and sort them by main effect
-            let features = [...dataStore.interacting_features]
-            features.sort(this.sort_by_main_effect)
+            const correlation_threshold = 0.8
+            let main_players = [] as (Feature | Group)[]
+
+            //first group all features that have a high correlation together
+            let remaining_features = [...features]
+            for (const feature of features) {
+                let correlated_features = remaining_features.filter(f => dataStore.correlations[feature][f] > correlation_threshold)
+                if (correlated_features.length > 0) {
+                    correlated_features.push(feature)
+                    main_players.push(new Group(correlated_features.map(f => new Feature(f)), "correlation"))
+                    remaining_features = remaining_features.filter(f => !correlated_features.includes(f))
+                }
+            }
+
+            //then add the remaining features to main_players
+            for (const feature of remaining_features) {
+                main_players.push(new Feature(feature))
+            }
+
+            //sort main players by main effect
+            main_players.sort((a, b) => a.get_score() - b.get_score())
 
             //then go through them and either add them to a previous group when they interact, or create a new group
-            for (const feature of features) {
+            const interaction_boundary = dataStore.data_summary.std * 0.2
+            for (const feature of main_players) {
                 let added = false
+
                 for (const group of groups) {
 
-                    // group highly correlated features together
-                    if (group.type == "single" || group.type == "correlation") {
-                        if (group.features.some(f => dataStore.correlations[f.feature][feature] > 0.5)) {
-                            group.add_feature(new Feature(feature))
-                            group.type = "correlation"
-                            group.isOpen = false
-                            added = true
-                            break
-                        }
-                    }
+                    //group features that interact together
 
-                    if (group.type == "single" || group.type == "interaction") {
-                        //group features that interact together
-                        const interaction_boundary = dataStore.data_summary.std * 0.2
-                        //const interaction_boundary = (dataStore.data_summary.max - dataStore.data_summary.min) * 0.2
-                        if (group.features.some(f => this.calculate_interaction_effect(f.feature, feature) > interaction_boundary)) {
-                            group.add_feature(new Feature(feature))
-                            group.type = "interaction"
-                            added = true
-                            break
-                        }
+                    //const interaction_boundary = (dataStore.data_summary.max - dataStore.data_summary.min) * 0.2
+                    if (group.calculate_interaction_effect(feature) > interaction_boundary) {
+                        group.push(feature)
+                        group.type = "interaction"
+                        added = true
+                        break
                     }
-
                 }
                 if (!added) {
-                    groups.push(new Group([new Feature(feature)], "single"))
+                    groups.push(new Group([feature], "single"))
                 }
             }
 
