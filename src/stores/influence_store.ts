@@ -8,6 +8,7 @@ abstract class GroupClass {
     value: number = 0
     isOpen: boolean = false
     parent: Group | null = null
+    manual_slow: boolean = false
 
     protected constructor() {
         this.parent = null
@@ -38,6 +39,7 @@ abstract class GroupClass {
         this.add_bar(crawler, this, updater)
         add_value_line(crawler, this, isLast)
         add_feature_names(crawler, this)
+        add_zero_line(crawler, isLast)
         crawler.offset += crawler.bar_height + crawler.spacing_inside_group
     }
 
@@ -121,7 +123,10 @@ export class Group extends GroupClass {
 
     vis_group(crawler: any, isLast: boolean, updater: any) {
 
-        if (this.isOpen && this.get_nr_features() > 1) {
+        if (this.get_nr_features() == 1) {
+            this.features[0].vis_group(crawler, isLast, updater)
+        }
+        else if (this.isOpen) {
             let initial_offset = crawler.offset
             for (let j = 0; j < this.get_nr_features(); j++) {
                 this.features[j].vis_group(crawler, isLast && j == this.get_nr_features() -1 , updater)
@@ -140,19 +145,33 @@ export class Group extends GroupClass {
 
     add_bar(crawler: any, d: any, updater: any) {
         // draw bars
-        crawler.layers[1].append("rect")
+        let rect = crawler.layers[1].append("rect")
             .on("click", () => {
                 this.isOpen = !this.isOpen
+                this.manual_slow = true
+                for (let feature of this.features) {
+                    feature.manual_slow = true
+                }
                 updater.value += 1
             })
-            .transition()
             .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
             .attr("y", crawler.offset)
             .attr("class", "bars" + crawler.offset)
             .attr("width", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0))
-            .attr("height", crawler.bar_height)
             .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
             .style("cursor", "pointer")
+
+        //optionally animate
+        if (crawler.isSlow || this.manual_slow) {
+            rect.transition()
+            .attr("height", crawler.bar_height)
+
+            this.manual_slow = false
+        }
+       else {
+            rect.attr("height", crawler.bar_height)
+        }
+
     }
 
     add_group_box(crawler: any, initial_offset: number, final_offset: number, updater: any) {
@@ -202,7 +221,7 @@ class Feature extends GroupClass {
 
     add_bar(crawler: any, d: any, updater: any) {
        // draw bars
-        crawler.layers[1].append("rect")
+        let rect = crawler.layers[1].append("rect")
             .on("click", () => {
                 if (this.parent != null) {
                     this.parent.isOpen = !this.parent.isOpen
@@ -210,13 +229,21 @@ class Feature extends GroupClass {
                 }
             })
             .style("cursor", this.parent != null ? "pointer" : "default")
-            .transition()
             .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
             .attr("y", crawler.offset)
             .attr("class", "bars" + crawler.offset)
             .attr("width", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0))
-            .attr("height", crawler.bar_height)
             .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
+
+        //optionally animate
+        if (crawler.isSlow || this.manual_slow) {
+            rect.transition()
+            .attr("height", crawler.bar_height)
+            this.manual_slow = false
+        }
+       else {
+            rect.attr("height", crawler.bar_height)
+        }
     }
 
 }
@@ -245,6 +272,22 @@ const add_feature_names = (crawler: any, d: any) => {
             .style("font-family", "Verdana")
             .style("text-anchor", "start")
             .style("color", "black")
+}
+
+const add_zero_line = (crawler: any, isLast: boolean) => {
+
+    let end_y = crawler.offset + crawler.bar_height + crawler.spacing_inside_group
+    if (isLast) {
+        end_y += crawler.spacing_between_groups
+    }
+  // add black vertical line at 0
+  crawler.layers[2].append("line")
+      .attr("x1", crawler.scale.value(0))
+      .attr("y1", crawler.offset)
+      .attr("x2", crawler.scale.value(0))
+      .attr("y2", end_y)
+      .attr("stroke", "black")
+      .attr("stroke-width", 2)
 }
 
 export const useInfluenceStore = defineStore({
