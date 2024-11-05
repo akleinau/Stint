@@ -90,11 +90,11 @@ const target_selected = (col: string) => {
 
 }
 
-const instance_selected = (_) => {
+const instance_selected = (_:any) => {
   dataStore.instance = JSON.parse(JSON.stringify(dataStore.data[instance_nr.value]))
 }
 
-const dataset_toggled = (_) => {
+const dataset_toggled = (_:any) => {
   if (isCustomDataset.value) {
     dataStore.reset()
   }

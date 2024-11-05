@@ -36,7 +36,7 @@ const update_vis = async (isSlow:boolean=true) => {
 
   d3.select(container.value).selectAll("*").remove()
 
-  if (dataStore.storyIsVisible === false) {
+  if (!dataStore.storyIsVisible) {
     return
   }
 
@@ -95,7 +95,7 @@ const update_vis = async (isSlow:boolean=true) => {
 
 }
 
-const sleep = (ms) => {
+const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 

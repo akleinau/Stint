@@ -41,8 +41,7 @@ export const useDataStore = defineStore({
                     if (feature === other_feature) {
                         continue
                     }
-                    const correlation = this.calculate_correlation(feature, other_feature)
-                    this.correlations[feature][other_feature] = correlation
+                    this.correlations[feature][other_feature] = this.calculate_correlation(feature, other_feature)
                 }
             }
         },

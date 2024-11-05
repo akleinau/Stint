@@ -9,7 +9,7 @@ import {useInfluenceStore} from "./stores/influence_store.ts";
 const dataStore = useDataStore()
 const influenceStore = useInfluenceStore()
 
-const sleep = (ms) => {
+const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 

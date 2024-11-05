@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import * as d3 from "d3";
 import {useTemplateRef, onMounted, ref, watch} from 'vue'
-import {useFeatureStore} from "../stores/feature_store.ts";
 import {useDataStore} from "../stores/dataStore.ts";
 
-const featureStore = useFeatureStore()
 const dataStore = useDataStore()
 
 //refs

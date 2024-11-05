@@ -5,7 +5,6 @@ const dataStore = useDataStore()
 
 
 import AbnormalVis from "../visualizations/abnormal-vis.vue";
-import DistributionVis from "../visualizations/distribution-vis.vue";
 import {ref, watch} from "vue";
 import DetailedFeatureView from "./detailed_feature_view.vue";
 
