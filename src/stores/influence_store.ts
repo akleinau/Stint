@@ -1,6 +1,10 @@
 import {defineStore} from "pinia";
 import {useDataStore} from "./dataStore";
 
+const sort_by_score = (a: GroupClass, b: GroupClass) => {
+    return Math.abs(b.get_score()) - Math.abs(a.get_score())
+}
+
 abstract class GroupClass {
     type: string = "single"
     ids: Set<number> = new Set()
@@ -51,6 +55,8 @@ abstract class GroupClass {
 
     abstract set_new_influences(ids: Set<number>, previous_value: number): void
 
+    abstract get_features(): string[]
+
 }
 
 export class Group extends GroupClass {
@@ -59,7 +65,7 @@ export class Group extends GroupClass {
     constructor(features: (Feature| Group)[], type: string) {
         super()
         //first sort the features by score
-        features.sort((a, b) => a.get_score() - b.get_score())
+        features.sort(sort_by_score)
         this.features = features
         for (const feature of this.features) {
             feature.set_parent(this)
@@ -123,6 +129,10 @@ export class Group extends GroupClass {
             return this.get_nr_features()
         }
         return 1
+    }
+
+    get_features(): string[] {
+        return this.features.map(f => f.get_features()).flat()
     }
 
     vis_group(crawler: any, isLast: boolean, updater: any) {
@@ -223,6 +233,10 @@ class Feature extends GroupClass {
         this.vis_bars(crawler, updater, isLast)
     }
 
+    get_features(): string[] {
+        return [this.feature]
+    }
+
     add_bar(crawler: any, d: any, updater: any) {
        // draw bars
         let rect = crawler.layers[1].append("rect")
@@ -269,7 +283,7 @@ const add_value_line = (crawler: any, d: any, isLast: boolean) => {
 const add_feature_names = (crawler: any, d: any) => {
 
     let name = d.get_name()
-    if (name.length > 20) {
+    if (name.length > 32) {
         name = name.slice(0, 30) + "..."
     }
 
@@ -357,7 +371,7 @@ export const useInfluenceStore = defineStore({
             }
 
             //sort main players by main effect
-            main_players.sort((a, b) => a.get_score() - b.get_score())
+            main_players.sort(sort_by_score)
 
             //then go through them and either add them to a previous group when they interact, or create a new group
             const interaction_boundary = dataStore.data_summary.std * 0.2
@@ -382,7 +396,12 @@ export const useInfluenceStore = defineStore({
             }
 
             //sort groups by Math.abs(score)
-            groups.sort((a, b) => Math.abs(b.get_score()) - Math.abs(a.get_score()))
+            groups.sort(sort_by_score)
+
+            // delete all groups whose score is below the boundary
+            let boundary = dataStore.data_summary.std * 0.2
+            groups = groups.filter(g => Math.abs(g.get_score()) > boundary)
+            dataStore.shown_features = groups.map(g => g.get_features()).flat()
 
             return groups
         },

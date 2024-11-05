@@ -27,6 +27,10 @@ watch(() => dataStore.storyIsVisible, () => {
   update()
 })
 
+watch(() => dataStore.shown_features, () => {
+  update()
+})
+
 // also watch dataStore.instance
 watch(() => dataStore.instance, () => {
   dataStore.storyIsVisible = false
@@ -44,7 +48,7 @@ const update = () => {
 
   dataStore.calculate_abnormality()
 
-  for (let feature of dataStore.interacting_features) {
+  for (let feature of dataStore.shown_features) {
     if (dataStore.feature_abnormality[feature] < abnormal_boundary) {
       focus_features.value.push(feature)
     } else {

@@ -15,6 +15,7 @@ export const useDataStore = defineStore({
         data_summary: {} as { min: number, max: number, mean: number, std: number},
         non_target_features: [] as string[],
         interacting_features: [] as string[],
+        shown_features: [] as string[],
         instance: {} as { [key: string]: number },
         storyIsVisible: false,
         correlations: {} as { [key: string]: CorrelationMap}, // feature name -> CorrelationMap
@@ -60,7 +61,7 @@ export const useDataStore = defineStore({
         calculate_abnormality() {
             const featureStore = useFeatureStore()
             this.feature_abnormality = {}
-            for (let feature of this.interacting_features) {
+            for (let feature of this.shown_features) {
                   const bins = featureStore.get_feature_bins(feature)
                   const max_count = d3.max(bins.map(d => d.count))
                   //const full_count = d3.sum(bins.map(d => d.count))
