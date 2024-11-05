@@ -12,6 +12,10 @@ watch (() => influenceStore.groups, (_) => {
   update_vis()
 })
 
+watch(() => dataStore.storyIsVisible, () => {
+  update_vis()
+})
+
 //refs
 const container = useTemplateRef('container')
 
@@ -29,6 +33,12 @@ watch(() => updater.value, () => {
 })
 
 const update_vis = async (isSlow:boolean=true) => {
+
+  d3.select(container.value).selectAll("*").remove()
+
+  if (dataStore.storyIsVisible === false) {
+    return
+  }
 
   const height = influenceStore.groups.length * 20 + d3.sum(influenceStore.groups.map(g => g.get_nr_bars())) * (bar_height+10)
 
@@ -69,7 +79,6 @@ const update_vis = async (isSlow:boolean=true) => {
       .attr("stroke", "black")
       .attr("stroke-width", 2)
 
-  d3.select(container.value).selectAll("*").remove()
   d3.select(container.value).node().append(svg.node())
 
   let crawler = {offset: 30, spacing_between_groups:spacing_between_groups, layers:layers,
@@ -84,29 +93,17 @@ const update_vis = async (isSlow:boolean=true) => {
 
   }
 
-  dataStore.storyIsVisible = true
-
-
 }
 
 const sleep = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-
-const explain = () => {
-  influenceStore.calculate_influences()
-}
-
-
 </script>
 
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
-    <div v-if="dataStore.interacting_features.length !== 0" class="mt-1">
-      <v-btn @click="explain" class="bg-blue">Explain</v-btn>
-    </div>
-    <h3 class="pt-5" v-if="influenceStore.groups.length>0">Your Story</h3>
+    <h3 class="pt-5" v-if="influenceStore.groups.length>0 && dataStore.storyIsVisible ">Influence on Prediction</h3>
     <div ref="container" class="px-5 pt-5"/>
   </div>
 </template>

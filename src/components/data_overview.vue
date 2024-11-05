@@ -23,13 +23,13 @@ const toggle_details_background = (key: string) => {
 }
 
 //watch dataStore.interacting_features
-watch(() => dataStore.interacting_features, () => {
+watch(() => dataStore.storyIsVisible, () => {
   update()
 })
 
 // also watch dataStore.instance
 watch(() => dataStore.instance, () => {
-  update()
+  dataStore.storyIsVisible = false
 })
 
 const update = () => {
@@ -37,6 +37,10 @@ const update = () => {
   background_features.value = []
   focus_features.value = []
   const abnormal_boundary = 0.5
+
+  if (!dataStore.storyIsVisible) {
+    return
+  }
 
   dataStore.calculate_abnormality()
 
@@ -52,10 +56,10 @@ const update = () => {
 </script>
 
 <template>
-  <div class="d-flex justify-center flex-column">
+  <div class="d-flex justify-center flex-column" v-if="dataStore.storyIsVisible">
 
     <div class="d-flex justify-center mb-5">
-      <v-btn class="bg-blue">Data Overview</v-btn>
+      <h3 >Data Overview</h3>
     </div>
 
     <!-- background features -->

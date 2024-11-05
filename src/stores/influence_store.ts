@@ -381,10 +381,14 @@ export const useInfluenceStore = defineStore({
                 }
             }
 
+            //sort groups by Math.abs(score)
+            groups.sort((a, b) => Math.abs(b.get_score()) - Math.abs(a.get_score()))
+
             return groups
         },
 
         calculate_influences() {
+            useDataStore().storyIsVisible = true
             this.calculate_main_effects()
             this.groups = this.calculate_groups()
 
