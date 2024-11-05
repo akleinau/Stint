@@ -39,54 +39,57 @@ export class Group implements GroupInterface, InfluenceScore {
             feature.set_parent(this)
         }
 
-        this.calculate_ids()
-        this.score = useInfluenceStore().get_average_influence(this.get_ids())
+        this.set_new_influences(new Set([...features[0].get_ids()]), 0)
 
         this.type = type
 
-
-        this.score = this.get_score()
-        this.value = this.score
         this.size = this.get_size()
         this.label = this.get_name()
         this.parent = null
 
     }
-
-    calculate_ids() {
-        this.ids = new Set([...this.features[0].get_ids()])
-        for (const feature of this.features.slice(1)) {
-            this.ids = new Set([...this.ids].filter(x => feature.get_ids().has(x)))
-        }
-    }
-
     set_parent(parent: Group) {
         this.parent = parent
     }
 
     push(feature: Feature | Group) {
         const previous_score = this.get_score()
-        this.ids = new Set([...this.ids].filter(x => feature.get_ids().has(x)))
+        feature.set_new_influences(this.ids, previous_score)
+        feature.set_parent(this)
+
+        this.ids = new Set([...feature.get_ids()])
         const new_score = useInfluenceStore().get_average_influence(this.get_ids())
         const difference = new_score - previous_score
 
         this.features.push(feature)
-        feature.set_new_influence(difference, new_score)
-        feature.set_parent(this)
 
-        this.score = new_score
+        this.score += difference
         this.value = new_score
         this.size = this.get_size()
         this.label = this.get_name()
     }
 
-    set_new_influence(score: number, value: number) {
-        this.score = score
-        this.value = value
+    set_new_influences(ids: Set<number>, previous_value: number) {
+        let current_ids = ids
+        let current_value = previous_value
+        for (const group of this.features) {
+            group.set_new_influences(current_ids, current_value)
+            current_ids = group.get_ids()
+            current_value = group.get_value()
+        }
+        this.ids = current_ids
+        let new_value = useInfluenceStore().get_average_influence(current_ids)
+        let difference = new_value - previous_value
+        this.score = difference
+        this.value = new_value
     }
 
     get_score() {
         return this.score
+    }
+
+    get_value() {
+        return this.value
     }
 
     calculate_interaction_effect(feature: Feature | Group) {
@@ -124,12 +127,12 @@ export class Group implements GroupInterface, InfluenceScore {
         return this.features
     }
 
-    vis_group(crawler: any, i: number, length: number, updater: any) {
+    vis_group(crawler: any, isLast: boolean, updater: any) {
 
         if (this.isOpen && this.get_nr_features() > 1) {
             let initial_offset = crawler.offset
             for (let j = 0; j < this.get_nr_features(); j++) {
-                this.features[j].vis_group(crawler, j, this.get_nr_features(), updater)
+                this.features[j].vis_group(crawler, isLast && j == this.get_nr_features() -1 , updater)
             }
             let final_offset = crawler.offset
 
@@ -169,13 +172,13 @@ export class Group implements GroupInterface, InfluenceScore {
 
                 .style("cursor", "pointer")
 
-            if (i < length - 1) {
+            if (!isLast) {
                 // draw value lines, vertically
                 crawler.layers[1].append("line")
                     .attr("x1", crawler.scale.value(d.value))
                     .attr("y1", crawler.offset)
                     .attr("x2", crawler.scale.value(d.value))
-                    .attr("y2", crawler.offset + 2 * crawler.bar_height)
+                    .attr("y2", crawler.offset + 2 * crawler.bar_height + crawler.spacing_inside_group)
                     .attr("class", "line_vertical" + crawler.offset)
                     .attr("stroke", "grey")
                     .attr("stroke-width", 2)
@@ -206,6 +209,7 @@ class Feature implements GroupInterface, InfluenceScore {
     size: number = 0
     label: string = ""
     parent: Group | null = null
+    ids: Set<number> = new Set()
 
     constructor(feature: string) {
         this.feature = feature
@@ -214,23 +218,32 @@ class Feature implements GroupInterface, InfluenceScore {
         this.size = useInfluenceStore().main_effects[feature].size
         this.label = feature + " = " + useDataStore().instance[this.feature]
         this.parent = null
+        this.ids = useInfluenceStore().instance_subsets[this.feature]
     }
 
     set_parent(parent: Group) {
         this.parent = parent
     }
 
-    set_new_influence(score: number, value: number) {
-        this.score = score
-        this.value = value
+    set_new_influences(ids: Set<number>, previous_value: number) {
+        let current_ids = this.get_ids()
+        this.ids = new Set([...ids].filter(x => current_ids.has(x)))
+        let new_value = useInfluenceStore().get_average_influence(this.ids)
+        let difference = new_value - previous_value
+        this.score = difference
+        this.value = new_value
     }
 
     get_ids() {
-        return useInfluenceStore().instance_subsets[this.feature]
+        return this.ids
     }
 
     get_score() {
         return this.score
+    }
+
+    get_value() {
+        return this.value
     }
 
     get_size() {
@@ -241,7 +254,7 @@ class Feature implements GroupInterface, InfluenceScore {
         return this.label
     }
 
-    vis_group(crawler: any, i: number, length: number, updater: any) {
+    vis_group(crawler: any, isLast: boolean, updater: any) {
 
         let d = this
 
@@ -264,7 +277,7 @@ class Feature implements GroupInterface, InfluenceScore {
             .attr("height", crawler.bar_height)
             .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
 
-        if (i < length - 1) {
+        if (!isLast) {
             // draw value lines, vertically
             crawler.layers[1].append("line")
                 .attr("x1", crawler.scale.value(d.value))
@@ -371,6 +384,8 @@ export const useInfluenceStore = defineStore({
                     groups.push(new Group([feature], "single"))
                 }
             }
+
+            console.log(groups)
 
             return groups
         },
