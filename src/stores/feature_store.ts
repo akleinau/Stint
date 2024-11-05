@@ -15,6 +15,17 @@ export interface bin_discrete extends bin {
 
 const max_discrete_bins = 24
 
+const make_binsize_pretty = (size: number) : number => {
+    // round up n to nearest multiple of five
+    let pretty_stepsize_10 = Math.pow(10, Math.floor(Math.log10(size)))
+    let float5 = 5 * pretty_stepsize_10
+    let pretty_stepsize = Math.round(size / float5) * float5
+    if (pretty_stepsize === 0) pretty_stepsize = float5/5
+
+    return pretty_stepsize
+
+}
+
 export const useFeatureStore = defineStore({
     id: 'feature',
     state: () => ({
@@ -38,19 +49,24 @@ export const useFeatureStore = defineStore({
                 //continuous
                 if (unique_values.length > max_discrete_bins) {
                     this.feature_types[feature] = "continuous"
-                    const bin_number = 20
-                    const min = Math.min(...values)
-                    const max = Math.max(...values)
-                    const bin_size = (max - min) / bin_number
+                    let bin_number = 20
+                    let min = Math.min(...values)
+                    let max = Math.max(...values)
+                    const bin_size = make_binsize_pretty((max - min) / bin_number)
+                    min = Math.floor(min / bin_size) * bin_size
+                    max = Math.ceil(max / bin_size) * bin_size
+                    bin_number = Math.round((max - min) / bin_size)
+                    const logStep = Math.max(0, -Math.floor(Math.log10(bin_size)))
+
                     const bins = Array.from({length: bin_number}, (_, i) => {
-                        const i_min = min + i * bin_size
+                        const i_min = (min + i * bin_size)
                         let i_max = i_min + bin_size
                         if (i === bin_number - 1) {
-                            i_max = i_max + 0.0001 //makes sure the max value is included in the last bin
+                            i_max = i_max + bin_size //makes sure the max value is included in the last bin
                         }
                         return {
-                            min: i_min,
-                            max: i_max,
+                            min: i_min.toFixed(logStep),
+                            max: i_max.toFixed(logStep),
                             count: 0
                         }
                     })
