@@ -1,37 +1,61 @@
 import {defineStore} from "pinia";
 import {useDataStore} from "./dataStore";
 
-interface InfluenceScore {
-    label: string,
-    score: number,
-    size: number,
-    value: number,
-}
-
-interface GroupInterface {
-    get_ids(): Set<number>,
-
-    get_score(): number,
-
-    get_size(): number,
-
-    get_name(): string,
-
-    set_parent(parent: Group): void,
-}
-
-export class Group implements GroupInterface, InfluenceScore {
-    features: (Feature | Group)[] = []
-    type: string = ""
+abstract class GroupClass {
+    type: string = "single"
     ids: Set<number> = new Set()
     score: number = 0
     value: number = 0
-    label: string = ""
-    size: number = 0
     isOpen: boolean = false
     parent: Group | null = null
 
+    protected constructor() {
+        this.parent = null
+    }
+
+   set_parent(parent: Group) {
+        this.parent = parent
+    }
+
+    get_score() {
+        return this.score
+    }
+
+    get_value() {
+        return this.value
+    }
+
+    get_ids() {
+        return this.ids
+    }
+
+    get_size() {
+        return this.ids.size
+    }
+
+    vis_bars(crawler: any, updater: any, isLast: boolean) {
+        crawler.svg.attr("height", crawler.offset + crawler.bar_height + crawler.spacing_inside_group)
+        this.add_bar(crawler, this, updater)
+        add_value_line(crawler, this, isLast)
+        add_feature_names(crawler, this)
+        crawler.offset += crawler.bar_height + crawler.spacing_inside_group
+    }
+
+    abstract add_bar(crawler: any, d: any, updater: any): void
+
+    abstract get_name(): string
+
+    abstract vis_group(crawler: any, isLast: boolean, updater: any): void
+
+    abstract set_new_influences(ids: Set<number>, previous_value: number): void
+
+}
+
+export class Group extends GroupClass {
+    features: (Feature | Group)[] = []
+
     constructor(features: (Feature| Group)[], type: string) {
+        super()
         //first sort the features by score
         features.sort((a, b) => a.get_score() - b.get_score())
         this.features = features
@@ -40,16 +64,7 @@ export class Group implements GroupInterface, InfluenceScore {
         }
 
         this.set_new_influences(new Set([...features[0].get_ids()]), 0)
-
         this.type = type
-
-        this.size = this.get_size()
-        this.label = this.get_name()
-        this.parent = null
-
-    }
-    set_parent(parent: Group) {
-        this.parent = parent
     }
 
     push(feature: Feature | Group) {
@@ -65,8 +80,6 @@ export class Group implements GroupInterface, InfluenceScore {
 
         this.score += difference
         this.value = new_score
-        this.size = this.get_size()
-        this.label = this.get_name()
     }
 
     set_new_influences(ids: Set<number>, previous_value: number) {
@@ -79,17 +92,8 @@ export class Group implements GroupInterface, InfluenceScore {
         }
         this.ids = current_ids
         let new_value = useInfluenceStore().get_average_influence(current_ids)
-        let difference = new_value - previous_value
-        this.score = difference
+        this.score = new_value - previous_value
         this.value = new_value
-    }
-
-    get_score() {
-        return this.score
-    }
-
-    get_value() {
-        return this.value
     }
 
     calculate_interaction_effect(feature: Feature | Group) {
@@ -104,14 +108,6 @@ export class Group implements GroupInterface, InfluenceScore {
         return this.features.map(f => f.get_name()).join(", ")
     }
 
-    get_ids() {
-        return this.ids
-    }
-
-    get_size() {
-        return this.get_ids().size
-    }
-
     get_nr_features() {
         return this.features.length
     }
@@ -123,10 +119,6 @@ export class Group implements GroupInterface, InfluenceScore {
         return 1
     }
 
-    get_features() {
-        return this.features
-    }
-
     vis_group(crawler: any, isLast: boolean, updater: any) {
 
         if (this.isOpen && this.get_nr_features() > 1) {
@@ -136,131 +128,80 @@ export class Group implements GroupInterface, InfluenceScore {
             }
             let final_offset = crawler.offset
 
-            // add a rectangle around the group
-            crawler.layers[0].append("rect")
-                .on("click", () => {
-                    this.isOpen = !this.isOpen
-                    updater.value += 1
-                })
-                .attr("x", 0)
-                .attr("y", initial_offset)
-                .attr("width", 500)
-                .attr("height", final_offset - initial_offset)
-                .attr("fill", "#CCCCCC")
-                .style("opacity", 0.2)
-                .style("cursor", "pointer")
+            this.add_group_box(crawler, initial_offset, final_offset, updater)
 
         } else {
-
-            let d = this
-
-            crawler.svg.attr("height", crawler.offset + crawler.bar_height + crawler.spacing_inside_group)
-
-            // draw bars
-            crawler.layers[1].append("rect")
-                .on("click", () => {
-                    this.isOpen = !this.isOpen
-                    updater.value += 1
-                })
-                .transition()
-                .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
-                .attr("y", crawler.offset)
-                .attr("class", "bars" + crawler.offset)
-                .attr("width", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0))
-                .attr("height", crawler.bar_height)
-                .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
-
-                .style("cursor", "pointer")
-
-            if (!isLast) {
-                // draw value lines, vertically
-                crawler.layers[1].append("line")
-                    .attr("x1", crawler.scale.value(d.value))
-                    .attr("y1", crawler.offset)
-                    .attr("x2", crawler.scale.value(d.value))
-                    .attr("y2", crawler.offset + 2 * crawler.bar_height + crawler.spacing_inside_group)
-                    .attr("class", "line_vertical" + crawler.offset)
-                    .attr("stroke", "grey")
-                    .attr("stroke-width", 2)
-            }
-
-            crawler.layers[1].append("text")
-                .attr("x", 520)
-                .attr("y", crawler.offset + crawler.bar_height / 2)
-                .text(d.label)
-                .attr("class", "text_feature_names" + crawler.offset)
-                .style("font-size", "12px")
-                .style("font-family", "Verdana")
-                .style("text-anchor", "start")
-                .style("color", "black")
-
-
-            crawler.offset += crawler.bar_height + crawler.spacing_inside_group
+            this.vis_bars(crawler, updater, isLast)
         }
 
     }
 
+
+
+    add_bar(crawler: any, d: any, updater: any) {
+        // draw bars
+        crawler.layers[1].append("rect")
+            .on("click", () => {
+                this.isOpen = !this.isOpen
+                updater.value += 1
+            })
+            .transition()
+            .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
+            .attr("y", crawler.offset)
+            .attr("class", "bars" + crawler.offset)
+            .attr("width", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0))
+            .attr("height", crawler.bar_height)
+            .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
+            .style("cursor", "pointer")
+    }
+
+    add_group_box(crawler: any, initial_offset: number, final_offset: number, updater: any) {
+        // add a rectangle around the group
+        crawler.layers[0].append("rect")
+            .on("click", () => {
+                this.isOpen = !this.isOpen
+                updater.value += 1
+            })
+            .attr("x", 0)
+            .attr("y", initial_offset)
+            .attr("width", 500)
+            .attr("height", final_offset - initial_offset)
+            .attr("fill", "#CCCCCC")
+            .style("opacity", 0.2)
+            .style("cursor", "pointer")
+    }
+
 }
 
-class Feature implements GroupInterface, InfluenceScore {
+class Feature extends GroupClass {
     feature: string = ""
-    score: number = 0
-    value: number = 0
-    size: number = 0
-    label: string = ""
-    parent: Group | null = null
-    ids: Set<number> = new Set()
 
     constructor(feature: string) {
+        super()
         this.feature = feature
         this.score = useInfluenceStore().main_effects[feature].average
         this.value = this.score
-        this.size = useInfluenceStore().main_effects[feature].size
-        this.label = feature + " = " + useDataStore().instance[this.feature]
-        this.parent = null
         this.ids = useInfluenceStore().instance_subsets[this.feature]
-    }
-
-    set_parent(parent: Group) {
-        this.parent = parent
     }
 
     set_new_influences(ids: Set<number>, previous_value: number) {
         let current_ids = this.get_ids()
         this.ids = new Set([...ids].filter(x => current_ids.has(x)))
         let new_value = useInfluenceStore().get_average_influence(this.ids)
-        let difference = new_value - previous_value
-        this.score = difference
+        this.score = new_value - previous_value
         this.value = new_value
     }
 
-    get_ids() {
-        return this.ids
-    }
-
-    get_score() {
-        return this.score
-    }
-
-    get_value() {
-        return this.value
-    }
-
-    get_size() {
-        return this.size
-    }
-
     get_name() {
-        return this.label
+        return this.feature + " = " + useDataStore().instance[this.feature]
     }
 
     vis_group(crawler: any, isLast: boolean, updater: any) {
+        this.vis_bars(crawler, updater, isLast)
+    }
 
-        let d = this
-
-        crawler.svg.attr("height", crawler.offset + crawler.bar_height + crawler.spacing_inside_group)
-
-        // draw bars
+    add_bar(crawler: any, d: any, updater: any) {
+       // draw bars
         crawler.layers[1].append("rect")
             .on("click", () => {
                 if (this.parent != null) {
@@ -276,32 +217,34 @@ class Feature implements GroupInterface, InfluenceScore {
             .attr("width", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0))
             .attr("height", crawler.bar_height)
             .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
+    }
 
-        if (!isLast) {
-            // draw value lines, vertically
-            crawler.layers[1].append("line")
-                .attr("x1", crawler.scale.value(d.value))
-                .attr("y1", crawler.offset)
-                .attr("x2", crawler.scale.value(d.value))
-                .attr("y2", crawler.offset + 2 * crawler.bar_height + crawler.spacing_inside_group)
-                .attr("class", "line_vertical" + crawler.offset)
-                .attr("stroke", "grey")
-                .attr("stroke-width", 2)
-        }
+}
 
-        crawler.layers[1].append("text")
+const add_value_line = (crawler: any, d: any, isLast: boolean) => {
+    if (!isLast) {
+        // draw value lines, vertically
+        crawler.layers[1].append("line")
+            .attr("x1", crawler.scale.value(d.value))
+            .attr("y1", crawler.offset)
+            .attr("x2", crawler.scale.value(d.value))
+            .attr("y2", crawler.offset + 2 * crawler.bar_height + crawler.spacing_inside_group)
+            .attr("class", "line_vertical" + crawler.offset)
+            .attr("stroke", "grey")
+            .attr("stroke-width", 2)
+    }
+}
+
+const add_feature_names = (crawler: any, d: any) => {
+    crawler.layers[1].append("text")
             .attr("x", 520)
             .attr("y", crawler.offset + crawler.bar_height / 2)
-            .text(d.label)
+            .text(d.get_name())
             .attr("class", "text_feature_names" + crawler.offset)
             .style("font-size", "12px")
             .style("font-family", "Verdana")
             .style("text-anchor", "start")
             .style("color", "black")
-
-        crawler.offset += crawler.bar_height + crawler.spacing_inside_group
-    }
-
 }
 
 export const useInfluenceStore = defineStore({
@@ -384,8 +327,6 @@ export const useInfluenceStore = defineStore({
                     groups.push(new Group([feature], "single"))
                 }
             }
-
-            console.log(groups)
 
             return groups
         },
