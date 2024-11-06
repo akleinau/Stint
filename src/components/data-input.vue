@@ -115,7 +115,7 @@ const interacting_features_selected = (cols: string[]) => {
     <div class="mx-3 align-center justify-center d-flex flex-column">
 
       <!-- data input -->
-      <v-btn-toggle v-model="isCustomDataset" class="mt-3 mb-3" @update:model-value="dataset_toggled">
+      <v-btn-toggle v-model="isCustomDataset" class="mb-3" @update:model-value="dataset_toggled">
         <v-btn :value="false">example data set</v-btn>
         <v-btn :value="true">custom data set</v-btn>
       </v-btn-toggle>
@@ -142,12 +142,12 @@ const interacting_features_selected = (cols: string[]) => {
 
       <!-- Instance -->
       <div class="d-flex flex-column align-center justify-center" v-if="dataStore.target_feature !== ''">
-        <v-btn-toggle v-model="isCustomInstance" class="mt-3" @update:model-value="instance_selected">
+        <v-btn-toggle v-model="isCustomInstance" class="mt-3" @update:model-value="instance_selected" >
           <v-btn :value="true">custom instance</v-btn>
           <v-btn :value="false">select instance</v-btn>
         </v-btn-toggle>
         <div v-if="isCustomInstance" class="pb-5">
-          <div v-for="key in dataStore.interacting_features" class="mt-3 w-100">
+          <div v-for="key in dataStore.interacting_features" class="mt-1 w-100">
             <v-text-field v-model.number="dataStore.instance[key]" class="px-5 w-100" :label="key" type="number"
                           variant="underlined" hide-details clearable density="compact" single-line>
               <template v-slot:prepend-inner>
