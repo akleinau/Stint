@@ -360,7 +360,12 @@ export const useInfluenceStore = defineStore({
                 let correlated_features = remaining_features.filter(f => dataStore.correlations[feature][f] > correlation_threshold)
                 if (correlated_features.length > 0) {
                     correlated_features.push(feature)
-                    main_players.push(new Group(correlated_features.map(f => new Feature(f)), "correlation"))
+
+                    // get the feature with the highest main effect and only add it
+                    correlated_features.sort((a, b) => Math.abs(this.main_effects[b].average) - Math.abs(this.main_effects[a].average))
+                    let main_feature = correlated_features[0]
+
+                    main_players.push(new Feature(main_feature))
                     remaining_features = remaining_features.filter(f => !correlated_features.includes(f))
                 }
             }
@@ -383,10 +388,14 @@ export const useInfluenceStore = defineStore({
                     //group features that interact together
 
                     //const interaction_boundary = (dataStore.data_summary.max - dataStore.data_summary.min) * 0.2
-                    if (group.calculate_interaction_effect(feature) > interaction_boundary) {
-                        group.push(feature)
-                        group.type = "interaction"
+                    let interaction_effect = group.calculate_interaction_effect(feature)
+                    if (interaction_effect > interaction_boundary) {
                         added = true
+                        if (interaction_effect - Math.abs(feature.get_score()) > interaction_boundary) {
+                            group.push(feature)
+                            group.type = "interaction"
+                        }
+
                         break
                     }
                 }
