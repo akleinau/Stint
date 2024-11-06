@@ -320,6 +320,7 @@ export const useInfluenceStore = defineStore({
         groups: [] as Group[],
         main_effects: {} as { [key: string]: { value: number, average: number, size: number } },
         instance_subsets: {} as { [key: string]: Set<number> },
+        explanation_prediction: 0
 
     }),
     actions: {
@@ -379,7 +380,8 @@ export const useInfluenceStore = defineStore({
             main_players.sort(sort_by_score)
 
             //then go through them and either add them to a previous group when they interact, or create a new group
-            const interaction_boundary = dataStore.data_summary.std * 0.2
+            const interaction_boundary = dataStore.data_summary.std * 0.01
+            const size_boundary = 10
             for (const feature of main_players) {
                 let added = false
 
@@ -389,7 +391,8 @@ export const useInfluenceStore = defineStore({
 
                     //const interaction_boundary = (dataStore.data_summary.max - dataStore.data_summary.min) * 0.2
                     let interaction_effect = group.calculate_interaction_effect(feature)
-                    if (interaction_effect > interaction_boundary) {
+                    let size = new Set([...group.get_ids()].filter(x => feature.get_ids().has(x))).size
+                    if (interaction_effect > interaction_boundary && size > size_boundary) {
                         added = true
                         if (interaction_effect - Math.abs(feature.get_score()) > interaction_boundary) {
                             group.push(feature)
@@ -400,7 +403,9 @@ export const useInfluenceStore = defineStore({
                     }
                 }
                 if (!added) {
-                    groups.push(new Group([feature], "single"))
+                    if (feature.get_size() > size_boundary) {
+                        groups.push(new Group([feature], "single"))
+                    }
                 }
             }
 
@@ -415,10 +420,19 @@ export const useInfluenceStore = defineStore({
             return groups
         },
 
+        calculate_explanation_prediction() {
+            let prediction = useDataStore().data_summary.mean
+            for (const group of this.groups) {
+                prediction += group.get_score()
+            }
+            this.explanation_prediction = prediction
+        },
+
         calculate_influences() {
             useDataStore().storyIsVisible = true
             this.calculate_main_effects()
             this.groups = this.calculate_groups()
+            this.calculate_explanation_prediction()
 
         },
 
