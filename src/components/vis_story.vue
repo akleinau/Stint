@@ -105,7 +105,7 @@ const sleep = (ms: number) => {
   <div class="w-100 d-flex flex-column align-center justify-center">
     <h3 class="pt-5" v-if="influenceStore.groups.length>0 && dataStore.storyIsVisible ">Influence on Prediction</h3>
     <div ref="container" class="px-5 pt-5"/>
-    <div>
+    <div v-if="false">
       Prediction: {{dataStore.instance[dataStore.target_feature] - dataStore.data_summary.mean}}
       Explanation: {{influenceStore.explanation_prediction  - dataStore.data_summary.mean}}
     </div>

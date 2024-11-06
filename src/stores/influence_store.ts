@@ -1,5 +1,6 @@
 import {defineStore} from "pinia";
 import {useDataStore} from "./dataStore";
+import {useFeatureStore} from "./feature_store.ts";
 
 const sort_by_score = (a: GroupClass, b: GroupClass) => {
     return Math.abs(b.get_score()) - Math.abs(a.get_score())
@@ -112,6 +113,13 @@ export class Group extends GroupClass {
         return Math.abs(combined_score - our_score - their_score)
     }
 
+    calculate_added_score(feature: Feature | Group) {
+        let our_score = this.get_score()
+        let combined_ids = new Set([...this.get_ids()].filter(x => feature.get_ids().has(x)))
+        let combined_score = useInfluenceStore().get_average_influence(combined_ids)
+        return Math.abs(combined_score - our_score)
+    }
+
     get_name() : string {
         if (this.type == "correlation") {
             return this.features[0].get_name() + " (...)"
@@ -167,6 +175,9 @@ export class Group extends GroupClass {
                     feature.manual_slow = true
                 }
                 updater.value += 1
+            })
+            .on("mouseover", () => {
+              console.log(this.get_size())
             })
             .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
             .attr("y", crawler.offset)
@@ -245,6 +256,9 @@ class Feature extends GroupClass {
                     this.parent.isOpen = !this.parent.isOpen
                     updater.value += 1
                 }
+            })
+            .on("mouseover", () => {
+              console.log(this.get_size())
             })
             .style("cursor", this.parent != null ? "pointer" : "default")
             .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
@@ -331,13 +345,31 @@ export const useInfluenceStore = defineStore({
             this.main_effects = {}
             for (let feature of dataStore.interacting_features) {
                 const instance_value = dataStore.instance[feature]
-                const similar_instances = dataStore.data.filter((d) => d[feature] === instance_value)
+                const similar_instances = this.get_similar_instances(feature)
                 const sum = similar_instances.reduce((acc, d) => acc + d[dataStore.target_feature], 0)
                 const size = similar_instances.length
                 this.main_effects[feature] = {value: instance_value, average: sum / size - center, size: size}
                 //also create set of ids for each feature
                 const ids = similar_instances.map((d: any) => d.__id__)
                 this.instance_subsets[feature] = new Set(ids)
+            }
+        },
+
+        get_similar_instances(feature: string) {
+            const dataStore = useDataStore()
+            const featureStore = useFeatureStore()
+            const instance_value = dataStore.instance[feature]
+            const feature_type = featureStore.feature_types[feature]
+            if (feature_type === "continuous") {
+                // get similar instances in some margin around the instance value
+                const margin = dataStore.data_summary.std * 0.2
+                const min = instance_value - margin
+                const max = instance_value + margin
+                return dataStore.data.filter((d) => d[feature] >= min && d[feature] <= max)
+            }
+
+            else {
+                return dataStore.data.filter((d) => d[feature] === instance_value)
             }
         },
 
@@ -351,6 +383,7 @@ export const useInfluenceStore = defineStore({
             const dataStore = useDataStore()
             let groups = [] as Group[]
             let features = dataStore.interacting_features
+            let isReduced = false
 
             const correlation_threshold = 0.8
             let main_players = [] as (Feature | Group)[]
@@ -361,12 +394,18 @@ export const useInfluenceStore = defineStore({
                 let correlated_features = remaining_features.filter(f => dataStore.correlations[feature][f] > correlation_threshold)
                 if (correlated_features.length > 0) {
                     correlated_features.push(feature)
-
-                    // get the feature with the highest main effect and only add it
                     correlated_features.sort((a, b) => Math.abs(this.main_effects[b].average) - Math.abs(this.main_effects[a].average))
-                    let main_feature = correlated_features[0]
 
-                    main_players.push(new Feature(main_feature))
+                    if (isReduced) {
+                        // get the feature with the highest main effect and only add it
+                        let main_feature = correlated_features[0]
+                        main_players.push(new Feature(main_feature))
+                    }
+                    else {
+                        let group = new Group(correlated_features.map(f => new Feature(f)), "correlation")
+                        main_players.push(group)
+                    }
+
                     remaining_features = remaining_features.filter(f => !correlated_features.includes(f))
                 }
             }
@@ -380,8 +419,8 @@ export const useInfluenceStore = defineStore({
             main_players.sort(sort_by_score)
 
             //then go through them and either add them to a previous group when they interact, or create a new group
-            const interaction_boundary = dataStore.data_summary.std * 0.01
-            const size_boundary = 10
+            const interaction_boundary = dataStore.data_summary.std * 0.05
+            const size_boundary = Math.max(50, dataStore.data.length * 0.001)
             for (const feature of main_players) {
                 let added = false
 
@@ -394,7 +433,7 @@ export const useInfluenceStore = defineStore({
                     let size = new Set([...group.get_ids()].filter(x => feature.get_ids().has(x))).size
                     if (interaction_effect > interaction_boundary && size > size_boundary) {
                         added = true
-                        if (interaction_effect - Math.abs(feature.get_score()) > interaction_boundary) {
+                        if (!isReduced || group.calculate_added_score(feature) > interaction_boundary) {
                             group.push(feature)
                             group.type = "interaction"
                         }
@@ -403,7 +442,7 @@ export const useInfluenceStore = defineStore({
                     }
                 }
                 if (!added) {
-                    if (feature.get_size() > size_boundary) {
+                    if (!isReduced || feature.get_size() > size_boundary ) {
                         groups.push(new Group([feature], "single"))
                     }
                 }
@@ -412,9 +451,11 @@ export const useInfluenceStore = defineStore({
             //sort groups by Math.abs(score)
             groups.sort(sort_by_score)
 
-            // delete all groups whose score is below the boundary
-            let boundary = dataStore.data_summary.std * 0.2
-            groups = groups.filter(g => Math.abs(g.get_score()) > boundary)
+            if (isReduced) {
+                // delete all groups whose score is below the boundary
+                let boundary = dataStore.data_summary.std * 0.05
+                groups = groups.filter(g => Math.abs(g.get_score()) > boundary)
+            }
             dataStore.shown_features = groups.map(g => g.get_features()).flat()
 
             return groups
