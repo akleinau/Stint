@@ -32,8 +32,8 @@ const update_vis = () => {
 
   // add a distribution heatmap over the counts of the bins
   const max_count = d3.max(bins.map(d => d.count))
-  const feature_min = d3.min(bins.map(d => 'value' in d ? d.value : 'min' in d? d.min : 0))
-  const feature_max = d3.max(bins.map(d => 'value' in d ? d.value : 'max' in d? d.max : 0))
+  const feature_min = d3.min(bins.map(d => 'value' in d ? +(d.value as number) : 'min' in d? +(d.min as number) : 0))
+  const feature_max = d3.max(bins.map(d => 'value' in d ? +(d.value as number)  : 'max' in d? +(d.max as number) : 0))
   const color = d3.scaleLinear()
       .domain([0, max_count])
       .range(["white", "black"])
@@ -67,7 +67,6 @@ const update_vis = () => {
       .attr("stroke-width", 1)
   bin_elements
       .append("text")
-      .text((d :any) => d.count)
       .attr("x", (d :any) => x(d.min == undefined ? d.value : d.min))
       .attr("y", rect_height/2)
       .attr("dy", "0.4em")
@@ -76,6 +75,17 @@ const update_vis = () => {
       .attr("fill", (d :any) => d.count > max_count/2 ? "white" : "black")
       .style("opacity", "0")
       .text((d :any) => ((d.count/full_count)*100).toFixed(1) + "%")
+  bin_elements
+      .append("text")
+      .text((d :any) => d.min == undefined ? d.value : d.min + " - " + d.max)
+      .attr("x", (d :any) => x(d.min == undefined ? d.value : d.min))
+      .attr("y", rect_height + 10)
+      .attr("dy", "0.4em")
+      .attr("text-anchor", "middle")
+      .attr("alignment-baseline", "middle")
+      .attr("fill", "black")
+      .style("opacity", "0")
+
 
   bin_elements
       .on("mouseover", (event: any, _:any) => {
