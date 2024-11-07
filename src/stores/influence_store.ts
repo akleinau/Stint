@@ -40,14 +40,14 @@ abstract class GroupClass {
         return this.ids.size
     }
 
-    vis_bars(crawler: any, updater: any, isLast: boolean) {
+    vis_bars(crawler: any, updater: any, isLast: boolean, isFirst: boolean) {
         crawler.svg.attr("height", crawler.offset + crawler.bar_height + crawler.spacing_inside_group)
         let group_elements = crawler.layers[1].append("g")
         this.add_bar(crawler, this, updater, group_elements)
         add_bar_score(crawler, this, group_elements)
         add_bar_size(crawler, this, group_elements)
         add_value_line(crawler, this, isLast, group_elements)
-        add_feature_names(crawler, this, group_elements)
+        add_feature_names(crawler, this, group_elements, isFirst)
         add_zero_line(crawler, isLast)
         crawler.offset += crawler.bar_height + crawler.spacing_inside_group
     }
@@ -56,7 +56,7 @@ abstract class GroupClass {
 
     abstract get_name(): string
 
-    abstract vis_group(crawler: any, isLast: boolean, updater: any): void
+    abstract vis_group(crawler: any, isLast: boolean, isFirst: boolean, updater: any): void
 
     abstract set_new_influences(ids: Set<number>, previous_value: number): void
 
@@ -147,22 +147,22 @@ export class Group extends GroupClass {
         return this.features.map(f => f.get_features()).flat()
     }
 
-    vis_group(crawler: any, isLast: boolean, updater: any) {
+    vis_group(crawler: any, isLast: boolean, isFirst: boolean, updater: any) {
 
         if (this.get_nr_features() == 1) {
-            this.features[0].vis_group(crawler, isLast, updater)
+            this.features[0].vis_group(crawler, isLast, isFirst, updater)
         }
         else if (this.isOpen) {
             let initial_offset = crawler.offset
             for (let j = 0; j < this.get_nr_features(); j++) {
-                this.features[j].vis_group(crawler, isLast && j == this.get_nr_features() -1 , updater)
+                this.features[j].vis_group(crawler, isLast && j == this.get_nr_features() -1 , isFirst && j == 0, updater)
             }
             let final_offset = crawler.offset
 
             this.add_group_box(crawler, initial_offset, final_offset, updater)
 
         } else {
-            this.vis_bars(crawler, updater, isLast)
+            this.vis_bars(crawler, updater, isLast, isFirst)
         }
 
     }
@@ -249,8 +249,8 @@ class Feature extends GroupClass {
         return this.feature + " = " + useDataStore().instance[this.feature]
     }
 
-    vis_group(crawler: any, isLast: boolean, updater: any) {
-        this.vis_bars(crawler, updater, isLast)
+    vis_group(crawler: any, isLast: boolean, isFirst: boolean, updater: any) {
+        this.vis_bars(crawler, updater, isLast, isFirst)
     }
 
     get_features(): string[] {
@@ -309,9 +309,9 @@ const add_value_line = (crawler: any, d: any, isLast: boolean, group_elements: a
     }
 }
 
-const add_feature_names = (crawler: any, d: any, group_elements: any) => {
+const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: boolean) => {
 
-    let name = d.get_name()
+    let name = (!isFirst? "& ": "") + d.get_name()
     if (name.length > 32) {
         name = name.slice(0, 30) + "..."
     }

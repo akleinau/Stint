@@ -82,7 +82,7 @@ const update_vis = async (isSlow:boolean=true) => {
       spacing_inside_group:spacing_inside_group, scale:scale, svg:svg, bar_height:bar_height, isSlow:isSlow}
   for (let i = 0; i < influenceStore.groups.length; i++) {
     let group: Group = influenceStore.groups[i]
-    group.vis_group(crawler, true, updater)
+    group.vis_group(crawler, true, true, updater)
     crawler.offset += crawler.spacing_between_groups
     if (isSlow) {
       await sleep(1000)
