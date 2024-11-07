@@ -302,7 +302,7 @@ const add_feature_names = (crawler: any, d: any) => {
     }
 
     crawler.layers[1].append("text")
-            .attr("x", 520)
+            .attr("x", 570)
             .attr("y", crawler.offset + crawler.bar_height / 2)
             .text(name)
             .attr("class", "text_feature_names" + crawler.offset)
@@ -419,33 +419,33 @@ export const useInfluenceStore = defineStore({
             main_players.sort(sort_by_score)
 
             //then go through them and either add them to a previous group when they interact, or create a new group
-            const interaction_boundary = dataStore.data_summary.std * 0.05
+            const interaction_boundary = dataStore.data_summary.range * 0.001
             const size_boundary = Math.max(50, dataStore.data.length * 0.001)
-            for (const feature of main_players) {
-                let added = false
 
-                for (const group of groups) {
+            while (main_players.length > 0) {
+                // find main player with highest score. Conveniently, this is the first one as it is ordered
+                let main_player = main_players.shift() as Feature | Group
+                // make a new group with this main player
+                let group = new Group([main_player], "single")
 
-                    //group features that interact together
-
-                    //const interaction_boundary = (dataStore.data_summary.max - dataStore.data_summary.min) * 0.2
-                    let interaction_effect = group.calculate_interaction_effect(feature)
-                    let size = new Set([...group.get_ids()].filter(x => feature.get_ids().has(x))).size
-                    if (interaction_effect > interaction_boundary && size > size_boundary) {
-                        added = true
-                        if (!isReduced || group.calculate_added_score(feature) > interaction_boundary) {
-                            group.push(feature)
-                            group.type = "interaction"
-                        }
-
-                        break
+                let interactions_present = true
+                while (interactions_present && main_players.length > 0) {
+                    let interaction_effects:any[] = main_players.map(mp => group.calculate_interaction_effect(mp))
+                    let interaction_size = main_players.map(mp => new Set([...group.get_ids()].filter(x => mp.get_ids().has(x))).size)
+                    interaction_effects = interaction_effects.map((e, i) => interaction_size[i] > size_boundary ? e: 0)
+                    let best_interaction = Math.max(...interaction_effects)
+                    let best_interaction_index = interaction_effects.indexOf(best_interaction)
+                    if (best_interaction > interaction_boundary) {
+                        group.push(main_players[best_interaction_index])
+                        main_players = main_players.filter((_, i) => i != best_interaction_index)
                     }
-                }
-                if (!added) {
-                    if (!isReduced || feature.get_size() > size_boundary ) {
-                        groups.push(new Group([feature], "single"))
+                    else {
+                        interactions_present = false
                     }
+
                 }
+                groups.push(group)
+
             }
 
             //sort groups by Math.abs(score)

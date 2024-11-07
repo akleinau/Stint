@@ -12,7 +12,7 @@ export const useDataStore = defineStore({
         data: [] as { [key: string]: number }[],
         feature_names: [] as string[],
         target_feature: "" as string,
-        data_summary: {} as { min: number, max: number, mean: number, std: number},
+        data_summary: {} as { min: number, max: number, mean: number, std: number, range:number},
         non_target_features: [] as string[],
         interacting_features: [] as string[],
         shown_features: [] as string[],
@@ -27,7 +27,7 @@ export const useDataStore = defineStore({
             this.data = []
             this.feature_names = []
             this.target_feature = ""
-            this.data_summary = {min: 0, max: 0, mean: 0, std: 0}
+            this.data_summary = {min: 0, max: 0, mean: 0, std: 0, range: 0}
             this.non_target_features = []
             this.interacting_features = []
             this.instance = {}
