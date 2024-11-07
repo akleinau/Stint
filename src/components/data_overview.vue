@@ -33,7 +33,7 @@ watch(() => dataStore.shown_features, () => {
 // also watch dataStore.instance
 watch(() => dataStore.instance, () => {
   dataStore.storyIsVisible = false
-})
+}, {deep:true})
 
 const update = () => {
   show_details.value = ""

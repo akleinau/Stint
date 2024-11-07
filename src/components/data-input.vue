@@ -85,6 +85,7 @@ const target_selected = (col: string) => {
   summary.min = Math.min(...dataStore.data.map((d: any) => d[col]))
   summary.max = Math.max(...dataStore.data.map((d: any) => d[col]))
   summary.std = d3.deviation(dataStore.data.map((d: any) => d[col]))
+  summary.range = summary.max - summary.min
   dataStore.data_summary = summary
   //interacting_features_selected(dataStore.non_target_features)
 

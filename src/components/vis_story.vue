@@ -43,7 +43,7 @@ const update_vis = async (isSlow:boolean=true) => {
   const height = influenceStore.groups.length * 20 + d3.sum(influenceStore.groups.map(g => g.get_nr_bars())) * (bar_height+10)
 
   let svg = d3.create("svg")
-      .attr("width", 750)
+      .attr("width", 800)
       .attr("height", height)
 
   let data = influenceStore.groups.flat()
@@ -51,12 +51,10 @@ const update_vis = async (isSlow:boolean=true) => {
     return
   }
 
-  min.value = Math.min(0, dataStore.data_summary.min)
-  max.value = dataStore.data_summary.max
   const spacing = 0.01* (dataStore.data_summary.max - dataStore.data_summary.min)
   min.value = dataStore.data_summary.min - spacing - dataStore.data_summary.mean
   max.value = dataStore.data_summary.max + spacing - dataStore.data_summary.mean
-  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([0, 500])
+  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([0, 550])
 
   let layers = []
   for (let i = 0; i < 3; i++) {
