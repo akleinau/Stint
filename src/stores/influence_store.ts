@@ -1,6 +1,7 @@
 import {defineStore} from "pinia";
 import {useDataStore} from "./dataStore";
 import {useFeatureStore} from "./feature_store.ts";
+import * as d3 from "d3";
 
 const sort_by_score = (a: GroupClass, b: GroupClass) => {
     return Math.abs(b.get_score()) - Math.abs(a.get_score())
@@ -41,14 +42,17 @@ abstract class GroupClass {
 
     vis_bars(crawler: any, updater: any, isLast: boolean) {
         crawler.svg.attr("height", crawler.offset + crawler.bar_height + crawler.spacing_inside_group)
-        this.add_bar(crawler, this, updater)
-        add_value_line(crawler, this, isLast)
-        add_feature_names(crawler, this)
+        let group_elements = crawler.layers[1].append("g")
+        this.add_bar(crawler, this, updater, group_elements)
+        add_bar_score(crawler, this, group_elements)
+        add_bar_size(crawler, this, group_elements)
+        add_value_line(crawler, this, isLast, group_elements)
+        add_feature_names(crawler, this, group_elements)
         add_zero_line(crawler, isLast)
         crawler.offset += crawler.bar_height + crawler.spacing_inside_group
     }
 
-    abstract add_bar(crawler: any, d: any, updater: any): void
+    abstract add_bar(crawler: any, d: any, updater: any, group_elements: any): void
 
     abstract get_name(): string
 
@@ -165,9 +169,9 @@ export class Group extends GroupClass {
 
 
 
-    add_bar(crawler: any, d: any, updater: any) {
+    add_bar(crawler: any, d: any, updater: any, group_elements: any) {
         // draw bars
-        let rect = crawler.layers[1].append("rect")
+        let rect = group_elements.append("rect")
             .on("click", () => {
                 this.isOpen = !this.isOpen
                 this.manual_slow = true
@@ -176,8 +180,13 @@ export class Group extends GroupClass {
                 }
                 updater.value += 1
             })
-            .on("mouseover", () => {
-              console.log(this.get_size())
+            .on("mouseover", (event: any, _:any) => {
+              d3.select(event.target.parentNode).selectAll(".details")
+                .style("opacity", "1")
+            })
+            .on("mouseout", (event: any, _: any) => {
+                d3.select(event.target.parentNode).selectAll(".details")
+                    .style("opacity", "0")
             })
             .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
             .attr("y", crawler.offset)
@@ -248,17 +257,23 @@ class Feature extends GroupClass {
         return [this.feature]
     }
 
-    add_bar(crawler: any, d: any, updater: any) {
+    add_bar(crawler: any, d: any, updater: any, group_elements: any) {
        // draw bars
-        let rect = crawler.layers[1].append("rect")
+        let rect = group_elements.append("rect")
             .on("click", () => {
                 if (this.parent != null) {
                     this.parent.isOpen = !this.parent.isOpen
                     updater.value += 1
                 }
             })
-            .on("mouseover", () => {
-              console.log(this.get_size())
+            .on("mouseover", (event: any, _: any) => {
+                d3.select(event.target.parentNode).selectAll(".details")
+                    .style("opacity", 1)
+
+            })
+            .on("mouseout", (event: any, _: any) => {
+                d3.select(event.target.parentNode).selectAll(".details")
+                    .style("opacity", "0")
             })
             .style("cursor", this.parent != null ? "pointer" : "default")
             .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
@@ -280,10 +295,10 @@ class Feature extends GroupClass {
 
 }
 
-const add_value_line = (crawler: any, d: any, isLast: boolean) => {
+const add_value_line = (crawler: any, d: any, isLast: boolean, group_elements: any) => {
     if (!isLast) {
         // draw value lines, vertically
-        crawler.layers[1].append("line")
+        group_elements.append("line")
             .attr("x1", crawler.scale.value(d.value))
             .attr("y1", crawler.offset)
             .attr("x2", crawler.scale.value(d.value))
@@ -294,22 +309,53 @@ const add_value_line = (crawler: any, d: any, isLast: boolean) => {
     }
 }
 
-const add_feature_names = (crawler: any, d: any) => {
+const add_feature_names = (crawler: any, d: any, group_elements: any) => {
 
     let name = d.get_name()
     if (name.length > 32) {
         name = name.slice(0, 30) + "..."
     }
 
-    crawler.layers[1].append("text")
+    group_elements.append("text")
             .attr("x", 570)
             .attr("y", crawler.offset + crawler.bar_height / 2)
             .text(name)
+            .attr("dy", ".4em")
             .attr("class", "text_feature_names" + crawler.offset)
             .style("font-size", "12px")
             .style("font-family", "Verdana")
             .style("text-anchor", "start")
             .style("color", "black")
+}
+
+const add_bar_score = (crawler: any, d: any, group_elements: any) => {
+
+    group_elements.append("text")
+            .attr("x", crawler.scale.value(d.value))
+            .attr("y", crawler.offset + crawler.bar_height / 2)
+            .text(d.score.toFixed(0))
+            .attr("dy", ".4em")
+            .attr("class", "details")
+            .style("font-size", "12px")
+            .style("font-family", "Verdana")
+            .style("text-anchor", d.value < 0 ? "end": "start")
+            .style("color", "black")
+            .style("opacity", 0)
+}
+
+const add_bar_size= (crawler: any, d: any, group_elements: any) => {
+
+    group_elements.append("text")
+            .attr("x", crawler.scale.value(0))
+            .attr("y", crawler.offset + crawler.bar_height / 2)
+            .text(" #" + d.get_size().toFixed(0))
+            .attr("dy", ".4em")
+            .attr("class", "details")
+            .style("font-size", "12px")
+            .style("font-family", "Verdana")
+            .style("text-anchor", d.value > 0 ? "end": "start")
+            .style("color", "black")
+            .style("opacity", 0)
 }
 
 const add_zero_line = (crawler: any, isLast: boolean) => {

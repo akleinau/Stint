@@ -51,10 +51,9 @@ const update_vis = async (isSlow:boolean=true) => {
     return
   }
 
-  const spacing = 0.01* (dataStore.data_summary.max - dataStore.data_summary.min)
-  min.value = dataStore.data_summary.min - spacing - dataStore.data_summary.mean
-  max.value = dataStore.data_summary.max + spacing - dataStore.data_summary.mean
-  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([0, 550])
+  min.value = dataStore.data_summary.min - dataStore.data_summary.mean
+  max.value = dataStore.data_summary.max - dataStore.data_summary.mean
+  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([30, 540])
 
   let layers = []
   for (let i = 0; i < 3; i++) {
