@@ -231,7 +231,7 @@ export class Group extends GroupClass {
         crawler.layers[0].append("rect")
             .attr("x", 0)
             .attr("y", initial_offset-5)
-            .attr("width", 500)
+            .attr("width", 800)
             .attr("height", final_offset - initial_offset +5)
             .attr("fill", "#CCCCCC")
             .style("opacity", 0.2)
@@ -250,7 +250,7 @@ export class Group extends GroupClass {
             })
             .attr("x", 0)
             .attr("y", initial_offset-5)
-            .attr("width", 500)
+            .attr("width", 800)
             .attr("height", final_offset - initial_offset +5)
             //remove fill, only keep border
             .attr("fill", "none")
@@ -360,6 +360,9 @@ const add_value_line = (crawler: any, d: any, isLast: boolean, group_elements: a
 
 const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: boolean) => {
 
+    let x_position = crawler.scale.value(d.value)
+    let padding = x_position  - crawler.scale.value(0) < 0 ? 5 : -5
+
     let name = (!isFirst? "& ": "") + d.get_feature_names()
     if (name.length > 32) {
         name = name.slice(0, 30) + "..."
@@ -367,7 +370,7 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
 
     // add feature names
     group_elements.append("text")
-            .attr("x", crawler.scale.value(d.value))
+            .attr("x", x_position - padding)
             .attr("y", crawler.offset + crawler.bar_height / 2)
             .text(name)
             .attr("dy", ".4em")
@@ -382,8 +385,7 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
         value = value.slice(0, 30) + "..."
     }
 
-    let x_position = crawler.scale.value(d.value)
-    let padding = x_position < 0 ? -5 : 5
+
 
     // add feature values
     group_elements.append("text")
