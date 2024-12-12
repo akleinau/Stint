@@ -53,7 +53,7 @@ const update_vis = async (isSlow:boolean=true) => {
 
   min.value = dataStore.data_summary.min - dataStore.data_summary.mean
   max.value = dataStore.data_summary.max - dataStore.data_summary.mean
-  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([30, 540])
+  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([200, 600])
 
   let layers = []
   for (let i = 0; i < 3; i++) {

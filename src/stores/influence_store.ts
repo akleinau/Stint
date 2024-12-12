@@ -126,10 +126,26 @@ export class Group extends GroupClass {
 
     get_name() : string {
         if (this.type == "correlation") {
-            return this.features[0].get_name() + " (...)"
+            return this.features[0].get_name() + "*"
         }
 
         return this.features.map(f => f.get_name()).join(", ")
+    }
+
+    get_feature_names() : string {
+        if (this.type == "correlation") {
+            return this.features[0].get_feature_names() + "*"
+        }
+
+        return this.features.map(f => f.get_feature_names()).join(", ")
+    }
+
+    get_feature_labels() : string {
+        if (this.type == "correlation") {
+            return this.features[0].get_feature_labels() + "*"
+        }
+
+        return this.features.map(f => f.get_feature_labels()).join(", ")
     }
 
     get_nr_features() {
@@ -166,7 +182,6 @@ export class Group extends GroupClass {
         }
 
     }
-
 
 
     add_bar(crawler: any, d: any, updater: any, group_elements: any, level: number=0) {
@@ -270,6 +285,14 @@ class Feature extends GroupClass {
         return this.feature + " = " + useDataStore().instance[this.feature]
     }
 
+    get_feature_names() {
+        return this.feature
+    }
+
+    get_feature_labels() {
+        return useDataStore().instance[this.feature]
+    }
+
     vis_group(crawler: any, isLast: boolean, isFirst: boolean, updater: any, level:number = 0) {
         this.vis_bars(crawler, updater, isLast, isFirst, level)
     }
@@ -337,21 +360,43 @@ const add_value_line = (crawler: any, d: any, isLast: boolean, group_elements: a
 
 const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: boolean) => {
 
-    let name = (!isFirst? "& ": "") + d.get_name()
+    let name = (!isFirst? "& ": "") + d.get_feature_names()
     if (name.length > 32) {
         name = name.slice(0, 30) + "..."
     }
 
+    // add feature names
     group_elements.append("text")
-            .attr("x", 570)
+            .attr("x", crawler.scale.value(d.value))
             .attr("y", crawler.offset + crawler.bar_height / 2)
             .text(name)
             .attr("dy", ".4em")
             .attr("class", "text_feature_names" + crawler.offset)
             .style("font-size", "12px")
             .style("font-family", "Verdana")
-            .style("text-anchor", "start")
-            .style("color", "black")
+            .style("text-anchor", d.value < 0 ? "end": "start")
+            .style("fill", "grey")
+
+    let value = d.get_feature_labels()
+    if (value.length > 32) {
+        value = value.slice(0, 30) + "..."
+    }
+
+    let x_position = crawler.scale.value(d.value)
+    let padding = x_position < 0 ? -5 : 5
+
+    // add feature values
+    group_elements.append("text")
+        .attr("x", x_position + padding)
+        .attr("y", crawler.offset + crawler.bar_height / 2)
+        .text(value)
+        .attr("dy", ".4em")
+        .attr("class", "text_feature_names" + crawler.offset)
+        .style("font-size", "12px")
+        .style("font-family", "Verdana")
+        .style("text-anchor", d.value < 0 ? "start": "end")
+        .style("fill", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0) < 5 ? "black": "white")
+
 }
 
 const add_bar_score = (crawler: any, d: any, group_elements: any) => {
