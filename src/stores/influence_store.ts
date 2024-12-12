@@ -40,10 +40,10 @@ abstract class GroupClass {
         return this.ids.size
     }
 
-    vis_bars(crawler: any, updater: any, isLast: boolean, isFirst: boolean) {
+    vis_bars(crawler: any, updater: any, isLast: boolean, isFirst: boolean, level:number = 0) {
         crawler.svg.attr("height", crawler.offset + crawler.bar_height + crawler.spacing_inside_group)
         let group_elements = crawler.layers[1].append("g")
-        this.add_bar(crawler, this, updater, group_elements)
+        this.add_bar(crawler, this, updater, group_elements, level)
         add_bar_score(crawler, this, group_elements)
         add_bar_size(crawler, this, group_elements)
         add_value_line(crawler, this, isLast, group_elements)
@@ -52,11 +52,11 @@ abstract class GroupClass {
         crawler.offset += crawler.bar_height + crawler.spacing_inside_group
     }
 
-    abstract add_bar(crawler: any, d: any, updater: any, group_elements: any): void
+    abstract add_bar(crawler: any, d: any, updater: any, group_elements: any, level: number): void
 
     abstract get_name(): string
 
-    abstract vis_group(crawler: any, isLast: boolean, isFirst: boolean, updater: any): void
+    abstract vis_group(crawler: any, isLast: boolean, isFirst: boolean, updater: any, level: number): void
 
     abstract set_new_influences(ids: Set<number>, previous_value: number): void
 
@@ -147,42 +147,45 @@ export class Group extends GroupClass {
         return this.features.map(f => f.get_features()).flat()
     }
 
-    vis_group(crawler: any, isLast: boolean, isFirst: boolean, updater: any) {
+    vis_group(crawler: any, isLast: boolean, isFirst: boolean, updater: any, level:number = 0) {
 
         if (this.get_nr_features() == 1) {
-            this.features[0].vis_group(crawler, isLast, isFirst, updater)
+            this.features[0].vis_group(crawler, isLast, isFirst, updater, level)
         }
         else if (this.isOpen) {
             let initial_offset = crawler.offset
             for (let j = 0; j < this.get_nr_features(); j++) {
-                this.features[j].vis_group(crawler, isLast && j == this.get_nr_features() -1 , isFirst && j == 0, updater)
+                this.features[j].vis_group(crawler, isLast && j == this.get_nr_features() -1 , isFirst && j == 0, updater, level + 1)
             }
             let final_offset = crawler.offset
 
             this.add_group_box(crawler, initial_offset, final_offset, updater)
 
         } else {
-            this.vis_bars(crawler, updater, isLast, isFirst)
+            this.vis_bars(crawler, updater, isLast, isFirst, level)
         }
 
     }
 
 
 
-    add_bar(crawler: any, d: any, updater: any, group_elements: any) {
+    add_bar(crawler: any, d: any, updater: any, group_elements: any, level: number=0) {
         // draw bars
         let rect = group_elements.append("rect")
             .on("click", () => {
                 this.isOpen = !this.isOpen
-                this.manual_slow = true
-                for (let feature of this.features) {
-                    feature.manual_slow = true
-                }
+
                 updater.value += 1
             })
-            .on("mouseover", (event: any, _:any) => {
+            .on("mouseenter", (event: any, _:any) => {
+                if (!this.isOpen ) {
+                    this.isOpen = true
+                    updater.value += 1
+                }
+
               d3.select(event.target.parentNode).selectAll(".details")
                 .style("opacity", "1")
+
             })
             .on("mouseout", (event: any, _: any) => {
                 d3.select(event.target.parentNode).selectAll(".details")
@@ -211,15 +214,33 @@ export class Group extends GroupClass {
     add_group_box(crawler: any, initial_offset: number, final_offset: number, updater: any) {
         // add a rectangle around the group
         crawler.layers[0].append("rect")
-            .on("click", () => {
-                this.isOpen = !this.isOpen
-                updater.value += 1
+            .attr("x", 0)
+            .attr("y", initial_offset-5)
+            .attr("width", 500)
+            .attr("height", final_offset - initial_offset +5)
+            .attr("fill", "#CCCCCC")
+            .style("opacity", 0.2)
+            .style("cursor", "pointer")
+
+        //add second boundary box to close the group again on move out
+        crawler.layers[2].append("rect")
+            .on("mouseover", () => {
+                if (this.isOpen ) {
+                    this.isOpen = false
+                    for (let j = 0; j < this.get_nr_features(); j++) {
+                        this.features[j].isOpen = false
+                    }
+                    updater.value += 1
+                }
             })
             .attr("x", 0)
-            .attr("y", initial_offset)
+            .attr("y", initial_offset-5)
             .attr("width", 500)
-            .attr("height", final_offset - initial_offset)
-            .attr("fill", "#CCCCCC")
+            .attr("height", final_offset - initial_offset +5)
+            //remove fill, only keep border
+            .attr("fill", "none")
+            .attr("stroke", "black")
+            .attr("stroke-width", 2)
             .style("opacity", 0.2)
             .style("cursor", "pointer")
     }
@@ -249,15 +270,15 @@ class Feature extends GroupClass {
         return this.feature + " = " + useDataStore().instance[this.feature]
     }
 
-    vis_group(crawler: any, isLast: boolean, isFirst: boolean, updater: any) {
-        this.vis_bars(crawler, updater, isLast, isFirst)
+    vis_group(crawler: any, isLast: boolean, isFirst: boolean, updater: any, level:number = 0) {
+        this.vis_bars(crawler, updater, isLast, isFirst, level)
     }
 
     get_features(): string[] {
         return [this.feature]
     }
 
-    add_bar(crawler: any, d: any, updater: any, group_elements: any) {
+    add_bar(crawler: any, d: any, updater: any, group_elements: any, level: number=0) {
        // draw bars
         let rect = group_elements.append("rect")
             .on("click", () => {
@@ -266,9 +287,14 @@ class Feature extends GroupClass {
                     updater.value += 1
                 }
             })
-            .on("mouseover", (event: any, _: any) => {
+            .on("mouseenter", (event: any, _: any) => {
+                if (this.parent != null && !this.isOpen) {
+                    this.parent.isOpen = true
+                    updater.value += 1
+                }
                 d3.select(event.target.parentNode).selectAll(".details")
                     .style("opacity", 1)
+
 
             })
             .on("mouseout", (event: any, _: any) => {
