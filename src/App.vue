@@ -5,6 +5,7 @@ import OpenEnded from './components/open-ended.vue'
 import DataOverview from './components/data_overview.vue'
 import {useDataStore} from "./stores/dataStore.ts";
 import {useInfluenceStore} from "./stores/influence_store.ts";
+import DetailView from "./components/detail-view.vue";
 
 const dataStore = useDataStore()
 const influenceStore = useInfluenceStore()
@@ -69,6 +70,7 @@ const explain = async () => {
 
         <DataOverview/>
         <VisStory/>
+        <DetailView/>
       </v-card-text>
 
     </v-card>

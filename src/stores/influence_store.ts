@@ -2,6 +2,7 @@ import {defineStore} from "pinia";
 import {useDataStore} from "./dataStore";
 import {useFeatureStore} from "./feature_store.ts";
 import * as d3 from "d3";
+import {useDetailStore} from "./detail_store.ts";
 
 const sort_by_score = (a: GroupClass, b: GroupClass) => {
     return Math.abs(b.get_score()) - Math.abs(a.get_score())
@@ -269,7 +270,7 @@ export class Group extends GroupClass {
 
 }
 
-class Feature extends GroupClass {
+export class Feature extends GroupClass {
     feature: string = ""
 
     constructor(feature: string) {
@@ -315,6 +316,7 @@ class Feature extends GroupClass {
                 if (this.parent != null) {
                     this.parent.isFreezedOpen = !this.parent.isFreezedOpen
                     console.log("freeze " + this.parent.isFreezedOpen)
+                    useDetailStore().selected_feature = this
                     updater.value += 1
                 }
             })
