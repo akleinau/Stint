@@ -13,6 +13,7 @@ abstract class GroupClass {
     score: number = 0
     value: number = 0
     isOpen: boolean = false
+    isFreezedOpen: boolean = false
     parent: Group | null = null
     manual_slow: boolean = false
 
@@ -44,8 +45,8 @@ abstract class GroupClass {
         crawler.svg.attr("height", crawler.offset + crawler.bar_height + crawler.spacing_inside_group)
         let group_elements = crawler.layers[1].append("g")
         this.add_bar(crawler, this, updater, group_elements, level)
-        add_bar_score(crawler, this, group_elements)
-        add_bar_size(crawler, this, group_elements)
+        //add_bar_score(crawler, this, group_elements)
+        //add_bar_size(crawler, this, group_elements)
         add_value_line(crawler, this, isLast, group_elements)
         add_feature_names(crawler, this, group_elements, isFirst)
         add_zero_line(crawler, isLast)
@@ -188,12 +189,13 @@ export class Group extends GroupClass {
         // draw bars
         let rect = group_elements.append("rect")
             .on("click", () => {
-                this.isOpen = !this.isOpen
+                this.isFreezedOpen = !this.isFreezedOpen
+                console.log("freeze " + this.isFreezedOpen)
 
                 updater.value += 1
             })
             .on("mouseenter", (event: any, _:any) => {
-                if (!this.isOpen ) {
+                if (!this.isOpen) {
                     this.isOpen = true
                     updater.value += 1
                 }
@@ -229,6 +231,11 @@ export class Group extends GroupClass {
     add_group_box(crawler: any, initial_offset: number, final_offset: number, updater: any) {
         // add a rectangle around the group
         crawler.layers[0].append("rect")
+            .on("click", () => {
+                    this.isFreezedOpen = !this.isFreezedOpen
+                    console.log("freeze " + this.isFreezedOpen)
+                    updater.value += 1
+            })
             .attr("x", 0)
             .attr("y", initial_offset-5)
             .attr("width", 800)
@@ -240,7 +247,7 @@ export class Group extends GroupClass {
         //add second boundary box to close the group again on move out
         crawler.layers[2].append("rect")
             .on("mouseover", () => {
-                if (this.isOpen ) {
+                if (this.isOpen && !this.isFreezedOpen) {
                     this.isOpen = false
                     for (let j = 0; j < this.get_nr_features(); j++) {
                         this.features[j].isOpen = false
@@ -306,19 +313,14 @@ class Feature extends GroupClass {
         let rect = group_elements.append("rect")
             .on("click", () => {
                 if (this.parent != null) {
-                    this.parent.isOpen = !this.parent.isOpen
+                    this.parent.isFreezedOpen = !this.parent.isFreezedOpen
+                    console.log("freeze " + this.parent.isFreezedOpen)
                     updater.value += 1
                 }
             })
             .on("mouseenter", (event: any, _: any) => {
-                if (this.parent != null && !this.isOpen) {
-                    this.parent.isOpen = true
-                    updater.value += 1
-                }
                 d3.select(event.target.parentNode).selectAll(".details")
                     .style("opacity", 1)
-
-
             })
             .on("mouseout", (event: any, _: any) => {
                 d3.select(event.target.parentNode).selectAll(".details")
@@ -379,6 +381,7 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
             .style("font-family", "Verdana")
             .style("text-anchor", d.value < 0 ? "end": "start")
             .style("fill", "grey")
+            .style("pointer-events", "none")
 
     let value = d.get_feature_labels()
     if (value.length > 22) {
@@ -398,6 +401,7 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
         .style("font-family", "Verdana")
         .style("text-anchor", d.value < 0 ? "start": "end")
         .style("fill", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0) < 10 ? "black": "white")
+        .style("pointer-events", "none")
 
 }
 
