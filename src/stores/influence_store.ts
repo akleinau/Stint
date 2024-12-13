@@ -364,8 +364,8 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
     let padding = x_position  - crawler.scale.value(0) < 0 ? 5 : -5
 
     let name = (!isFirst? "& ": "") + d.get_feature_names()
-    if (name.length > 32) {
-        name = name.slice(0, 30) + "..."
+    if (name.length > 22) {
+        name = name.slice(0, 20) + "..."
     }
 
     // add feature names
@@ -375,14 +375,14 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
             .text(name)
             .attr("dy", ".4em")
             .attr("class", "text_feature_names" + crawler.offset)
-            .style("font-size", "12px")
+            .style("font-size", "14px")
             .style("font-family", "Verdana")
             .style("text-anchor", d.value < 0 ? "end": "start")
             .style("fill", "grey")
 
     let value = d.get_feature_labels()
-    if (value.length > 32) {
-        value = value.slice(0, 30) + "..."
+    if (value.length > 22) {
+        value = value.slice(0, 20) + "..."
     }
 
 
@@ -394,10 +394,10 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
         .text(value)
         .attr("dy", ".4em")
         .attr("class", "text_feature_names" + crawler.offset)
-        .style("font-size", "12px")
+        .style("font-size", "14px")
         .style("font-family", "Verdana")
         .style("text-anchor", d.value < 0 ? "start": "end")
-        .style("fill", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0) < 5 ? "black": "white")
+        .style("fill", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0) < 10 ? "black": "white")
 
 }
 

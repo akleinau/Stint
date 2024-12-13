@@ -22,7 +22,7 @@ const container = useTemplateRef('container')
 const min = ref<number>(0)
 const max = ref<number>(1)
 const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, 800]))
-const bar_height = 20
+const bar_height = 25
 const spacing_between_groups = 15
 const spacing_inside_group = 5
 
@@ -53,7 +53,7 @@ const update_vis = async (isSlow:boolean=true) => {
 
   min.value = dataStore.data_summary.min - dataStore.data_summary.mean
   max.value = dataStore.data_summary.max - dataStore.data_summary.mean
-  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([200, 600])
+  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([100, 700])
 
   let layers = []
   for (let i = 0; i < 3; i++) {
@@ -61,8 +61,15 @@ const update_vis = async (isSlow:boolean=true) => {
   }
 
 
-  // add axis
+  // add axis and add a "+" in front of positive values
   let axis = d3.axisTop(scale.value)
+      .tickFormat((d) => {
+        if (d > 0) {
+          return "+" + d
+        }
+        return d
+      })
+      .ticks(10)
   layers[2].append("g")
       .attr("transform", "translate(0, " + (20) + ")")
       .call(axis)
