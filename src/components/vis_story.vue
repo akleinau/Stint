@@ -73,6 +73,8 @@ const update_vis = async (isSlow:boolean=true) => {
       .ticks(10)
   layers[2].append("g")
       .attr("transform", "translate(0, " + (20) + ")")
+      .style("font-size", "12px")
+      .style("color", "#555555")
       .call(axis)
 
   // add black vertical line at 0

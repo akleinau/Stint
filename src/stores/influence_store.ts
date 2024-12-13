@@ -262,8 +262,8 @@ export class Group extends GroupClass {
             //remove fill, only keep border
             .attr("fill", "none")
             .attr("stroke", "black")
-            .attr("stroke-width", 2)
-            .style("opacity", 0.2)
+            .attr("stroke-width", 4)
+            .style("opacity", 0)
             .style("cursor", "pointer")
     }
 
