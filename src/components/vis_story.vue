@@ -51,8 +51,9 @@ const update_vis = async (isSlow:boolean=true) => {
     return
   }
 
-  min.value = dataStore.data_summary.min - dataStore.data_summary.mean
-  max.value = dataStore.data_summary.max - dataStore.data_summary.mean
+  const range = get_subset_influence_range()
+  min.value = range[0]
+  max.value = range[1]
   scale.value = d3.scaleLinear().domain([min.value, max.value]).range([100, 700])
 
   let layers = []
@@ -101,6 +102,19 @@ const update_vis = async (isSlow:boolean=true) => {
 
 const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const get_subset_influence_range = () => {
+  const min_subset_size = dataStore.get_min_subset_size()
+
+  // now get the smalles n values from dataStore.data
+  let data = dataStore.data.map(d => d[dataStore.target_feature])
+  let sorted_data = data.sort((a, b) => a - b)
+  let min_items = sorted_data.slice(0, min_subset_size)
+  let max_items = sorted_data.slice(-min_subset_size)
+  let min = d3.mean(min_items) - dataStore.data_summary.mean
+  let max = d3.mean(max_items) - dataStore.data_summary.mean
+  return [min, max]
 }
 
 </script>

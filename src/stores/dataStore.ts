@@ -69,6 +69,10 @@ export const useDataStore = defineStore({
 
                   this.feature_abnormality[feature] = instance_bin_count / max_count
             }
+        },
+
+        get_min_subset_size(): number {
+            return Math.max(50, this.data.length * 0.001)
         }
     },
 })

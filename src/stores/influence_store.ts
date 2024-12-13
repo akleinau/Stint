@@ -543,7 +543,7 @@ export const useInfluenceStore = defineStore({
 
             //then go through them and either add them to a previous group when they interact, or create a new group
             const interaction_boundary = dataStore.data_summary.range * 0.001
-            const size_boundary = Math.max(50, dataStore.data.length * 0.001)
+            const size_boundary = dataStore.get_min_subset_size()
 
             while (main_players.length > 0) {
                 // find main player with highest score. Conveniently, this is the first one as it is ordered
