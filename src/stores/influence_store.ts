@@ -54,6 +54,22 @@ abstract class GroupClass {
         crawler.offset += crawler.bar_height + crawler.spacing_inside_group
     }
 
+    get_previous_group() {
+        if (this.parent == null) {
+            return null
+        }
+        else {
+            let parent = this.parent
+            let index = parent.features.indexOf(this)
+            if (index == 0) {
+                return parent.get_previous_group()
+            }
+            else {
+                return parent.features[index - 1]
+            }
+        }
+    }
+
     abstract add_bar(crawler: any, d: any, updater: any, group_elements: any, level: number): void
 
     abstract get_name(): string
@@ -67,7 +83,7 @@ abstract class GroupClass {
 }
 
 export class Group extends GroupClass {
-    features: (Feature | Group)[] = []
+    features: GroupClass[] = []
 
     constructor(features: (Feature| Group)[], type: string) {
         super()
