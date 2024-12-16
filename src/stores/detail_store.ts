@@ -22,15 +22,17 @@ export const useDetailStore = defineStore({
             if (type == "continuous") {
                 // interprete bins as type bin_continuous
                 for (let bin of bins as bin_continuous[]) {
-                    vis_bins.push({"x": [bin.min + 0.5*(bin.max-bin.min)], "prediction": bin.prediction_mean})
+                    vis_bins.push({"x": bin.min, "prediction": bin.prediction_mean})
                 }
             }
             else {
                 // interprete bins as type bin_discrete
                 for (let bin of bins as bin_discrete[]) {
-                    vis_bins.push({"x": [bin.value], "prediction": bin.prediction_mean})
+                    vis_bins.push({"x": bin.value, "prediction": bin.prediction_mean})
                 }
             }
+
+            vis_bins.sort((a, b) => +a.x - +b.x)
 
             return vis_bins
         },
@@ -75,7 +77,7 @@ export const useDetailStore = defineStore({
             let vis_bins_formatted = []
             if (type == "continuous") {
                 for (let bin of vis_bins) {
-                    vis_bins_formatted.push({"x": bin.min + 0.5*(bin.max-bin.min), "prediction": bin.prediction_mean})
+                    vis_bins_formatted.push({"x": bin.min, "prediction": bin.prediction_mean})
                 }
             }
             else {
@@ -83,6 +85,9 @@ export const useDetailStore = defineStore({
                     vis_bins_formatted.push({"x": bin.value, "prediction": bin.prediction_mean})
                 }
             }
+
+            // sort by x
+            vis_bins_formatted.sort((a, b) => +a.x - +b.x)
 
             return vis_bins_formatted
 

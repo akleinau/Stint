@@ -34,7 +34,6 @@ const update_vis = () => {
 
   let vis_bins = detailStore.get_vis_bins() // array of bins with x and prediction
   let set_vis_bins = detailStore.get_current_set_vis_bins()
-  let current_bin_index = featureStore.get_instance_bin_index(detailStore.selected_feature.get_feature_names(), instance_value.value)
 
   const svg_width = 500
   const rect_width = svg_width / vis_bins.length
@@ -55,32 +54,30 @@ const update_vis = () => {
       .domain([0, d3.max(vis_bins.map(d => d.prediction))])
       .range([0, 70])
 
-  // add bars
-  svg.selectAll(".bins")
-      .data(vis_bins)
-      .enter()
-      .append("rect")
-      .attr("class", "bins")
-      .attr("x", d => x(d.x)-rect_width/2)
-      .attr("y", d => 70 - y(d.prediction))
-      .attr("width", rect_width)
-      .attr("height", d => y(d.prediction))
-      .attr("fill", (_, i) => i === current_bin_index ? "green" : "grey")
-      .style("opacity", 0.5)
+  // add curve for vis_bins
+  let line = d3.line()
+      .x(d => x(d.x))
+      .y(d => 70 - y(d.prediction))
+  // add curve
+  svg.append("path")
+      .datum(vis_bins)
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-width", 1)
+      .attr("d", line)
 
   if (set_vis_bins !== null) {
-      // add bars
-    svg.selectAll(".setbins")
-        .data(set_vis_bins)
-        .enter()
-        .append("rect")
-        .attr("class", "setbins")
-        .attr("x", d => x(d.x)-rect_width/2)
-        .attr("y", d => 70 - y(d.prediction))
-        .attr("width", rect_width)
-        .attr("height", d => y(d.prediction))
-        .attr("fill", (_, i) => i === current_bin_index ? "red" : "blue")
-        .style("opacity", 0.5)
+      // add curve for set_vis_bins
+      let line = d3.line()
+          .x(d => x(d.x))
+          .y(d => 70 - y(d.prediction))
+      // add curve
+      svg.append("path")
+          .datum(set_vis_bins)
+          .attr("fill", "none")
+          .attr("stroke", "blue")
+          .attr("stroke-width", 1)
+          .attr("d", line)
   }
 
   // add x-axis
