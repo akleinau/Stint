@@ -35,29 +35,34 @@ const update_vis = () => {
   let vis_bins = detailStore.get_vis_bins() // array of bins with x and prediction
   let set_vis_bins = detailStore.get_current_set_vis_bins()
 
-  const svg_width = 500
+  let combined_bins = vis_bins.concat(set_vis_bins)
+
+  const svg_width = 300
+  const svg_height = 100
+  const y_padding = 30
   const rect_width = svg_width / vis_bins.length
 
   let svg = d3.create("svg")
       .attr("width", svg_width + 20)
-      .attr("height", 100)
-      .attr("viewBox", [-10, 0, svg_width + 20, 100])
+      .attr("height", svg_height)
+      .attr("viewBox", [-10, 0, svg_width + 20, svg_height])
 
-  // create x-axis based on keys of vis_bins
-  let min_x = d3.min(vis_bins.map(d => +d.x))
-  let max_x = d3.max(vis_bins.map(d => +d.x))
+  // create x-axis based on keys of vis_bins and set_vis_bins
+  let min_x = d3.min(combined_bins.map(d => +d.x))
+  let max_x = d3.max(combined_bins.map(d => +d.x))
+  console.log(min_x, max_x)
   let x = d3.scaleLinear()
       .domain([min_x,max_x])
       .range([rect_width/2, svg_width-rect_width/2])
 
   let y = d3.scaleLinear()
       .domain([0, d3.max(vis_bins.map(d => d.prediction))])
-      .range([0, 70])
+      .range([0, svg_height- y_padding])
 
   // add curve for vis_bins
   let line = d3.line()
       .x(d => x(d.x))
-      .y(d => 70 - y(d.prediction))
+      .y(d => svg_height - y_padding - y(d.prediction))
   // add curve
   svg.append("path")
       .datum(vis_bins)
@@ -70,7 +75,7 @@ const update_vis = () => {
       // add curve for set_vis_bins
       let line = d3.line()
           .x(d => x(d.x))
-          .y(d => 70 - y(d.prediction))
+          .y(d => svg_height - y_padding - y(d.prediction))
       // add curve
       svg.append("path")
           .datum(set_vis_bins)
@@ -82,8 +87,11 @@ const update_vis = () => {
 
   // add x-axis
   svg.append("g")
-      .attr("transform", `translate(0, 70)`)
+      .attr("transform", `translate(0, ${svg_height - y_padding})`)
       .call(d3.axisBottom(x))
+
+  // turn around whole svg 90 degrees
+  //svg.attr("transform", "rotate(90)")
 
 
 
