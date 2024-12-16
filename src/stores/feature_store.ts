@@ -1,7 +1,10 @@
 import {defineStore} from "pinia";
+import {useDataStore} from "./dataStore.ts";
 
 export interface bin {
     count: number,
+    prediction_sum: number,
+    prediction_mean: number
 }
 
 export interface bin_continuous extends bin {
@@ -35,13 +38,16 @@ export const useFeatureStore = defineStore({
     }),
     actions: {
 
-        set_features(data: any) {
+        set_features() {
+            const data = useDataStore().data
             this.feature_names = data.columns
             this.calculate_feature_bins(data)
         },
 
         calculate_feature_bins(data: { [key: string]: number }[]) {
             this.feature_bins = {}
+            let target_feature = useDataStore().target_feature
+
             for (let feature of this.feature_names) {
                 const values = data.map((d) => d[feature])
                 const unique_values = Array.from(new Set(values)).sort()
@@ -67,15 +73,23 @@ export const useFeatureStore = defineStore({
                         return {
                             min: i_min.toFixed(logStep),
                             max: i_max.toFixed(logStep),
-                            count: 0
+                            count: 0,
+                            prediction_sum: 0,
+                            prediction_mean: 0
                         }
                     })
-                    for (let value of values) {
-                        let bin_index = Math.floor((value - min) / bin_size)
+
+                    data.forEach((d) => {
+                        const bin_index = Math.floor((d[feature] - min) / bin_size)
                         if (bin_index === bin_number) {
-                            bin_index = bin_number - 1
+                            bins[bin_number - 1].count += 1
+                            bins[bin_number - 1].prediction_sum += d[target_feature]
                         }
-                        bins[bin_index].count += 1
+                    })
+
+                    //calculate mean
+                    for (let bin of bins) {
+                        bin.prediction_mean = bin.prediction_sum / bin.count
                     }
 
                     this.feature_bins[feature] = bins
@@ -87,13 +101,21 @@ export const useFeatureStore = defineStore({
                     const bins = unique_values.map((value) => {
                         return {
                             value: value,
-                            count: 0
+                            count: 0,
+                            prediction_sum: 0,
+                            prediction_mean: 0
                         }
                     })
 
-                    for (let value of values) {
-                        const bin_index = bins.findIndex((bin) => bin.value === value)
+                    data.forEach((d) => {
+                        const bin_index = bins.findIndex((bin) => bin.value === d[feature])
                         bins[bin_index].count += 1
+                        bins[bin_index].prediction_sum += d[target_feature]
+                    })
+
+                    //calculate mean
+                    for (let bin of bins) {
+                        bin.prediction_mean = bin.prediction_sum / bin.count
                     }
 
                     this.feature_bins[feature] = bins
@@ -116,6 +138,10 @@ export const useFeatureStore = defineStore({
                 return bins.findIndex((bin) => bin.value === value)
             }
         },
+
+        get_feature_type(feature: string): string {
+            return this.feature_types[feature]
+        }
 
     }
 });

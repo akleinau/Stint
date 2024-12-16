@@ -1,5 +1,6 @@
 <script setup lang="ts">
 
+import DependencyVis from "../visualizations/dependency_vis.vue";
 import {useDataStore} from "../stores/dataStore.ts";
 import {useInfluenceStore} from "../stores/influence_store.ts";
 import {useDetailStore} from "../stores/detail_store.ts";
@@ -14,19 +15,8 @@ const container = useTemplateRef('container')
 
 // trigger update on detailStore.selected_feature change
 watch(() => detailStore.selected_feature, () => {
-  update_depenceny_plot()
+  console.log("update detail view")
 })
-
-// visualize the influence dependency plot of the selected feature
-const update_depenceny_plot = () => {
-  let svg = d3.create("svg")
-      .attr("width", 800)
-      .attr("height", 200)
-
-  //d3.select(container.value).node().append(svg.node())
-
-
-}
 
 </script>
 
@@ -36,9 +26,12 @@ const update_depenceny_plot = () => {
     <div v-if="detailStore.selected_feature !== null">
       <div> {{ detailStore.selected_feature.get_name() }}</div>
       <div> subset size: {{ detailStore.selected_feature.get_size() }}</div>
+      <DependencyVis />
     </div>
 
-    <div ref="container" class="px-5 pt-5"/>
+
+
+
   </div>
 </template>
 

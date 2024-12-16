@@ -73,11 +73,11 @@ const set_data = (data: any) => {
   data = add_id(data)
   dataStore.feature_names = data.columns
   dataStore.data = data
-  featureStore.set_features(data)
 }
 
 const target_selected = (col: string) => {
   dataStore.target_feature = col
+  featureStore.set_features()
   dataStore.instance = JSON.parse(JSON.stringify(dataStore.data[instance_nr.value])) //makes sure there is always an instance selected
   dataStore.non_target_features = dataStore.feature_names.filter((f: string) => f !== col)
   let summary = {} as any
