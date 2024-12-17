@@ -62,7 +62,7 @@ const update = () => {
   <div class="d-flex justify-center flex-column" v-if="dataStore.storyIsVisible">
 
     <div class="d-flex justify-center mb-5">
-      <h3 >Data Overview</h3>
+      <h3 > The features of the current instance:</h3>
     </div>
 
     <!-- background features -->
@@ -80,7 +80,9 @@ const update = () => {
       </div>
     </div>
 
-
+    <div v-if="focus_features.length > 0" class="d-flex justify-center mb-5">
+      <i style="font-size:15px; color:darkred"> some of them are unusual...</i>
+    </div>
 
     <!-- focus features -->
     <div v-for="key in focus_features">

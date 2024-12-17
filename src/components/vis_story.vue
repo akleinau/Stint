@@ -11,7 +11,10 @@ const influenceStore = useInfluenceStore()
 
 // also watch dataStore.instance
 watch(() => dataStore.instance, () => {
-  influenceStore.calculate_influences()
+  if (dataStore.storyIsVisible) {
+      influenceStore.calculate_influences()
+  }
+
 }, {deep:true})
 
 </script>
@@ -19,11 +22,11 @@ watch(() => dataStore.instance, () => {
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
     <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      Influence of the Features
+      Feature influence on {{dataStore.target_feature}}:
     </h3>
     <InfluenceVis />
     <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      their combined influence...
+      ... resulting in a combined influence of:
     </h3>
     <InfluenceSummaryVis />
 

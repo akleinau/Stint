@@ -61,16 +61,16 @@ const update_vis = () => {
   svg.append("text")
       .attr("x", abnormal_xaxis(1))
       .attr("y", 45)
-      .text("normal")
+      .text("common")
       .style("fill", "grey")
 
   // add "abnormal" text right
   svg.append("text")
       .attr("x", abnormal_xaxis(0))
       .attr("y", 45)
-      .text("abnormal")
+      .text("unusual")
       .style("text-anchor", "end")
-      .style("fill", "crimson")
+      .style("fill", "darkred")
 
 
   d3.select(container.value).selectAll("*").remove()
