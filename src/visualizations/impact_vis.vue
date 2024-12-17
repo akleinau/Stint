@@ -34,7 +34,7 @@ const update_vis = () => {
 
   let values = detailStore.change_impacts
 
-  const svg_width = 300
+  const svg_width = 350
   const svg_height = 100
   const y_padding = 30
   const padding_sides = 40
@@ -59,13 +59,31 @@ const update_vis = () => {
       .domain([min_y, max_y])
       .range([svg_height- y_padding, 0])
 
+  // color in area below zero in red
+  svg.append("rect")
+      .attr("x", x(min_x))
+      .attr("y", y(0))
+      .attr("width", x(max_x) - x(min_x))
+      .attr("height", Math.abs(y(0) - y(min_y)))
+      .attr("fill", "crimson")
+      .attr("opacity", 0.4)
+
+  // color in area above zero in blue
+  svg.append("rect")
+      .attr("x", x(min_x))
+      .attr("y", y(max_y))
+      .attr("width", x(max_x) - x(min_x))
+      .attr("height", Math.abs(y(0) - y(max_y)))
+      .attr("fill", "darkslateblue")
+      .attr("opacity", 0.4)
+
   // add horizontal zero impact line
   svg.append("line")
       .attr("x1", x(min_x))
       .attr("y1", y(0))
       .attr("x2", x(max_x))
       .attr("y2", y(0))
-      .attr("stroke", "darkgrey")
+      .attr("stroke", "black")
       .attr("stroke-width", 1)
 
   // add curve for vis_bins
@@ -77,7 +95,7 @@ const update_vis = () => {
       .datum(values)
       .attr("fill", "none")
       .attr("stroke", "black")
-      .attr("stroke-width", 1)
+      .attr("stroke-width", 2)
       .attr("d", line)
 
   // add x-axis
@@ -100,7 +118,7 @@ const update_vis = () => {
       .attr("x2", x(instance_value.value))
       .attr("y2", svg_height)
       .attr("stroke", "teal")
-      .attr("stroke-width", 1)
+      .attr("stroke-width", 2)
 
 
 
