@@ -70,6 +70,15 @@ abstract class GroupClass {
         }
     }
 
+    check_open() {
+        const detailStore = useDetailStore()
+        if (detailStore.selected_feature != null) {
+            if (this.get_features().includes(detailStore.selected_feature.get_feature_names()) != null) {
+                this.isOpen = true
+            }
+        }
+    }
+
     abstract add_bar(crawler: any, d: any, updater: any, group_elements: any, level: number): void
 
     abstract get_name(): string
@@ -96,6 +105,9 @@ export class Group extends GroupClass {
 
         this.set_new_influences(new Set([...features[0].get_ids()]), 0)
         this.type = type
+
+        this.check_open()
+
     }
 
     push(feature: Feature | Group) {
@@ -111,6 +123,8 @@ export class Group extends GroupClass {
 
         this.score += difference
         this.value = new_score
+
+        this.check_open()
     }
 
     set_new_influences(ids: Set<number>, previous_value: number) {
@@ -295,6 +309,8 @@ export class Feature extends GroupClass {
         this.score = useInfluenceStore().main_effects[feature].average
         this.value = this.score
         this.ids = useInfluenceStore().instance_subsets[this.feature]
+
+        this.check_open()
     }
 
     set_new_influences(ids: Set<number>, previous_value: number) {
