@@ -8,7 +8,7 @@ const dataStore = useDataStore()
 const influenceStore = useInfluenceStore()
 
 // watch dataStore.influence_scores
-watch (() => influenceStore.groups, (_) => {
+watch (() => influenceStore.influence.groups, (_) => {
   update_vis()
 })
 
@@ -46,13 +46,13 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
     return
   }
 
-  const height = influenceStore.groups.length * 20 + d3.sum(influenceStore.groups.map(g => g.get_nr_bars())) * (bar_height+10)
+  const height = influenceStore.influence.groups.length * 20 + d3.sum(influenceStore.influence.groups.map(g => g.get_nr_bars())) * (bar_height+10)
 
   let svg = d3.create("svg")
       .attr("width", 800)
       .attr("height", height)
 
-  let data = influenceStore.groups.flat()
+  let data = influenceStore.influence.groups.flat()
   if (data.length === 0) {
     return
   }
@@ -97,8 +97,8 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
   let crawler = {offset: 30, spacing_between_groups:spacing_between_groups, layers:layers,
       spacing_inside_group:spacing_inside_group, scale:scale, svg:svg, bar_height:bar_height, isSlow:isSlow,
     areChangesSlow:areChangesSlow}
-  for (let i = 0; i < influenceStore.groups.length; i++) {
-    let group: Group = influenceStore.groups[i]
+  for (let i = 0; i < influenceStore.influence.groups.length; i++) {
+    let group: Group = influenceStore.influence.groups[i]
     group.vis_group(crawler, true, true, updater)
     crawler.offset += crawler.spacing_between_groups
     if (isSlow && !areChangesSlow) {
@@ -130,7 +130,7 @@ const get_subset_influence_range = () => {
 
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
-    <h3 class="pt-5" v-if="influenceStore.groups.length>0 && dataStore.storyIsVisible ">Influence on Prediction</h3>
+    <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">Influence on Prediction</h3>
     <div ref="container" class="px-5 pt-5"/>
     <div v-if="false">
       Prediction: {{dataStore.instance[dataStore.target_feature] - dataStore.data_summary.mean}}

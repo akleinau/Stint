@@ -17,9 +17,11 @@ abstract class GroupClass {
     isFreezedOpen: boolean = false
     parent: Group | null = null
     manual_slow: boolean = false
+    influence_object: any
 
-    protected constructor() {
+    protected constructor(influence_object) {
         this.parent = null
+        this.influence_object = influence_object
     }
 
    set_parent(parent: Group) {
@@ -94,8 +96,8 @@ abstract class GroupClass {
 export class Group extends GroupClass {
     features: GroupClass[] = []
 
-    constructor(features: (Feature| Group)[], type: string) {
-        super()
+    constructor(features: (Feature| Group)[], type: string, influence_object: any) {
+        super(influence_object)
         //first sort the features by score
         features.sort(sort_by_score)
         this.features = features
@@ -116,7 +118,7 @@ export class Group extends GroupClass {
         feature.set_parent(this)
 
         this.ids = new Set([...feature.get_ids()])
-        const new_score = useInfluenceStore().get_average_influence(this.get_ids())
+        const new_score = this.influence_object.get_average_influence(this.get_ids())
         const difference = new_score - previous_score
 
         this.features.push(feature)
@@ -136,7 +138,7 @@ export class Group extends GroupClass {
             current_value = group.get_value()
         }
         this.ids = current_ids
-        let new_value = useInfluenceStore().get_average_influence(current_ids)
+        let new_value = this.influence_object.get_average_influence(current_ids)
         this.score = new_value - previous_value
         this.value = new_value
     }
@@ -145,14 +147,14 @@ export class Group extends GroupClass {
         let our_score = this.get_score()
         let their_score = feature.get_score()
         let combined_ids = new Set([...this.get_ids()].filter(x => feature.get_ids().has(x)))
-        let combined_score = useInfluenceStore().get_average_influence(combined_ids)
+        let combined_score = this.influence_object.get_average_influence(combined_ids)
         return Math.abs(combined_score - our_score - their_score)
     }
 
     calculate_added_score(feature: Feature | Group) {
         let our_score = this.get_score()
         let combined_ids = new Set([...this.get_ids()].filter(x => feature.get_ids().has(x)))
-        let combined_score = useInfluenceStore().get_average_influence(combined_ids)
+        let combined_score = this.influence_object.get_average_influence(combined_ids)
         return Math.abs(combined_score - our_score)
     }
 
@@ -303,12 +305,12 @@ export class Group extends GroupClass {
 export class Feature extends GroupClass {
     feature: string = ""
 
-    constructor(feature: string) {
-        super()
+    constructor(feature: string, influence_object: any) {
+        super(influence_object)
         this.feature = feature
-        this.score = useInfluenceStore().main_effects[feature].average
+        this.score = this.influence_object.main_effects[feature].average
         this.value = this.score
-        this.ids = useInfluenceStore().instance_subsets[this.feature]
+        this.ids = this.influence_object.instance_subsets[this.feature]
 
         this.check_open()
     }
@@ -316,13 +318,13 @@ export class Feature extends GroupClass {
     set_new_influences(ids: Set<number>, previous_value: number) {
         let current_ids = this.get_ids()
         this.ids = new Set([...ids].filter(x => current_ids.has(x)))
-        let new_value = useInfluenceStore().get_average_influence(this.ids)
+        let new_value = this.influence_object.get_average_influence(this.ids)
         this.score = new_value - previous_value
         this.value = new_value
     }
 
     get_name() {
-        return this.feature + " = " + useDataStore().instance[this.feature]
+        return this.feature + " = " + this.influence_object.instance[this.feature]
     }
 
     get_feature_names() {
@@ -330,7 +332,7 @@ export class Feature extends GroupClass {
     }
 
     get_feature_labels() {
-        return useDataStore().instance[this.feature]
+        return this.influence_object.instance[this.feature]
     }
 
     vis_group(crawler: any, isLast: boolean, isFirst: boolean, updater: any, level:number = 0) {
@@ -489,23 +491,32 @@ const add_zero_line = (crawler: any, isLast: boolean) => {
       .attr("stroke-width", 2)
 }
 
-export const useInfluenceStore = defineStore({
-    id: 'influence',
-    state: () => ({
-        groups: [] as Group[],
-        main_effects: {} as { [key: string]: { value: number, average: number, size: number } },
-        instance_subsets: {} as { [key: string]: Set<number> },
-        explanation_prediction: 0
+class Influence {
+    groups: Group[] = []
+    main_effects: { [key: string]: { value: number, average: number, size: number } } = {}
+    instance_subsets: { [key: string]: Set<number> } = {}
+    explanation_prediction: number = 0
+    instance: { [key: string]: number } = {}
 
-    }),
-    actions: {
+    constructor(instance: any = null) {
+        this.groups = []
+        this.main_effects = {}
+        this.instance_subsets = {}
+        this.explanation_prediction = 0
+        if (instance != null) {
+            this.instance = instance
+        }
+        else {
+            this.instance = useDataStore().instance
+        }
+    }
 
-        calculate_main_effects() {
+    calculate_main_effects() {
             const dataStore = useDataStore()
             const center = dataStore.data_summary.mean
             this.main_effects = {}
             for (let feature of dataStore.interacting_features) {
-                const instance_value = dataStore.instance[feature]
+                const instance_value = this.instance[feature]
                 const similar_instances = this.get_similar_instances(feature)
                 const sum = similar_instances.reduce((acc, d) => acc + d[dataStore.target_feature], 0)
                 const size = similar_instances.length
@@ -514,12 +525,12 @@ export const useInfluenceStore = defineStore({
                 const ids = similar_instances.map((d: any) => d.__id__)
                 this.instance_subsets[feature] = new Set(ids)
             }
-        },
+        }
 
         get_similar_instances(feature: string) {
             const dataStore = useDataStore()
             const featureStore = useFeatureStore()
-            const instance_value = dataStore.instance[feature]
+            const instance_value = this.instance[feature]
             const feature_type = featureStore.feature_types[feature]
             if (feature_type === "continuous") {
                 // get similar instances in some margin around the instance value
@@ -532,13 +543,13 @@ export const useInfluenceStore = defineStore({
             else {
                 return dataStore.data.filter((d) => d[feature] === instance_value)
             }
-        },
+        }
 
         calculate_interaction_effect(feature1: string, feature2: string) {
             const instance_subset = new Set([...this.instance_subsets[feature1]].filter(x => this.instance_subsets[feature2].has(x)))
             const average = this.get_average_influence(instance_subset)
             return Math.abs(average - this.main_effects[feature1].average - this.main_effects[feature2].average)
-        },
+        }
 
         calculate_groups() {
             const dataStore = useDataStore()
@@ -560,10 +571,10 @@ export const useInfluenceStore = defineStore({
                     if (isReduced) {
                         // get the feature with the highest main effect and only add it
                         let main_feature = correlated_features[0]
-                        main_players.push(new Feature(main_feature))
+                        main_players.push(new Feature(main_feature, this))
                     }
                     else {
-                        let group = new Group(correlated_features.map(f => new Feature(f)), "correlation")
+                        let group = new Group(correlated_features.map(f => new Feature(f, this)), "correlation", this)
                         main_players.push(group)
                     }
 
@@ -573,7 +584,7 @@ export const useInfluenceStore = defineStore({
 
             //then add the remaining features to main_players
             for (const feature of remaining_features) {
-                main_players.push(new Feature(feature))
+                main_players.push(new Feature(feature, this))
             }
 
             //sort main players by main effect
@@ -587,7 +598,7 @@ export const useInfluenceStore = defineStore({
                 // find main player with highest score. Conveniently, this is the first one as it is ordered
                 let main_player = main_players.shift() as Feature | Group
                 // make a new group with this main player
-                let group = new Group([main_player], "single")
+                let group = new Group([main_player], "single", this)
 
                 let interactions_present = true
                 while (interactions_present && main_players.length > 0) {
@@ -620,7 +631,7 @@ export const useInfluenceStore = defineStore({
             dataStore.shown_features = groups.map(g => g.get_features()).flat()
 
             return groups
-        },
+        }
 
         calculate_explanation_prediction() {
             let prediction = useDataStore().data_summary.mean
@@ -628,7 +639,7 @@ export const useInfluenceStore = defineStore({
                 prediction += group.get_score()
             }
             this.explanation_prediction = prediction
-        },
+        }
 
         calculate_influences() {
             useDataStore().storyIsVisible = true
@@ -636,17 +647,44 @@ export const useInfluenceStore = defineStore({
             this.groups = this.calculate_groups()
             this.calculate_explanation_prediction()
 
-        },
+        }
 
         get_average_influence(ids: Set<number>): number {
             let subset = useDataStore().data.filter((_, i) => ids.has(i))
             let average = subset.reduce((acc, d) => acc + d[useDataStore().target_feature], 0) / subset.length
             let center = useDataStore().data_summary.mean
             return average - center
-        },
+        }
 
         sort_by_main_effect(a: string, b: string) {
-            return Math.abs(useInfluenceStore().main_effects[b].average) - Math.abs(useInfluenceStore().main_effects[a].average)
+            return Math.abs(this.main_effects[b].average) - Math.abs(this.main_effects[a].average)
         }
+
+
+
+
+}
+
+export const useInfluenceStore = defineStore({
+    id: 'influence',
+    state: () => ({
+        influence: new Influence()
+    }),
+    actions: {
+        calculate_influences() {
+            this.influence = new Influence()
+            this.influence.calculate_influences()
+        },
+        get_average_influence(ids: Set<number>) {
+            return this.influence.get_average_influence(ids)
+        },
+
+        get_explanation_prediction(instance: { [key: string]: number }) {
+            let influence = new Influence(instance)
+            influence.calculate_influences()
+            return influence.explanation_prediction
+        }
+
+
     }
 })

@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia'
-import {Feature} from './influence_store.ts'
+import {Feature, useInfluenceStore} from './influence_store.ts'
 import {bin_continuous, bin_discrete, useFeatureStore} from "./feature_store.ts";
 import {useDataStore} from "./dataStore.ts";
 
@@ -7,6 +7,7 @@ export const useDetailStore = defineStore({
     id: 'detail',
     state: () => ({
         selected_feature: null as Feature | null,
+        change_impacts: [] as {x: number, impact: number}[]
 
     }),
     actions: {
@@ -90,6 +91,46 @@ export const useDetailStore = defineStore({
             vis_bins_formatted.sort((a, b) => +a.x - +b.x)
 
             return vis_bins_formatted
+
+        },
+
+        calculate_feature_change_impact_values() {
+
+            // first sample a range of values of the selected feature
+            let featureStore = useFeatureStore()
+            let dataStore = useDataStore()
+            let feature_name = this.selected_feature.get_feature_names()
+            let bins = featureStore.get_feature_bins(feature_name)
+            let type = featureStore.get_feature_type(feature_name)
+
+            // get one value per bin
+            let values = []
+            if (type == "continuous") {
+                for (let bin of bins as bin_continuous[]) {
+                    values.push((bin.min + bin.max) / 2)
+                }
+            }
+            else {
+                for (let bin of bins as bin_discrete[]) {
+                    values.push(bin.value)
+                }
+            }
+
+            // also sort values
+            values.sort((a, b) => +a - +b)
+
+            // calculate impact for each value
+            let influenceStore = useInfluenceStore()
+            let impacts = []
+            for (let value of values) {
+                let instance = JSON.parse(JSON.stringify(dataStore.instance))
+                instance[feature_name] = value
+                let impact = influenceStore.get_explanation_prediction(instance)
+                impact -= dataStore.data_summary.mean
+                impacts.push({"x": value, "impact": impact})
+            }
+
+            this.change_impacts = impacts
 
         }
 
