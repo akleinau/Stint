@@ -16,6 +16,12 @@ watch(() => dataStore.storyIsVisible, () => {
   update_vis()
 })
 
+// also watch dataStore.instance
+watch(() => dataStore.instance, () => {
+  influenceStore.calculate_influences()
+  update_vis(false, false)
+}, {deep:true})
+
 //refs
 const container = useTemplateRef('container')
 
@@ -32,7 +38,7 @@ watch(() => updater.value, () => {
   update_vis(false)
 })
 
-const update_vis = async (isSlow:boolean=true) => {
+const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
 
   d3.select(container.value).selectAll("*").remove()
 
@@ -89,12 +95,13 @@ const update_vis = async (isSlow:boolean=true) => {
   d3.select(container.value).node().append(svg.node())
 
   let crawler = {offset: 30, spacing_between_groups:spacing_between_groups, layers:layers,
-      spacing_inside_group:spacing_inside_group, scale:scale, svg:svg, bar_height:bar_height, isSlow:isSlow}
+      spacing_inside_group:spacing_inside_group, scale:scale, svg:svg, bar_height:bar_height, isSlow:isSlow,
+    areChangesSlow:areChangesSlow}
   for (let i = 0; i < influenceStore.groups.length; i++) {
     let group: Group = influenceStore.groups[i]
     group.vis_group(crawler, true, true, updater)
     crawler.offset += crawler.spacing_between_groups
-    if (isSlow) {
+    if (isSlow && !areChangesSlow) {
       await sleep(1000)
     }
 

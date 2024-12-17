@@ -32,7 +32,7 @@ watch(() => dataStore.shown_features, () => {
 
 // also watch dataStore.instance
 watch(() => dataStore.instance, () => {
-  dataStore.storyIsVisible = false
+  //dataStore.storyIsVisible = false
 }, {deep:true})
 
 const update = () => {

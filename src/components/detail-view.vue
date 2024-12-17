@@ -13,6 +13,18 @@ let detailStore = useDetailStore()
 
 const container = useTemplateRef('container')
 
+const min_feature_value = (feature_name: string) => {
+  return d3.min(dataStore.data.map(d => d[feature_name]))
+}
+
+const max_feature_value = (feature_name: string) => {
+  return d3.max(dataStore.data.map(d => d[feature_name]))
+}
+
+const get_name = () => {
+  return detailStore.selected_feature.get_feature_names()
+}
+
 // trigger update on detailStore.selected_feature change
 watch(() => detailStore.selected_feature, () => {
   console.log("update detail view")
@@ -27,6 +39,7 @@ watch(() => detailStore.selected_feature, () => {
       <div> {{ detailStore.selected_feature.get_name() }}</div>
       <div> subset size: {{ detailStore.selected_feature.get_size() }}</div>
       <DependencyVis />
+      <VSlider v-model="dataStore.instance[get_name()]" :min="min_feature_value(get_name())" :max="max_feature_value(get_name())" :step="1" />
     </div>
 
 

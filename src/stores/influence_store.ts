@@ -233,7 +233,7 @@ export class Group extends GroupClass {
             .style("cursor", "pointer")
 
         //optionally animate
-        if (crawler.isSlow || this.manual_slow) {
+        if ((crawler.isSlow || this.manual_slow) && !crawler.areChangesSlow) {
             rect.transition()
             .attr("height", crawler.bar_height)
 
@@ -352,7 +352,7 @@ export class Feature extends GroupClass {
             .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
 
         //optionally animate
-        if (crawler.isSlow || this.manual_slow) {
+        if ((crawler.isSlow || this.manual_slow) && !crawler.areChangesSlow) {
             rect.transition()
             .attr("height", crawler.bar_height)
             this.manual_slow = false
