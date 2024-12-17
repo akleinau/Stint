@@ -28,6 +28,15 @@ const get_name = () => {
 // trigger update on detailStore.selected_feature change
 watch(() => detailStore.selected_feature, () => {
   console.log("update detail view")
+
+  // create prediction visualization dependent on feature
+  // to calculate influences: influenceStore.calculate_influences()
+  // however, I need to first rewrite it that I can enter any instance, not just the current one
+  // then, I need to iterate through a selection of values for the selected feature, create an instance,
+  // calculate the influences, and store the resulting prediction
+  // to calculate the prediction: influenceStore.explanation_prediction
+  // which also has to be rewritten to accept any instance
+
 })
 
 </script>
@@ -35,11 +44,12 @@ watch(() => detailStore.selected_feature, () => {
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
     <h3 class="pt-5" v-if="influenceStore.groups.length>0 && dataStore.storyIsVisible ">Detail View</h3>
-    <div v-if="detailStore.selected_feature !== null">
+    <div v-if="detailStore.selected_feature !== null" class="d-flex flex-column justify-center">
       <div> {{ detailStore.selected_feature.get_name() }}</div>
       <div> subset size: {{ detailStore.selected_feature.get_size() }}</div>
       <DependencyVis />
       <VSlider v-model="dataStore.instance[get_name()]" :min="min_feature_value(get_name())" :max="max_feature_value(get_name())" :step="1" />
+      <v-btn @click="detailStore.selected_feature = null" >close</v-btn>
     </div>
 
 
