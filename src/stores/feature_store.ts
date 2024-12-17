@@ -88,8 +88,9 @@ export const useFeatureStore = defineStore({
                     })
 
                     //calculate mean
+                    let mean = useDataStore().data_summary.mean
                     for (let bin of bins) {
-                        bin.prediction_mean = bin.prediction_sum / bin.count
+                        bin.prediction_mean = bin.prediction_sum / bin.count - mean
                     }
 
                     this.feature_bins[feature] = bins
@@ -114,8 +115,9 @@ export const useFeatureStore = defineStore({
                     })
 
                     //calculate mean
+                    let mean = useDataStore().data_summary.mean
                     for (let bin of bins) {
-                        bin.prediction_mean = bin.prediction_sum / bin.count
+                        bin.prediction_mean = bin.prediction_sum / bin.count - mean
                     }
 
                     this.feature_bins[feature] = bins

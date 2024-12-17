@@ -77,7 +77,6 @@ const set_data = (data: any) => {
 
 const target_selected = (col: string) => {
   dataStore.target_feature = col
-  featureStore.set_features()
   dataStore.instance = JSON.parse(JSON.stringify(dataStore.data[instance_nr.value])) //makes sure there is always an instance selected
   dataStore.non_target_features = dataStore.feature_names.filter((f: string) => f !== col)
   let summary = {} as any
@@ -88,6 +87,8 @@ const target_selected = (col: string) => {
   summary.range = summary.max - summary.min
   dataStore.data_summary = summary
   //interacting_features_selected(dataStore.non_target_features)
+
+  featureStore.set_features()
 
 }
 

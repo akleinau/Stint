@@ -40,7 +40,7 @@ const update_vis = () => {
   const svg_width = 300
   const svg_height = 100
   const y_padding = 30
-  const rect_width = svg_width / vis_bins.length
+  const padding_sides = 40
 
   let svg = d3.create("svg")
       .attr("width", svg_width + 20)
@@ -50,13 +50,16 @@ const update_vis = () => {
   // create x-axis based on keys of vis_bins and set_vis_bins
   let min_x = d3.min(combined_bins.map(d => +d.x))
   let max_x = d3.max(combined_bins.map(d => +d.x))
-  console.log(min_x, max_x)
+
   let x = d3.scaleLinear()
       .domain([min_x,max_x])
-      .range([rect_width/2, svg_width-rect_width/2])
+      .range([padding_sides/2, svg_width-padding_sides/2])
+
+  let min_y = d3.min(combined_bins.map(d => +d.prediction))
+  let max_y = d3.max(combined_bins.map(d => +d.prediction))
 
   let y = d3.scaleLinear()
-      .domain([0, d3.max(vis_bins.map(d => d.prediction))])
+      .domain([min_y, max_y])
       .range([0, svg_height- y_padding])
 
   // add curve for vis_bins
@@ -89,6 +92,11 @@ const update_vis = () => {
   svg.append("g")
       .attr("transform", `translate(0, ${svg_height - y_padding})`)
       .call(d3.axisBottom(x))
+
+  // add y-axis
+  svg.append("g")
+      .attr("transform", `translate(${padding_sides/2}, 0)`)
+      .call(d3.axisLeft(y).ticks(2))
 
   // turn around whole svg 90 degrees
   //svg.attr("transform", "rotate(90)")
