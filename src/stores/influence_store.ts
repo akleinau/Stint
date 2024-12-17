@@ -396,8 +396,12 @@ const add_value_line = (crawler: any, d: any, isLast: boolean, group_elements: a
 
 const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: boolean) => {
 
-    let x_position = crawler.scale.value(d.value)
-    let padding = x_position  - crawler.scale.value(0) < 0 ? 5 : -5
+    let x_position = d.value
+    if ((d.value - d.score) < 0 && d.score > 0 || (d.value - d.score) > 0 && d.score < 0) {
+        x_position -= d.score
+    }
+
+    let padding =x_position < 0 ? 5 : -5
 
     let name = (!isFirst? "& ": "") + d.get_feature_names()
     if (name.length > 22) {
@@ -406,14 +410,14 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
 
     // add feature names
     group_elements.append("text")
-            .attr("x", x_position - padding)
+            .attr("x", crawler.scale.value(x_position) - padding)
             .attr("y", crawler.offset + crawler.bar_height / 2)
             .text(name)
             .attr("dy", ".4em")
             .attr("class", "text_feature_names" + crawler.offset)
             .style("font-size", "14px")
             .style("font-family", "Verdana")
-            .style("text-anchor", d.value < 0 ? "end": "start")
+            .style("text-anchor", x_position < 0 ? "end": "start")
             .style("fill", "grey")
             .style("pointer-events", "none")
 
@@ -426,14 +430,14 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
 
     // add feature values
     group_elements.append("text")
-        .attr("x", x_position + padding)
+        .attr("x", crawler.scale.value(x_position) + padding)
         .attr("y", crawler.offset + crawler.bar_height / 2)
         .text(value)
         .attr("dy", ".4em")
         .attr("class", "text_feature_names" + crawler.offset)
         .style("font-size", "14px")
         .style("font-family", "Verdana")
-        .style("text-anchor", d.value < 0 ? "start": "end")
+        .style("text-anchor", x_position < 0 ? "start": "end")
         .style("fill", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0) < 10 ? "black": "white")
         .style("pointer-events", "none")
 
