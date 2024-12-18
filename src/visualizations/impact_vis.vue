@@ -34,8 +34,8 @@ const update_vis = () => {
 
   let values = detailStore.change_impacts
 
-  const svg_width = 350
-  const svg_height = 100
+  const svg_width = 500
+  const svg_height = 120
   const y_padding = 30
   const padding_sides = 40
 
@@ -59,23 +59,6 @@ const update_vis = () => {
       .domain([min_y, max_y])
       .range([svg_height- y_padding, 0])
 
-  // color in area below zero in red
-  svg.append("rect")
-      .attr("x", x(min_x))
-      .attr("y", y(0))
-      .attr("width", x(max_x) - x(min_x))
-      .attr("height", Math.abs(y(0) - y(min_y)))
-      .attr("fill", "crimson")
-      .attr("opacity", 0.4)
-
-  // color in area above zero in blue
-  svg.append("rect")
-      .attr("x", x(min_x))
-      .attr("y", y(max_y))
-      .attr("width", x(max_x) - x(min_x))
-      .attr("height", Math.abs(y(0) - y(max_y)))
-      .attr("fill", "darkslateblue")
-      .attr("opacity", 0.4)
 
   // add horizontal zero impact line
   svg.append("line")
@@ -84,19 +67,51 @@ const update_vis = () => {
       .attr("x2", x(max_x))
       .attr("y2", y(0))
       .attr("stroke", "black")
-      .attr("stroke-width", 1)
+      .attr("stroke-width", 2)
+
+
+  // add area for vis_bins, color in red if below zero, blue if above zero
+  let area_below_zero = d3.area()
+      .x(d => x(d.x))
+      .y0(y(0))
+      .y1(d => y(d.impact < 0 ? d.impact : 0))
+  svg.append("path")
+      .datum(values)
+      .attr("d", area_below_zero)
+      .attr("fill", "crimson")
+
+  let area_above_zero = d3.area()
+      .x(d => x(d.x))
+      .y0(y(0))
+      .y1(d => y(d.impact > 0 ? d.impact : 0))
+  svg.append("path")
+      .datum(values)
+      .attr("d", area_above_zero)
+      .attr("fill", "darkslateblue")
 
   // add curve for vis_bins
   let line = d3.line()
       .x(d => x(d.x))
       .y(d => y(d.impact))
-  // add curve
   svg.append("path")
       .datum(values)
       .attr("fill", "none")
       .attr("stroke", "black")
-      .attr("stroke-width", 2)
+      .attr("stroke-width", 3)
       .attr("d", line)
+      .attr("opacity", 1)
+
+    // add line for instance value
+  svg.append("line")
+      .attr("x1", x(instance_value.value))
+      .attr("y1", 0)
+      .attr("x2", x(instance_value.value))
+      .attr("y2", svg_height)
+      .attr("stroke", "darkgrey")
+      .attr("stroke-width", 4)
+
+
+
 
   // add x-axis
   svg.append("g")
@@ -111,14 +126,6 @@ const update_vis = () => {
   // turn around whole svg 90 degrees
   //svg.attr("transform", "rotate(90)")
 
-  // add line for instance value
-  svg.append("line")
-      .attr("x1", x(instance_value.value))
-      .attr("y1", 0)
-      .attr("x2", x(instance_value.value))
-      .attr("y2", svg_height)
-      .attr("stroke", "teal")
-      .attr("stroke-width", 2)
 
 
 
