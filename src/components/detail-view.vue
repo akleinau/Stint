@@ -50,7 +50,7 @@ watch( () => dataStore.interacting_features, () => {
       <div> change {{detailStore.selected_feature.get_feature_names() }}: </div>
       <VSlider v-model="dataStore.instance[get_name()]" :min="min_feature_value(get_name())" :max="max_feature_value(get_name())" :step="1"
         width="460px"/>
-      <v-btn @click="detailStore.selected_feature = null" >close</v-btn>
+      <v-btn @click="detailStore.selected_feature = null" variant="outlined" >close</v-btn>
     </div>
 
 
