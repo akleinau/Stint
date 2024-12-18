@@ -64,17 +64,6 @@ const update_vis = async (isSlow:boolean=true) => {
     layers.push(svg.append("g"))
   }
 
-
-  // add axis and add a "+" in front of positive values
-  let axis = d3.axisTop(scale.value)
-      .tickFormat((d) => {
-        if (d > 0) {
-          return "+" + d
-        }
-        return d
-      })
-      .ticks(10)
-
   // add black vertical line at 0
   layers[2].append("line")
       .attr("x1", scale.value(0))
@@ -103,9 +92,9 @@ const update_vis = async (isSlow:boolean=true) => {
 
    // add text under the bar stating prediction value
     layers[1].append("text")
-        .attr("x", scale.value(prediction) + 5)
+        .attr("x", scale.value(prediction))
         .attr("y", padding_top + bar_height + padding_bar + text_height)
-        .text(prediction.toFixed(0))
+        .text( (prediction > 0 ? " +" : "") + prediction.toFixed(0))
         .style("font-size", "15px")
         .style("color", "#555555")
         .style("font-weight", "bold")
