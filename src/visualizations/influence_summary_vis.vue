@@ -54,7 +54,7 @@ const update_vis = async (isSlow:boolean=true) => {
       .attr("width", 800)
       .attr("height", height)
 
-  const range = get_subset_influence_range()
+  const range = dataStore.get_subset_influence_range()
   min.value = range[0]
   max.value = range[1]
   scale.value = d3.scaleLinear().domain([min.value, max.value]).range([100, 700])
@@ -114,19 +114,6 @@ const update_vis = async (isSlow:boolean=true) => {
 
   d3.select(container.value).node().append(svg.node())
 
-}
-
-const get_subset_influence_range = () => {
-  const min_subset_size = dataStore.get_min_subset_size()
-
-  // now get the smalles n values from dataStore.data
-  let data = dataStore.data.map(d => d[dataStore.target_feature])
-  let sorted_data = data.sort((a, b) => a - b)
-  let min_items = sorted_data.slice(0, min_subset_size)
-  let max_items = sorted_data.slice(-min_subset_size)
-  let min = d3.mean(min_items) - dataStore.data_summary.mean
-  let max = d3.mean(max_items) - dataStore.data_summary.mean
-  return [min, max]
 }
 
 </script>

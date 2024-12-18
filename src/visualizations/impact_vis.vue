@@ -37,7 +37,7 @@ const update_vis = () => {
   const svg_width = 500
   const svg_height = 120
   const y_padding = 30
-  const padding_sides = 40
+  const padding_sides = 45
 
   let svg = d3.create("svg")
       .attr("width", svg_width + 20)
@@ -52,8 +52,9 @@ const update_vis = () => {
       .domain([min_x,max_x])
       .range([padding_sides/2, svg_width-padding_sides/2])
 
-  let min_y = d3.min(values.map(d => +d.impact))
-  let max_y = d3.max(values.map(d => +d.impact))
+  const range = dataStore.get_subset_influence_range()
+  let min_y = range[0]
+  let max_y = range[1]
 
   let y = d3.scaleLinear()
       .domain([min_y, max_y])
@@ -121,7 +122,14 @@ const update_vis = () => {
   // add y-axis
   svg.append("g")
       .attr("transform", `translate(${padding_sides/2}, 0)`)
-      .call(d3.axisLeft(y).ticks(2))
+      .call(d3.axisLeft(y)
+          .tickFormat((d) => {
+            if (d > 0) {
+              return "+" + d
+            }
+            return d
+          })
+          .ticks(5))
 
   // turn around whole svg 90 degrees
   //svg.attr("transform", "rotate(90)")
