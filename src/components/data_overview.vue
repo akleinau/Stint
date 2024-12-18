@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import {useDataStore} from "../stores/dataStore.ts";
+import {useFeatureStore} from "../stores/feature_store.ts";
 
 const dataStore = useDataStore()
+const featureStore = useFeatureStore()
 
 
 import AbnormalVis from "../visualizations/abnormal-vis.vue";
@@ -56,6 +58,14 @@ const update = () => {
   }
 }
 
+const get_bin_percent = (feature: string) => {
+  const dataset_size = dataStore.data.length
+  const bins = featureStore.get_feature_bins(feature)
+  const bin_nr = featureStore.get_instance_bin_index(feature, dataStore.instance[feature])
+  const bin_size = bins[bin_nr].count
+  return ((bin_size / dataset_size) * 100).toFixed(0) + "%"
+}
+
 </script>
 
 <template>
@@ -86,15 +96,17 @@ const update = () => {
 
     <!-- focus features -->
     <div v-for="key in focus_features">
-      <div class="d-flex justify-center">
-        <div class="d-flex mt-2 justify-end" style="width:150px"> {{ key }} = {{ dataStore.instance[key] }}</div>
-        <AbnormalVis :feature_name="key"/>
-        <v-btn @click="toggle_details(key)" density="compact"
-               :icon="show_details == key? 'mdi-chevron-up' :'mdi-chevron-down'"> </v-btn>
+      <div class="d-flex justify-center mb-3 align-center">
+         <v-chip @click="toggle_details(key)" :variant="show_details == key? 'outlined' : 'tonal' "
+              style="color:darkred">
+          {{key}} = {{dataStore.instance[key]}}
+        </v-chip>
+        <div class="ml-2"> only {{get_bin_percent(key)}} of instances </div>
+
       </div>
 
       <!-- detailed view -->
-      <DetailedFeatureView v-if="show_details == key" :feature="key" :show_abnormal="false"/>
+      <DetailedFeatureView v-if="show_details == key" :feature="key" :show_abnormal="true"/>
 
 
     </div>
