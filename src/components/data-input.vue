@@ -108,6 +108,7 @@ const dataset_toggled = (_:any) => {
 const interacting_features_selected = (cols: string[]) => {
   dataStore.interacting_features = cols
   dataStore.calculate_correlations()
+  dataStore.storyIsVisible = false
 }
 
 </script>

@@ -5,10 +5,12 @@ import OpenEnded from './components/open-ended.vue'
 import DataOverview from './components/data_overview.vue'
 import {useDataStore} from "./stores/dataStore.ts";
 import {useInfluenceStore} from "./stores/influence_store.ts";
+import {useDetailStore} from "./stores/detail_store.ts";
 import DetailView from "./components/detail-view.vue";
 
 const dataStore = useDataStore()
 const influenceStore = useInfluenceStore()
+const detailStore = useDetailStore()
 
 const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -57,7 +59,6 @@ const explain = async () => {
         <DataInput/>
 
       </v-card-text>
-
     </v-card>
 
     <div v-if="dataStore.interacting_features.length !== 0"
@@ -65,14 +66,28 @@ const explain = async () => {
       <v-btn @click="explain" class="bg-blue">Explain</v-btn>
     </div>
 
-    <v-card class="h-100" style="margin:auto; width:900px" v-show="dataStore.storyIsVisible" id="storyCard">
+    <v-card class="h-100 mb-5" style="margin:auto; width:900px" v-show="dataStore.storyIsVisible" id="storyCard">
       <v-card-text>
 
         <DataOverview/>
-        <VisStory/>
-        <DetailView/>
-      </v-card-text>
 
+      </v-card-text>
+    </v-card>
+
+    <v-card class="h-100 mb-5" style="margin:auto; width:900px" v-show="dataStore.storyIsVisible" id="storyCard">
+      <v-card-text>
+
+        <VisStory/>
+
+      </v-card-text>
+    </v-card>
+
+      <v-card class="h-100" style="margin:auto; width:900px" v-show="dataStore.storyIsVisible && detailStore.selected_feature !== null" id="storyCard">
+      <v-card-text>
+
+        <DetailView/>
+
+      </v-card-text>
     </v-card>
 
       <div v-if="dataStore.interacting_features.length !== 0"

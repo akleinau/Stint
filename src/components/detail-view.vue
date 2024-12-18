@@ -39,21 +39,33 @@ watch( () => dataStore.interacting_features, () => {
 
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center" v-if="detailStore.selected_feature != null">
-    <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
+     <div class="w-100 d-flex justify-end align-right align-content-end align-end">
+       <v-btn @click="detailStore.selected_feature = null" variant="text" prepend-icon="mdi-close" >close</v-btn>
+    </div>
+
+
+    <h3 v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
       Your selected feature: {{ detailStore.selected_feature.get_feature_names() }}
     </h3>
     <div v-if="detailStore.selected_feature !== null" class="d-flex flex-column align-center justify-center"  style="font-size:15px">
       <div> {{ detailStore.selected_feature.get_name() }} </div>
       <div> subset size: {{ detailStore.selected_feature.get_size() }}</div>
-      <i class="mt-2"> influence on final result: </i>
+      <h3 class="mt-2"> ... combined influence per hour: </h3>
       <ImpactVis />
-      <div> change {{detailStore.selected_feature.get_feature_names() }}: </div>
+      <div> {{detailStore.selected_feature.get_feature_names() }} </div>
       <VSlider v-model="dataStore.instance[get_name()]" :min="min_feature_value(get_name())" :max="max_feature_value(get_name())" :step="1"
         width="460px"/>
-      <v-btn @click="detailStore.selected_feature = null" variant="outlined" >close</v-btn>
+
+
+
+
     </div>
 
-
+    <!-- hint -->
+    <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-3">
+      <v-icon class="mr-1">mdi-cursor-default-click-outline</v-icon>
+      <i> move the slider to see how the combined influence changes per {{detailStore.selected_feature.get_feature_names() }}! </i>
+    </div>
 
 
   </div>

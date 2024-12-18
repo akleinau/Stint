@@ -30,6 +30,12 @@ watch(() => dataStore.instance, () => {
     </h3>
     <InfluenceSummaryVis />
 
+    <!-- hint -->
+    <div class="w-100 d-flex justify-end align-right align-content-end align-end">
+      <v-icon class="mr-1">mdi-cursor-default-click-outline </v-icon>
+      <i> click on one of the features to learn more about it! </i>
+    </div>
+
   </div>
 </template>
 
