@@ -31,6 +31,10 @@ watch(() => detailStore.selected_feature, () => {
   console.log("update detail view")
 })
 
+watch( () => dataStore.interacting_features, () => {
+  detailStore.selected_feature = null
+})
+
 </script>
 
 <template>
@@ -41,7 +45,7 @@ watch(() => detailStore.selected_feature, () => {
     <div v-if="detailStore.selected_feature !== null" class="d-flex flex-column align-center justify-center"  style="font-size:15px">
       <div> {{ detailStore.selected_feature.get_name() }} </div>
       <div> subset size: {{ detailStore.selected_feature.get_size() }}</div>
-      <i class="mt-2"> combined influence per {{detailStore.selected_feature.get_feature_names() }}: </i>
+      <i class="mt-2"> influence on final result: </i>
       <ImpactVis />
       <div> change {{detailStore.selected_feature.get_feature_names() }}: </div>
       <VSlider v-model="dataStore.instance[get_name()]" :min="min_feature_value(get_name())" :max="max_feature_value(get_name())" :step="1"

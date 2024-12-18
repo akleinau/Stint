@@ -89,7 +89,7 @@ const update_vis = async (isSlow:boolean=true) => {
             .attr("x", prediction < 0 ? scale.value(prediction) : scale.value(0))
             .attr("y", padding_top + padding_bar)
             .attr("width", scale.value(Math.abs(prediction)) - scale.value(0))
-            .attr("fill", prediction < 0 ? "crimson" : "darkslateblue")
+            .attr("fill", prediction < 0 ? "#ffadb6" : "#a6cff4")
             .style("cursor", "pointer")
 
         //optionally animate

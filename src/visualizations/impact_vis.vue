@@ -79,7 +79,7 @@ const update_vis = () => {
   svg.append("path")
       .datum(values)
       .attr("d", area_below_zero)
-      .attr("fill", "crimson")
+      .attr("fill", "#ffadb6")
 
   let area_above_zero = d3.area()
       .x(d => x(d.x))
@@ -88,7 +88,7 @@ const update_vis = () => {
   svg.append("path")
       .datum(values)
       .attr("d", area_above_zero)
-      .attr("fill", "darkslateblue")
+      .attr("fill", "#a6cff4")
 
   // add curve for vis_bins
   let line = d3.line()
