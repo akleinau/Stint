@@ -134,7 +134,6 @@ const update_vis = () => {
 
 <template>
   <div class="d-flex justify-center ml-15">
-    <span class="text-grey-darken-1">Distribution: </span>
     <div  ref="container"></div>
   </div>
 </template>

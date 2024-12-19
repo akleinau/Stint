@@ -7,6 +7,7 @@ import {useDataStore} from "./stores/dataStore.ts";
 import {useInfluenceStore} from "./stores/influence_store.ts";
 import {useDetailStore} from "./stores/detail_store.ts";
 import DetailView from "./components/detail-view.vue";
+import DetailedFeatureView from "./components/detailed_feature_view.vue";
 
 const dataStore = useDataStore()
 const influenceStore = useInfluenceStore()
@@ -48,7 +49,7 @@ const explain = async () => {
 
 <template>
   <div id="app">
-    <v-card class="mt-5 h-100 mb-2" style="margin:auto; width:900px">
+    <v-card class="mt-5 h-100 mb-2">
       <v-card-item>
         <v-card-title class="d-flex flex-column align-center">
           <h1 class="mt-5">STINT - Stories about Interactions</h1>
@@ -66,7 +67,7 @@ const explain = async () => {
       <v-btn @click="explain" class="bg-blue">Explain</v-btn>
     </div>
 
-    <v-card class="h-100 mb-5" style="margin:auto; width:900px" v-show="dataStore.storyIsVisible" id="storyCard">
+    <v-card class="h-100 mb-5" v-show="dataStore.storyIsVisible" id="storyCard">
       <v-card-text>
 
         <DataOverview/>
@@ -74,7 +75,15 @@ const explain = async () => {
       </v-card-text>
     </v-card>
 
-    <v-card class="h-100 mb-5" style="margin:auto; width:900px" v-show="dataStore.storyIsVisible" id="storyCard">
+    <v-card class="h-100 mb-5 detailCard" v-show="dataStore.storyIsVisible && dataStore.selected_feature != null">
+      <v-card-text class="d-flex flex-column align-center">
+
+        <DetailedFeatureView :feature="dataStore.selected_feature" :show_abnormal="true"/>
+
+      </v-card-text>
+    </v-card>
+
+    <v-card class="h-100 mb-5" v-show="dataStore.storyIsVisible" id="storyCard">
       <v-card-text>
 
         <VisStory/>
@@ -82,7 +91,7 @@ const explain = async () => {
       </v-card-text>
     </v-card>
 
-      <v-card class="h-100" style="margin:auto; width:900px" v-show="dataStore.storyIsVisible && detailStore.selected_feature !== null" id="storyCard">
+      <v-card class="h-100 detailCard" v-show="dataStore.storyIsVisible && detailStore.selected_feature !== null" id="storyCard">
       <v-card-text>
 
         <DetailView/>
@@ -112,8 +121,14 @@ html, body {
   background-color: #384f54;
 }
 
-#actions {
+.detailCard {
+  border-left: 20px solid darkgrey !important;
+  border-right: 20px solid darkgrey !important;
+}
 
+.v-card {
+  margin:auto !important;
+  width:900px !important
 }
 
 </style>

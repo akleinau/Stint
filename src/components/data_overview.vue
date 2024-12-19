@@ -16,11 +16,11 @@ let background_features = ref<string[]>([])
 let focus_features = ref<string[]>([])
 
 const toggle_details = (key: string) => {
-  show_details.value = show_details.value === key ? "" : key
+  dataStore.selected_feature = dataStore.selected_feature === key ? null : key
 }
 
 const toggle_details_background = (key: string) => {
-  show_details_background.value = show_details_background.value === key ? "" : key
+  dataStore.selected_feature = dataStore.selected_feature === key ? null : key
 }
 
 //watch dataStore.interacting_features
@@ -83,12 +83,6 @@ const get_bin_percent = (feature: string) => {
         </v-chip>
       </div>
     </div>
-    <div v-if="show_details_background !== ''">
-      <DetailedFeatureView :feature="show_details_background" :show_abnormal="true"/>
-      <div class="d-flex justify-center mb-5">
-        <v-btn @click="toggle_details_background('')" density="compact" icon="mdi-chevron-up" variant="tonal"></v-btn>
-      </div>
-    </div>
 
     <div v-if="focus_features.length > 0" class="d-flex justify-center mb-5">
       <i style="font-size:15px; color:darkred"> some of them are unusual...</i>
@@ -104,10 +98,6 @@ const get_bin_percent = (feature: string) => {
         <div class="ml-2"> only {{get_bin_percent(key)}} of instances </div>
 
       </div>
-
-      <!-- detailed view -->
-      <DetailedFeatureView v-if="show_details == key" :feature="key" :show_abnormal="true"/>
-
 
     </div>
 

@@ -18,6 +18,7 @@ export const useDataStore = defineStore({
         shown_features: [] as string[],
         instance: {} as { [key: string]: number },
         storyIsVisible: false,
+        selected_feature: null as string | null,
         correlations: {} as { [key: string]: CorrelationMap}, // feature name -> CorrelationMap
         feature_abnormality: {} as { [key: string]: number } // feature name -> abnormality value
     }),

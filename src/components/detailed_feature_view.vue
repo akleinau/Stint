@@ -16,24 +16,34 @@ const hasCorrelations = (key: string) => {
 </script>
 
 <template>
-      <div class="mb-2 bg-grey-lighten-4 mx-5">
-        <v-divider class="mb-2"></v-divider>
-        <div class="d-flex justify-center" v-if="props.show_abnormal">
-          <div class="d-flex mt-2 justify-end" style="width:150px"> {{ props.feature }} = {{ dataStore.instance[props.feature] }}</div>
-          <AbnormalVis  :feature_name="props.feature"/>
-        </div>
-        <DistributionVis :feature_name="props.feature"/>
-        <div  class="d-flex mb-2 justify-center">
-          <span v-if="hasCorrelations(props.feature)" class="text-grey-darken-1">Correlations: </span>
-          <span v-else>(No correlations)</span>
-          <span v-for="(corr, other_feature) in dataStore.correlations[props.feature]">
+
+
+  <div class="mb-2 mx-5 d-flex flex-column justify-center align-center w-100" v-if="dataStore.selected_feature != null">
+
+    <div class="w-100 d-flex justify-end align-right align-content-end align-end">
+      <v-btn @click="dataStore.selected_feature = null" variant="text" prepend-icon="mdi-close">close</v-btn>
+    </div>
+
+    <h3 class="mb-2"> The selected feature: {{ props.feature }} =
+        {{ dataStore.instance[props.feature] }} </h3>
+
+    <div class="d-flex justify-center" v-if="props.show_abnormal">
+      <AbnormalVis :feature_name="props.feature"/>
+    </div>
+    <div class="mb-2" style="font-size:16px"> It has the following value distribution: </div>
+    <DistributionVis :feature_name="props.feature"/>
+    <div class="mb-2"  style="font-size:16px"> It has the following correlations with other features: </div>
+    <div class="d-flex mb-2 justify-center">
+      <span v-if="hasCorrelations(props.feature)" class="text-grey-darken-1">Correlations: </span>
+      <span v-else>(No correlations)</span>
+      <span v-for="(corr, other_feature) in dataStore.correlations[props.feature]">
             <v-chip class="mx-2" v-if="Math.abs(corr) > 0.2" variant="outlined">
               {{ other_feature }}: {{ corr.toFixed(2) }}
             </v-chip>
           </span>
-        </div>
-        <v-divider></v-divider>
-      </div>
+    </div>
+
+  </div>
 </template>
 
 <style scoped>

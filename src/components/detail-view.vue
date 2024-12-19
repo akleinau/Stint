@@ -45,7 +45,7 @@ watch( () => dataStore.interacting_features, () => {
 
 
     <h3 v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      Your selected feature: {{ detailStore.selected_feature.get_feature_names() }}
+      The selected feature: {{ detailStore.selected_feature.get_feature_names() }}
     </h3>
     <div v-if="detailStore.selected_feature !== null" class="d-flex flex-column align-center justify-center"  style="font-size:16px">
       <div> {{ detailStore.selected_feature.get_name() }} </div>
