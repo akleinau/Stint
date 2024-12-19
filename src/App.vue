@@ -67,23 +67,30 @@ const explain = async () => {
       <v-btn @click="explain" class="bg-blue">Explain</v-btn>
     </div>
 
-    <v-card class="h-100 mb-5" v-show="dataStore.storyIsVisible" id="storyCard">
+    <v-card class="h-100 mb-5" v-show="dataStore.storyIsVisible">
       <v-card-text>
 
         <DataOverview/>
 
       </v-card-text>
+
     </v-card>
 
     <v-card class="h-100 mb-5 detailCard" v-show="dataStore.storyIsVisible && dataStore.selected_feature != null">
+
       <v-card-text class="d-flex flex-column align-center">
 
         <DetailedFeatureView :feature="dataStore.selected_feature" :show_abnormal="true"/>
 
       </v-card-text>
+
+      <v-card-actions class="bg-grey-lighten-2 justify-center">
+          <v-btn class="w-100" @click="dataStore.selected_feature = null" variant="text" prepend-icon="mdi-close">close</v-btn>
+      </v-card-actions>
     </v-card>
 
     <v-card class="h-100 mb-5" v-show="dataStore.storyIsVisible" id="storyCard">
+
       <v-card-text>
 
         <VisStory/>
@@ -91,12 +98,19 @@ const explain = async () => {
       </v-card-text>
     </v-card>
 
-      <v-card class="h-100 detailCard" v-show="dataStore.storyIsVisible && detailStore.selected_feature !== null" id="storyCard">
+      <v-card class="h-100 detailCard" v-if="dataStore.storyIsVisible && detailStore.selected_feature !== null">
+
+
       <v-card-text>
 
         <DetailView/>
 
       </v-card-text>
+
+      <v-card-actions class="bg-grey-lighten-2 justify-center">
+          <v-btn class="w-100" @click="detailStore.selected_feature = null" variant="text" prepend-icon="mdi-close">close</v-btn>
+      </v-card-actions>
+
     </v-card>
 
       <div v-if="dataStore.interacting_features.length !== 0"
@@ -122,13 +136,16 @@ html, body {
 }
 
 .detailCard {
-  border-left: 20px solid darkgrey !important;
-  border-right: 20px solid darkgrey !important;
+
 }
 
 .v-card {
   margin:auto !important;
   width:900px !important
+}
+
+h3 {
+  font-size:18px
 }
 
 </style>

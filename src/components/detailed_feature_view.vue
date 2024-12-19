@@ -20,9 +20,6 @@ const hasCorrelations = (key: string) => {
 
   <div class="mb-2 mx-5 d-flex flex-column justify-center align-center w-100" v-if="dataStore.selected_feature != null">
 
-    <div class="w-100 d-flex justify-end align-right align-content-end align-end">
-      <v-btn @click="dataStore.selected_feature = null" variant="text" prepend-icon="mdi-close">close</v-btn>
-    </div>
 
     <h3 class="mb-2"> The selected feature: {{ props.feature }} =
         {{ dataStore.instance[props.feature] }} </h3>

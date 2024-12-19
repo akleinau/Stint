@@ -85,7 +85,7 @@ const get_bin_percent = (feature: string) => {
     </div>
 
     <div v-if="focus_features.length > 0" class="d-flex justify-center mb-5">
-      <i style="font-size:15px; color:darkred"> some of them are unusual...</i>
+      <i style="font-size:16px; color:darkred"> some of them are unusual...</i>
     </div>
 
     <!-- focus features -->

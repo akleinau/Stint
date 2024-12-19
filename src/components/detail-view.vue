@@ -39,10 +39,6 @@ watch( () => dataStore.interacting_features, () => {
 
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center" v-if="detailStore.selected_feature != null">
-     <div class="w-100 d-flex justify-end align-right align-content-end align-end">
-       <v-btn @click="detailStore.selected_feature = null" variant="text" prepend-icon="mdi-close" >close</v-btn>
-    </div>
-
 
     <h3 v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
       The selected feature: {{ detailStore.selected_feature.get_feature_names() }}
