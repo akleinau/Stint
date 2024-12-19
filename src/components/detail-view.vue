@@ -47,10 +47,11 @@ watch( () => dataStore.interacting_features, () => {
     <h3 v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
       Your selected feature: {{ detailStore.selected_feature.get_feature_names() }}
     </h3>
-    <div v-if="detailStore.selected_feature !== null" class="d-flex flex-column align-center justify-center"  style="font-size:15px">
+    <div v-if="detailStore.selected_feature !== null" class="d-flex flex-column align-center justify-center"  style="font-size:16px">
       <div> {{ detailStore.selected_feature.get_name() }} </div>
-      <div> subset size: {{ detailStore.selected_feature.get_size() }}</div>
-      <h3 class="mt-2"> ... combined influence per hour: </h3>
+      <div class="mt-3" style="font-size:16px">
+        How do different values of {{ detailStore.selected_feature.get_feature_names() }} impact the combined influence?
+      </div>
       <ImpactVis />
       <div> {{detailStore.selected_feature.get_feature_names() }} </div>
       <VSlider v-model="dataStore.instance[get_name()]" :min="min_feature_value(get_name())" :max="max_feature_value(get_name())" :step="1"
@@ -63,8 +64,8 @@ watch( () => dataStore.interacting_features, () => {
 
     <!-- hint -->
     <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-3">
-      <v-icon class="mr-1">mdi-cursor-default-click-outline</v-icon>
-      <i> move the slider to see how the combined influence changes per {{detailStore.selected_feature.get_feature_names() }}! </i>
+      <v-icon class="mr-1">mdi-arrow-left-right</v-icon>
+      <i> move the slider to change the value of {{detailStore.selected_feature.get_feature_names() }}! </i>
     </div>
 
 
