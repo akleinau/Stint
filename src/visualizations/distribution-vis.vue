@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as d3 from "d3";
-import {useTemplateRef, onMounted, ref} from 'vue'
+import {useTemplateRef, onMounted, ref, watch} from 'vue'
 import {useFeatureStore} from "../stores/feature_store.ts";
 import {useDataStore} from "../stores/dataStore.ts";
 
@@ -15,6 +15,11 @@ let instance_value = ref(0)
 const props = defineProps(['feature_name'])
 
 onMounted(() => {
+  instance_value.value = dataStore.instance[props.feature_name]
+  update_vis()
+})
+
+watch(() => props.feature_name, () => {
   instance_value.value = dataStore.instance[props.feature_name]
   update_vis()
 })
@@ -34,16 +39,36 @@ const update_vis = () => {
   const max_count = d3.max(bins.map(d => d.count))
   const feature_min = d3.min(bins.map(d => 'value' in d ? +(d.value as number) : 'min' in d? +(d.min as number) : 0))
   const feature_max = d3.max(bins.map(d => 'value' in d ? +(d.value as number)  : 'max' in d? +(d.max as number) : 0))
-  const color = d3.scaleLinear()
+
+  const max_rect_height = 30
+  const y = d3.scaleLinear()
       .domain([0, max_count])
-      .range(["white", "black"])
+      .range([0, max_rect_height])
 
   const rect_width = svg_width / bins.length
-  const rect_height = 30
+
 
   const x = d3.scaleLinear()
       .domain([feature_min, feature_max])
       .range([rect_width/2, svg_width-rect_width/2])
+
+  // add x-axis with padding
+  const xAxis = d3.axisBottom(x)
+
+  if (bins.length <= 4) {
+    xAxis.tickValues(bins.map(d => 'value' in d? d.value : 1))
+  }
+  else {
+    xAxis.tickValues([feature_min, feature_max])
+  }
+
+  let axis = svg.append("g")
+      .attr("transform", "translate(0, " + max_rect_height + ")")
+      .style("font-size", "12px")
+      .style("color", "grey")
+      .call(xAxis)
+  axis.selectAll(".domain, line") //remove the axis line
+      .remove()
 
 
   //add rectangles with text
@@ -55,20 +80,21 @@ const update_vis = () => {
         .attr("x", (d :any) => d.min == undefined ? x(d.value) - rect_width/2 : x(d.min))
       .attr("y", 5)
       .attr("width", rect_width)
-      .attr("height", rect_height)
+      .attr("height", d => y(d.count))
+
+  // add rectangles with size based on count, going upwards
   bin_elements
       .append("rect")
       .attr("x", (d :any) => d.min == undefined ? x(d.value) - rect_width/2 : x(d.min))
-      .attr("y", 5)
+      .attr("y", (d :any) => max_rect_height - y(d.count))
       .attr("width", rect_width)
-      .attr("height", rect_height)
-      .attr("fill", (d :any) => color(d.count))
-      .attr("stroke", "white")
-      .attr("stroke-width", 1)
+      .attr("height", (d :any) => y(d.count))
+      .attr("fill", d => (d.min == undefined ? d.value : d.min) == instance_value.value ? "grey" : "darkgrey")
+
   bin_elements
       .append("text")
       .attr("x", (d :any) => x(d.min == undefined ? d.value : d.min))
-      .attr("y", rect_height/2)
+      .attr("y", max_rect_height - 15)
       .attr("dy", "0.4em")
       .attr("text-anchor", "middle")
       .attr("alignment-baseline", "middle")
@@ -79,8 +105,7 @@ const update_vis = () => {
       .append("text")
       .text((d :any) => d.min == undefined ? d.value : d.min + " - " + d.max)
       .attr("x", (d :any) => x(d.min == undefined ? d.value : d.min))
-      .attr("y", rect_height + 10)
-      .attr("dy", "0.4em")
+      .attr("y", max_rect_height + 14)
       .attr("text-anchor", "middle")
       .attr("alignment-baseline", "middle")
       .attr("fill", "black")
@@ -97,32 +122,6 @@ const update_vis = () => {
             .style("opacity", "0")
       })
 
-  // add x-axis with padding
-  const xAxis = d3.axisBottom(x)
-
-  if (bins.length <= 4) {
-    xAxis.tickValues(bins.map(d => 'value' in d? d.value : 1))
-  }
-  else {
-    xAxis.tickValues([feature_min, feature_max])
-  }
-
-  let axis = svg.append("g")
-      .attr("transform", "translate(0, " + (rect_height) + ")")
-      .style("font-size", "12px")
-      .style("color", "grey")
-      .call(xAxis)
-  axis.selectAll(".domain, line") //remove the axis line
-      .remove()
-
-  // add a line for the instance value
-  svg.append("line")
-      .attr("x1", x(instance_value.value))
-      .attr("y1", 0)
-      .attr("x2", x(instance_value.value))
-      .attr("y2", rect_height+10)
-      .attr("stroke", "seagreen")
-      .attr("stroke-width", 4)
 
 
   d3.select(container.value).selectAll("*").remove()

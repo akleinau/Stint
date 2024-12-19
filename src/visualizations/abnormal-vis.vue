@@ -31,8 +31,8 @@ const update_vis = () => {
 
   let svg = d3.create("svg")
       .attr("width", svg_width + 20)
-      .attr("height", 60)
-      .attr("viewBox",[-10, 0, svg_width + 20, 60])
+      .attr("height", 50)
+      .attr("viewBox",[-10, 0, svg_width + 20, 50])
 
   let abnormal_xaxis = d3.scaleLinear()
       .domain([1, 0])

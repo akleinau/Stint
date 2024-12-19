@@ -80,7 +80,7 @@ const explain = async () => {
 
       <v-card-text class="d-flex flex-column align-center">
 
-        <DetailedFeatureView :feature="dataStore.selected_feature" :show_abnormal="true"/>
+        <DetailedFeatureView :feature="dataStore.selected_feature" :show_abnormal="false"/>
 
       </v-card-text>
 
