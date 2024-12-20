@@ -25,13 +25,7 @@ watch(() => dataStore.instance, () => {
       How do they influence {{dataStore.target_feature}}?
     </h3>
     <InfluenceVis />
-    <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      ... resulting in a combined influence of:
-    </h3>
     <InfluenceSummaryVis />
-    <div class="mb-4" style="font-size:16px">
-      compared to the average value of {{dataStore.target_feature}}.
-    </div>
 
     <!-- hint -->
     <div class="w-100 d-flex justify-end align-right align-content-end align-end">

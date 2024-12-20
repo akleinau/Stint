@@ -33,6 +33,7 @@ const padding_bar = 10
 const text_height = 20
 
 const updater = ref(0)
+let prediction = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
 
 watch(() => updater.value, () => {
   update_vis(false)
@@ -105,11 +106,46 @@ const update_vis = async (isSlow:boolean=true) => {
 
 }
 
+const get_prediction_change_text = () => {
+  const prediction = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
+  if (prediction < 0) {
+    return "reducing"
+  }
+  else {
+    return "increasing"
+  }
+}
+
+const get_prediction_text = () => {
+  return Math.abs(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean).toFixed(0)
+}
+
+const get_influence_sign_text = () => {
+  const influence = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
+  if (influence > 0) {
+    return "positive"
+  }
+  else if (influence < 0) {
+    return "negative"
+  }
+  else {
+    return "neutral"
+  }
+}
+
 </script>
 
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
+    <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
+      ... their combined influence is {{get_influence_sign_text()}}:
+    </h3>
     <div ref="container" class="px-5"/>
+    <div class="mb-4" style="font-size:16px">
+      {{ get_prediction_change_text() }} the value of {{ dataStore.target_feature }} by {{ get_prediction_text() }}
+      compared
+      to its average.
+    </div>
     <div v-if="false">
       Prediction: {{dataStore.instance[dataStore.target_feature] - dataStore.data_summary.mean}}
       Explanation: {{influenceStore.influence.explanation_prediction  - dataStore.data_summary.mean}}

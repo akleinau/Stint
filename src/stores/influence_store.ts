@@ -667,6 +667,27 @@ class Influence {
             return Math.abs(this.main_effects[b].average) - Math.abs(this.main_effects[a].average)
         }
 
+        get_textual_summary() {
+            // get the two most important groups and state if they are positive or negative
+            let text = ""
+            let group = this.groups[0]
+            if (group != null) {
+                text += "The strongest influence is "
+                text += group.get_score() > 0 ? "positive" : "negative"
+                text += " and comes from "
+                text += group.get_nr_features() == 1 ? group.get_name() :
+                    "the interaction of: " + group.get_name()
+                text += ". "
+            }
+            group = this.groups[1]
+            if (group != null) {
+                text += "The second most important group is (" + group.get_name() + "), which has a "
+                text += group.get_score() > 0 ? "positive" : "negative"
+                text += " influence on the prediction. "
+            }
+            return text
+        }
+
 
 
 
@@ -690,6 +711,10 @@ export const useInfluenceStore = defineStore({
             let influence = new Influence(instance)
             influence.calculate_influences()
             return influence.explanation_prediction
+        },
+
+        get_textual_summary() {
+            return this.influence.get_textual_summary()
         }
 
 
