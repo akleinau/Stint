@@ -378,6 +378,33 @@ export class Feature extends GroupClass {
        else {
             rect.attr("height", crawler.bar_height)
         }
+
+       // add transparent boundary box for feature selection
+        group_elements.append("rect")
+           .on("click", () => {
+                if (this.parent != null) {
+                    this.parent.isFreezedOpen = !this.parent.isFreezedOpen
+                    console.log("freeze " + this.parent.isFreezedOpen)
+                    useDetailStore().selected_feature = this
+                    updater.value += 1
+                }
+            })
+            .on("mouseenter", (event: any, _: any) => {
+                d3.select(event.target.parentNode).selectAll(".details")
+                    .style("opacity", 1)
+            })
+            .on("mouseout", (event: any, _: any) => {
+                d3.select(event.target.parentNode).selectAll(".details")
+                    .style("opacity", "0")
+            })
+            .style("cursor", this.parent != null ? "pointer" : "default")
+            .attr("x",0)
+            .attr("y", crawler.offset)
+            .attr("width", 10000)
+            .attr("height", crawler.bar_height)
+            .attr("fill", "black")
+            .attr("opacity", 0.0)
+
     }
 
 }
@@ -534,7 +561,7 @@ class Influence {
             const feature_type = featureStore.feature_types[feature]
             if (feature_type === "continuous") {
                 // get similar instances in some margin around the instance value
-                const margin = dataStore.data_summary.std * 0.2
+                const margin = d3.deviation(dataStore.data.map(d => d[feature])) * 0.2
                 const min = instance_value - margin
                 const max = instance_value + margin
                 return dataStore.data.filter((d) => d[feature] >= min && d[feature] <= max)

@@ -107,7 +107,7 @@ export const useDetailStore = defineStore({
             let values = []
             if (type == "continuous") {
                 for (let bin of bins as bin_continuous[]) {
-                    values.push((bin.min + bin.max) / 2)
+                    values.push((+bin.min + +bin.max) / 2)
                 }
             }
             else {

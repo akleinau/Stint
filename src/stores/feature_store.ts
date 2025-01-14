@@ -84,6 +84,9 @@ export const useFeatureStore = defineStore({
                         if (bin_index === bin_number) {
                             bins[bin_number - 1].count += 1
                             bins[bin_number - 1].prediction_sum += d[target_feature]
+                        } else {
+                            bins[bin_index].count += 1
+                            bins[bin_index].prediction_sum += d[target_feature]
                         }
                     })
 

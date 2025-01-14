@@ -135,10 +135,6 @@ html, body {
   background-color: #384f54;
 }
 
-.detailCard {
-
-}
-
 .v-card {
   margin:auto !important;
   width:900px !important

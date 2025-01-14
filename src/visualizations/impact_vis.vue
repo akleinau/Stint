@@ -3,9 +3,11 @@ import * as d3 from "d3";
 import {useTemplateRef, onMounted, ref, watch} from 'vue'
 import {useDataStore} from "../stores/dataStore.ts";
 import {useDetailStore} from "../stores/detail_store.ts";
+import {useInfluenceStore} from "../stores/influence_store.ts";
 
 const dataStore = useDataStore()
 const detailStore = useDetailStore()
+const influenceStore = useInfluenceStore()
 
 //refs
 const container = useTemplateRef('container')
@@ -29,6 +31,14 @@ watch(() => detailStore.selected_feature, () => {
   detailStore.calculate_feature_change_impact_values()
   update_vis()
 })
+
+const get_prediction = () => {
+  let value = Math.round(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean)
+  if (value > 0) {
+    return `+${value}`
+  }
+  return value
+}
 
 const update_vis = () => {
 
@@ -146,7 +156,8 @@ const update_vis = () => {
 </script>
 
 <template>
-  <div class="d-flex justify-center">
+  <div class="d-flex justify-center flex-column">
+    <div class="ma-auto"> {{get_prediction()}}</div>
     <div ref="container"></div>
   </div>
 </template>

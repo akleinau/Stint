@@ -89,7 +89,7 @@ const update_vis = () => {
       .attr("y", (d :any) => max_rect_height - y(d.count))
       .attr("width", rect_width)
       .attr("height", (d :any) => y(d.count))
-      .attr("fill", d => (d.min == undefined ? d.value : d.min) == instance_value.value ? "grey" : "darkgrey")
+      .attr("fill", (_,i) => i == featureStore.get_instance_bin_index(props.feature_name,instance_value.value) ? "grey" : "darkgrey")
 
   bin_elements
       .append("text")

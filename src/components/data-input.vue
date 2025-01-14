@@ -152,7 +152,7 @@ const interacting_features_selected = (cols: string[]) => {
         <div v-if="isCustomInstance" class="pb-5">
           <div v-for="key in dataStore.interacting_features" class="mt-1 w-100">
             <v-text-field v-model.number="dataStore.instance[key]" class="px-5 w-100" :label="key" type="number"
-                          variant="underlined" hide-details clearable density="compact" single-line>
+                          variant="underlined" hide-details density="compact" single-line>
               <template v-slot:prepend-inner>
                 <div class="d-flex">
                   <span> {{ key }} </span>
