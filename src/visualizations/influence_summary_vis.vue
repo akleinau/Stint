@@ -141,10 +141,21 @@ const get_influence_sign_text = () => {
       ... their combined influence is {{get_influence_sign_text()}}:
     </h3>
     <div ref="container" class="px-5"/>
-    <div class="mb-4" style="font-size:16px">
-      {{ get_prediction_change_text() }} the value of {{ dataStore.target_feature }} by {{ get_prediction_text() }}
+    <div class=" story_text" >
+      {{ get_prediction_change_text() }} the value of
+      <span class="highlight">{{ dataStore.target_feature }}</span>
+        by
+       <span class="highlight">{{ get_prediction_text() }}</span>
       compared
-      to its average.
+      to its average of
+       <span class="highlight" v-if="dataStore.data_summary.mean !== undefined">{{dataStore.data_summary.mean.toFixed(0)}}</span>.
+    </div>
+    <v-icon icon="mdi-arrow-down" size="20"></v-icon>
+    <div class="mb-4 story_text">
+      When only considering the selected features,
+      <span class="highlight">{{ dataStore.target_feature }}</span>
+      would be
+      <span class="highlight">{{influenceStore.influence.explanation_prediction.toFixed(0)}}</span>.
     </div>
     <div v-if="false">
       Prediction: {{dataStore.instance[dataStore.target_feature] - dataStore.data_summary.mean}}

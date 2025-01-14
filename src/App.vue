@@ -133,12 +133,25 @@ html, body {
   margin: 0;
   padding: 0;
   background-color: #384f54;
+  font-size:16px;
 }
 
 .v-card {
   margin:auto !important;
-  width:900px !important
+  width:900px !important;
+  font-size:16px;
 }
+
+.story_text {
+  font-size:16px;
+}
+
+.highlight {
+  font-family: monospace;
+
+}
+
+
 
 h3 {
   font-size:18px

@@ -119,8 +119,7 @@ const sleep = (ms: number) => {
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
     <div ref="container" class="px-5 pt-5"/>
-    <div style="font-size:16px">
-      {{ influenceStore.get_textual_summary()}}
+    <div style="font-size:16px; text-align:center" v-html="influenceStore.get_textual_summary()">
     </div>
   </div>
 </template>

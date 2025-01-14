@@ -143,39 +143,8 @@ const interacting_features_selected = (cols: string[]) => {
 
       </div>
 
-      <!-- Instance -->
-      <div class="d-flex flex-column align-center justify-center" v-if="dataStore.target_feature !== ''">
-        <v-btn-toggle v-model="isCustomInstance" class="mt-3" @update:model-value="instance_selected" >
-          <v-btn :value="true">custom instance</v-btn>
-          <v-btn :value="false">select instance</v-btn>
-        </v-btn-toggle>
-        <div v-if="isCustomInstance" class="pb-5">
-          <div v-for="key in dataStore.interacting_features" class="mt-1 w-100">
-            <v-text-field v-model.number="dataStore.instance[key]" class="px-5 w-100" :label="key" type="number"
-                          variant="underlined" hide-details density="compact" single-line>
-              <template v-slot:prepend-inner>
-                <div class="d-flex">
-                  <span> {{ key }} </span>
-                  <span> : </span>
-                </div>
-              </template>
-            </v-text-field>
-          </div>
-
-        </div>
-        <div v-else class="mt-5">
-          <v-slider class="px-3 mt-5"
-                    v-model="instance_nr" label="instance nr" min="1" max="1000" step="1" value="26"
-                    thumb-label="always" @update:modelValue="instance_selected"></v-slider>
-          <v-data-table :items="Object.entries(dataStore.instance)"
-                        density="compact" hide-default-header
-                        :headers="[{'title': 'Feature', 'value': '0'}, {'title': 'Value', 'value': '1'}]"
-          ></v-data-table>
-        </div>
-      </div>
-
       <!-- Interacting features -->
-      <div class="d-flex flex-column align-center justify-center w-100">
+      <div class="d-flex flex-column align-center justify-center w-100 mt-5">
         <div v-if="dataStore.target_feature !== ''" class="mt-1 w-100">
           <v-autocomplete v-model="dataStore.interacting_features" class="px-5" label="Select interacting features"
                           :items="dataStore.non_target_features"
@@ -183,6 +152,28 @@ const interacting_features_selected = (cols: string[]) => {
                           @update:modelValue="interacting_features_selected"/>
         </div>
       </div>
+
+
+      <!-- Instance -->
+      <div class="d-flex flex-column align-center justify-center" v-if="dataStore.target_feature !== ''">
+
+          <div v-for="key in dataStore.interacting_features" class="mt-1 w-100 d-flex flex-row align-center">
+            <v-text-field v-model.number="dataStore.instance[key]" class="px-5 w-100" :label="key" type="number"
+                          :suffix="'(' + d3.min(dataStore.data.map(d => d[key])) + ' - ' + d3.max(dataStore.data.map(d => d[key])) + ')'"
+                          variant="underlined" hide-details density="compact" single-line>
+              <template v-slot:prepend-inner>
+                <div class="d-flex">
+                  <span> {{ key }} </span>
+                  <span> : </span>
+                </div>
+              </template>
+
+            </v-text-field>
+
+          </div>
+
+      </div>
+
     </div>
   </div>
 </template>

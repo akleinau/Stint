@@ -46,7 +46,8 @@ const update_vis = () => {
 
   const svg_width = 500
   const svg_height = 120
-  const y_padding = 30
+  const y_padding_below = 30
+  const y_padding_top = 30
   const padding_sides = 45
 
   let svg = d3.create("svg")
@@ -68,7 +69,7 @@ const update_vis = () => {
 
   let y = d3.scaleLinear()
       .domain([min_y, max_y])
-      .range([svg_height- y_padding, 0])
+      .range([svg_height- y_padding_below, y_padding_top])
 
 
   // add horizontal zero impact line
@@ -115,18 +116,27 @@ const update_vis = () => {
     // add line for instance value
   svg.append("line")
       .attr("x1", x(instance_value.value))
-      .attr("y1", 0)
+      .attr("y1", y_padding_top)
       .attr("x2", x(instance_value.value))
       .attr("y2", svg_height)
       .attr("stroke", "darkgrey")
       .attr("stroke-width", 4)
+
+  // add current prediction value on top
+  svg.append("text")
+      .attr("x", x(instance_value.value))
+      .attr("y", 20)
+      .text(get_prediction())
+      .style("text-anchor", "middle")
+      .style("fill", "grey")
+
 
 
 
 
   // add x-axis
   svg.append("g")
-      .attr("transform", `translate(0, ${svg_height - y_padding})`)
+      .attr("transform", `translate(0, ${svg_height - y_padding_below})`)
       .call(d3.axisBottom(x))
 
   // add y-axis
@@ -157,7 +167,6 @@ const update_vis = () => {
 
 <template>
   <div class="d-flex justify-center flex-column">
-    <div class="ma-auto"> {{get_prediction()}}</div>
     <div ref="container"></div>
   </div>
 </template>

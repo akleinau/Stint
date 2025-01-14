@@ -324,7 +324,7 @@ export class Feature extends GroupClass {
     }
 
     get_name() {
-        return this.feature + " = " + this.influence_object.instance[this.feature]
+        return this.feature + ": " + this.influence_object.instance[this.feature]
     }
 
     get_feature_names() {
@@ -432,7 +432,7 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
 
     let padding =x_position < 0 ? 5 : -5
 
-    let name = (!isFirst? "& ": "") + d.get_feature_names()
+    let name = (!isFirst? "& ": "") + d.get_name()
     if (name.length > 22) {
         name = name.slice(0, 20) + "..."
     }
@@ -450,12 +450,7 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
             .style("fill", "grey")
             .style("pointer-events", "none")
 
-    let value = d.get_feature_labels()
-    if (value.length > 22) {
-        value = value.slice(0, 20) + "..."
-    }
-
-
+    let value = d.score.toFixed(0)
 
     // add feature values
     group_elements.append("text")
@@ -699,18 +694,19 @@ class Influence {
             let text = ""
             let group = this.groups[0]
             if (group != null) {
-                text += "The strongest influence is "
+                text += "The strongest influence is <span class='highlight'>"
                 text += group.get_score() > 0 ? "positive" : "negative"
-                text += " and comes from "
-                text += group.get_nr_features() == 1 ? group.get_name() :
-                    "the interaction of: " + group.get_name()
-                text += ". "
+                text += "</span> and comes from "
+                text += group.get_nr_features() == 1 ? "<span class='highlight'>" + group.get_name() :
+                    "the interaction of: <span class='highlight'>" + group.get_name()
+                text += "</span>. "
             }
             group = this.groups[1]
             if (group != null) {
-                text += "The second most important group is (" + group.get_name() + "), which has a "
+                text += "The second most important group is (<span class='highlight'>" + group.get_name() + "</span>)"
+                text += ", which has a <span class='highlight'>"
                 text += group.get_score() > 0 ? "positive" : "negative"
-                text += " influence on the prediction. "
+                text += "</span> influence on the prediction. "
             }
             return text
         }

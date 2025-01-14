@@ -53,7 +53,7 @@ watch(() => slider_value.value, () => {
   if (featureStore.get_feature_type(get_name()) == 'continuous') {
 
     let range = max_feature_value(get_name()) - min_feature_value(get_name())
-    let step = range / 100
+    let step = Math.min(1, range / 100)
     let fraction_digits = Math.log10(1/step)
     dataStore.instance[get_name()] = +slider_value.value.toFixed(fraction_digits)
 
@@ -75,15 +75,15 @@ watch(() => slider_value.value, () => {
       The selected feature: {{ detailStore.selected_feature.get_feature_names() }}
     </h3>
     <div class="d-flex flex-column align-center justify-center"  style="font-size:16px">
-      <div> {{ detailStore.selected_feature.get_name() }} </div>
       <div class="mt-3" style="font-size:16px">
         How do different values of {{ detailStore.selected_feature.get_feature_names() }} impact the combined influence?
       </div>
       <ImpactVis />
-      <div> {{detailStore.selected_feature.get_feature_names() }} </div>
+      <div> {{ detailStore.selected_feature.get_name() }} </div>
       <VSlider v-model="slider_value" :min="min_feature_value(get_name())"
-               :max="max_feature_value(get_name())"
+               :max="max_feature_value(get_name())" hide-details
                width="460px"/>
+
     </div>
 
     <!-- hint -->
