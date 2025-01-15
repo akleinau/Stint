@@ -3,12 +3,7 @@
 	"features": [
 		{
 			"name": "cnt",
-			"label": "nr of bike rentals",
-			"unit": "bikes"
-		},
-		{
-			"name": "hour",
-			"unit": "hr"
+			"label": "nr of bike rentals"
 		},
 		{
 			"name": "workingday",
@@ -20,11 +15,47 @@
 		{
 			"name": "season",
 			"classes": [
-					{"value": 0, "label": "winter"},
-					{"value": 1, "label": "spring"},
-					{"value": 2, "label": "summer"},
-					{"value": 3, "label": "autumn"}
+					{"value": 1, "label": "winter"},
+					{"value": 2, "label": "spring"},
+					{"value": 3, "label": "summer"},
+					{"value": 4, "label": "autumn"}
 				]
+		},
+		{
+			"name": "year",
+			"classes": [
+					{"value": 0, "label": "2011"},
+					{"value": 1, "label": "2012"}
+				]
+		},
+		{
+			"name": "holiday",
+			"classes": [
+					{"value": 0, "label": "no"},
+					{"value": 1, "label": "yes"}
+				]
+		},
+		{
+			"name": "weekday",
+			"classes": [
+					{"value": 0, "label": "Sunday"},
+					{"value": 1, "label": "Monday"},
+					{"value": 2, "label": "Tuesday"},
+					{"value": 3, "label": "Wednesday"},
+					{"value": 4, "label": "Thursday"},
+					{"value": 5, "label": "Friday"},
+					{"value": 6, "label": "Saturday"}
+			]
+		},
+		{
+			"name": "weather_situation",
+			"classes": [
+					{"value": 1, "label": "clear"},
+					{"value": 2, "label": "cloudy"},
+					{"value": 3, "label": "light rain"},
+					{"value": 4, "label": "heavy rain"}
+			]
 		}
+
 	]
 }
