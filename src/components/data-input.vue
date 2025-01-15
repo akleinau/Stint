@@ -10,6 +10,7 @@ const lbl = dataStore.get_label
 const featureStore = useFeatureStore()
 
 const files = ref(null)
+const catalogue_files = ref(null)
 const instance_nr = ref(26)
 const isCustomInstance = ref(true)
 const isCustomDataset = ref(false)
@@ -74,6 +75,16 @@ const uploaded = (files: any) => {
   reader.readAsText(csvFile)
 }
 
+const catalogue_uploaded = (files: any) => {
+  const jsonFile = files;
+  const reader = new FileReader();
+  reader.onload = (event: any) => {
+    let catalogue = JSON.parse(event.target.result)
+    set_catalogue(catalogue)
+  }
+  reader.readAsText(jsonFile)
+}
+
 const set_data = (data: any) => {
   data = make_numeric(data)
   data = add_id(data)
@@ -119,6 +130,8 @@ const instance_selected = (_:any) => {
 const dataset_toggled = (_:any) => {
   if (isCustomDataset.value) {
     dataStore.reset()
+    files.value = null
+    catalogue_files.value = null
   }
   else {
     load_example_dataset()
@@ -146,6 +159,12 @@ const get_discrete_select_list = (key: string) => {
   })
 }
 
+const get_feature_select_list = () => {
+  return dataStore.feature_names.map((f: string) => {
+    return {value: f, title: lbl(f)}
+  })
+}
+
 </script>
 
 <template>
@@ -153,20 +172,25 @@ const get_discrete_select_list = (key: string) => {
     <div class="mx-3 align-center justify-center d-flex flex-column">
 
       <!-- data input -->
-      <v-btn-toggle v-model="isCustomDataset" class="mb-3" @update:model-value="dataset_toggled">
+      <v-btn-toggle v-model="isCustomDataset" class="mb-1" @update:model-value="dataset_toggled">
         <v-btn :value="false">example data set</v-btn>
         <v-btn :value="true">custom data set</v-btn>
       </v-btn-toggle>
-      <div v-if="isCustomDataset" class="w-50">
-        <div class="d-flex align-center justify-center w-100">
-          <div class="mt-3 w-75">
+      <div v-if="isCustomDataset" class="w-100">
+        <div class="d-flex flex-column align-center justify-center w-100">
+          <div class="d-flex mt-3 w-100">
             <v-file-input label="Choose CSV file" v-model="files"
                           accept=".csv"
                           @update:modelValue="uploaded"></v-file-input>
+            <v-file-input label="(Optional) choose Catalogue file" v-model="catalogue_files"
+                          accept=".json"
+                          @update:modelValue="catalogue_uploaded"></v-file-input>
           </div>
-          <div v-if="dataStore.feature_names.length !== 0" class="mt-3 w-50">
-            <v-autocomplete v-model="dataStore.target_feature" class="px-5" label="Select outcome column"
-                            :items="dataStore.feature_names"
+          <div v-if="dataStore.feature_names.length !== 0" class=" w-50">
+            <v-autocomplete v-model="dataStore.target_feature" class="px-5" label="Select target feature"
+                            :items="get_feature_select_list()"
+                            item-value="value" item-title="title"
+                            variant="underlined"
                             @update:modelValue="target_selected"/>
           </div>
         </div>
@@ -179,7 +203,7 @@ const get_discrete_select_list = (key: string) => {
       </div>
 
       <!-- Interacting features -->
-      <div class="d-flex flex-column align-center justify-center w-100 mt-5">
+      <div class="d-flex flex-column align-center justify-center w-100 mt-3">
         <div v-if="dataStore.target_feature !== ''" class="mt-1 w-100">
           <v-autocomplete v-model="dataStore.interacting_features" class="px-5" label="Select interacting features"
                           :items="dataStore.non_target_features"

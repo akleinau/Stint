@@ -33,6 +33,7 @@ export const useDataStore = defineStore({
             this.non_target_features = []
             this.interacting_features = []
             this.instance = {}
+            this.feature_catalogue = {}
         },
 
         calculate_correlations() {
