@@ -5,6 +5,7 @@ import {useDataStore} from "../stores/dataStore";
 import {Group, useInfluenceStore} from "../stores/influence_store.ts";
 
 const dataStore = useDataStore()
+const lbl = dataStore.get_label
 const influenceStore = useInfluenceStore()
 
 // watch dataStore.influence_scores
@@ -118,8 +119,17 @@ const sleep = (ms: number) => {
 
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
+    <div class="mt-2 story_text">
+      (compared to the average
+      <span class="highlight" >{{ lbl(dataStore.target_feature)}}</span>
+      of
+       <span class="highlight" v-if="dataStore.data_summary.mean !== undefined">
+         {{dataStore.data_summary.mean.toFixed(0)}}
+       </span>
+      )
+    </div>
     <div ref="container" class="px-5 pt-5"/>
-    <div style="font-size:16px; text-align:center" v-html="influenceStore.get_textual_summary()">
+    <div style="text-align:center" class="story_text" v-html="influenceStore.get_textual_summary()">
     </div>
   </div>
 </template>

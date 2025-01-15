@@ -698,17 +698,17 @@ class Influence {
             if (group != null) {
                 text += "The strongest influence is <span class='highlight'>"
                 text += group.get_score() > 0 ? "positive" : "negative"
-                text += "</span> and comes from "
+                text += "</span> and comes from ("
                 text += group.get_nr_features() == 1 ? "<span class='highlight'>" + group.get_name() :
-                    "the interaction of: <span class='highlight'>" + group.get_name()
-                text += "</span>. "
+                    "<span class='highlight'>" + group.get_name()
+                text += ") </span>. "
             }
             group = this.groups[1]
             if (group != null) {
-                text += "The second most important group is (<span class='highlight'>" + group.get_name() + "</span>)"
-                text += ", which has a <span class='highlight'>"
+                text += "<br> Additionally, (<span class='highlight'>" + group.get_name() + "</span>)"
+                text += " has a <span class='highlight'>"
                 text += group.get_score() > 0 ? "positive" : "negative"
-                text += "</span> influence on the prediction. "
+                text += "</span> influence. "
             }
             return text
         }

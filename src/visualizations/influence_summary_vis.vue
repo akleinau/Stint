@@ -143,14 +143,9 @@ const get_influence_sign_text = () => {
     </h3>
     <div ref="container" class="px-5"/>
     <div class=" story_text" >
-      <span class="highlight">{{ get_prediction_change_text() }}</span>
-      the value of
-      <span class="highlight">{{ lbl(dataStore.target_feature) }}</span>
+      <span class="highlight">{{ get_prediction_change_text() }} {{ lbl(dataStore.target_feature) }}</span>
         by
-       <span class="highlight">{{ get_prediction_text() }}</span>
-      compared
-      to its average of
-       <span class="highlight" v-if="dataStore.data_summary.mean !== undefined">{{dataStore.data_summary.mean.toFixed(0)}}</span>.
+       <span class="highlight">{{ get_prediction_text() }}</span>.
     </div>
     <v-icon icon="mdi-arrow-down" size="20"></v-icon>
     <div class="mb-4 story_text">
