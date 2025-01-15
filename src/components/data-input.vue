@@ -6,6 +6,7 @@ import {useDataStore} from "../stores/dataStore.ts";
 import {useFeatureStore} from "../stores/feature_store.ts";
 
 const dataStore = useDataStore()
+const lbl = dataStore.get_label
 const featureStore = useFeatureStore()
 
 const files = ref(null)
@@ -130,6 +131,21 @@ const interacting_features_selected = (cols: string[]) => {
   dataStore.storyIsVisible = false
 }
 
+const get_discrete_select_list = (key: string) => {
+  let bins = featureStore.get_feature_bins(key)
+  let bin_values = bins.map((d: any) => d.value)
+
+  // check if bin_values are numerical and sort them accordingly
+  if (bin_values.every((v: any) => typeof v === 'number')) {
+    bin_values = bin_values.sort((a: any, b: any) => a - b)
+  }
+
+  let bin_labels = bin_values.map((v: any) => lbl(key, v))
+  return bin_values.map((v: any, i: number) => {
+    return {value: v, title: bin_labels[i]}
+  })
+}
+
 </script>
 
 <template>
@@ -177,6 +193,9 @@ const interacting_features_selected = (cols: string[]) => {
       <div class="d-flex flex-column align-center justify-center" v-if="dataStore.target_feature !== ''">
 
           <div v-for="key in dataStore.interacting_features" class="mt-1 w-100 d-flex flex-row align-center">
+
+            <!-- continuous -->
+            <div v-if="featureStore.get_feature_type(key) == 'continuous'" class="w-100">
             <v-text-field v-model.number="dataStore.instance[key]" class="px-5 w-100" :label="key" type="number"
                           :suffix="'(' + d3.min(dataStore.data.map(d => d[key])) + ' - ' + d3.max(dataStore.data.map(d => d[key])) + ')'"
                           variant="underlined" hide-details density="compact" single-line>
@@ -186,8 +205,26 @@ const interacting_features_selected = (cols: string[]) => {
                   <span> : </span>
                 </div>
               </template>
-
             </v-text-field>
+            </div>
+
+            <!-- discrete -->
+            <div v-else class="w-100">
+              <v-select v-model="dataStore.instance[key]" class="px-5 w-100" :label="key"
+                        :items="get_discrete_select_list(key)"
+                        item-value="value"
+                        item-title="title"
+                        variant="underlined" hide-details density="compact" single-line>
+                <template v-slot:prepend-inner>
+                  <div class="d-flex">
+                    <span> {{ key }} </span>
+                    <span> : </span>
+                  </div>
+                </template>
+              </v-select>
+
+            </div>
+
 
           </div>
 
