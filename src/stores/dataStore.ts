@@ -20,7 +20,8 @@ export const useDataStore = defineStore({
         storyIsVisible: false,
         selected_feature: null as string | null,
         correlations: {} as { [key: string]: CorrelationMap}, // feature name -> CorrelationMap
-        feature_abnormality: {} as { [key: string]: number } // feature name -> abnormality value
+        feature_abnormality: {} as { [key: string]: number }, // feature name -> abnormality value
+        feature_catalogue: {} as any
     }),
     actions: {
 
@@ -87,6 +88,36 @@ export const useDataStore = defineStore({
             let min = d3.mean(min_items) - this.data_summary.mean
             let max = d3.mean(max_items) - this.data_summary.mean
             return [min, max]
+        },
+
+        get_label(feature: string|number, value: number = null): string|number {
+            const catalogue_feature = this.feature_catalogue[feature]
+
+            if (value == null) {
+                if (catalogue_feature === undefined) {
+                    return feature
+                }
+                if (catalogue_feature.label === undefined) {
+                    return feature
+                }
+                return this.feature_catalogue[feature].label
+            }
+            else {
+                if (catalogue_feature === undefined) {
+                    return value.toString()
+                }
+                if (catalogue_feature.classes === undefined) {
+                    return value.toString()
+                }
+                const value_class = catalogue_feature.classes.find((c) => c.value === value)
+                if (value_class === undefined) {
+                    return value.toString()
+                }
+                else {
+                    return value_class.label
+                }
+            }
+
         }
 
 

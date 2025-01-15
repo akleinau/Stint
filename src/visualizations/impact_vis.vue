@@ -4,10 +4,13 @@ import {useTemplateRef, onMounted, ref, watch} from 'vue'
 import {useDataStore} from "../stores/dataStore.ts";
 import {useDetailStore} from "../stores/detail_store.ts";
 import {useInfluenceStore} from "../stores/influence_store.ts";
+import {bin_discrete, useFeatureStore} from "../stores/feature_store.ts";
 
 const dataStore = useDataStore()
+const lbl = dataStore.get_label
 const detailStore = useDetailStore()
 const influenceStore = useInfluenceStore()
+const featureStore = useFeatureStore()
 
 //refs
 const container = useTemplateRef('container')
@@ -38,6 +41,10 @@ const get_prediction = () => {
     return `+${value}`
   }
   return value
+}
+
+const get_feature_name = () => {
+  return detailStore.selected_feature.get_feature_names()
 }
 
 const update_vis = () => {
@@ -131,13 +138,32 @@ const update_vis = () => {
       .style("fill", "grey")
 
 
+  let xAxis = d3.axisBottom(x)
+  // continuous  - check if bins are of bin_continuous type
+  if (featureStore.get_feature_type(get_feature_name()) == 'continuous') {
+    xAxis.tickValues([min_x, max_x])
+  }
+  // discrete
+  else {
+    let bins = featureStore.get_feature_bins(get_feature_name())
+    if (bins.length <= 4) {
+      const bin_values = bins.map((d : bin_discrete) => d.value)
+      xAxis.tickValues(bin_values)
+      const bin_labels = bins.map((d : bin_discrete) => lbl(get_feature_name(), d.value))
+      xAxis.tickFormat((_,i) => bin_labels[i])
+    }
+    else {
+      xAxis.tickValues([min_x, max_x])
+      xAxis.tickFormat(d => lbl(get_feature_name(), d))
+    }
+  }
 
 
 
   // add x-axis
   svg.append("g")
       .attr("transform", `translate(0, ${svg_height - y_padding_below})`)
-      .call(d3.axisBottom(x))
+      .call(xAxis)
 
   // add y-axis
   svg.append("g")

@@ -324,7 +324,9 @@ export class Feature extends GroupClass {
     }
 
     get_name() {
-        return this.feature + ": " + this.influence_object.instance[this.feature]
+        const dataStore = useDataStore()
+        const lbl = dataStore.get_label
+        return lbl(this.feature) + ": " + lbl(this.feature, this.influence_object.instance[this.feature])
     }
 
     get_feature_names() {

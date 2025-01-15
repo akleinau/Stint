@@ -6,6 +6,7 @@ import {useInfluenceStore} from "../stores/influence_store.ts";
 import {watch} from "vue";
 
 const dataStore = useDataStore()
+const lbl = dataStore.get_label
 const influenceStore = useInfluenceStore()
 
 
@@ -22,7 +23,7 @@ watch(() => dataStore.instance, () => {
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
     <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      How do they influence {{dataStore.target_feature}}?
+      How do they influence <span class="highlight">{{lbl(dataStore.target_feature)}}</span>?
     </h3>
     <InfluenceVis />
     <InfluenceSummaryVis />

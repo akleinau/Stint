@@ -3,6 +3,7 @@ import {useDataStore} from "../stores/dataStore.ts";
 import {useFeatureStore} from "../stores/feature_store.ts";
 
 const dataStore = useDataStore()
+const lbl = dataStore.get_label
 const featureStore = useFeatureStore()
 
 
@@ -79,7 +80,7 @@ const get_bin_percent = (feature: string) => {
     <div  class="d-flex justify-center mb-3 flex-wrap">
       <div v-for="key in background_features" class="pa-1">
         <v-chip @click="toggle_details_background(key)" :variant="show_details_background == key? 'elevated' : 'tonal' ">
-          {{key}} = {{dataStore.instance[key]}}
+          {{lbl(key)}}: {{lbl(key, dataStore.instance[key])}}
         </v-chip>
       </div>
     </div>
@@ -93,7 +94,7 @@ const get_bin_percent = (feature: string) => {
       <div class="d-flex justify-center mb-3 align-center">
          <v-chip @click="toggle_details(key)" :variant="show_details == key? 'outlined' : 'tonal' "
               style="color:darkred">
-          {{key}} = {{dataStore.instance[key]}}
+          {{lbl(key)}} = {{lbl(key, dataStore.instance[key])}}
         </v-chip>
         <div class="ml-2"> only {{get_bin_percent(key)}} of instances </div>
 

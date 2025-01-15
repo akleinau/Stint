@@ -54,6 +54,11 @@ const load_example_dataset = async () => {
   const csvFile = "https://raw.githubusercontent.com/akleinau/Stint/cbd10b108068e982c460e961b9cc071b4f1199be/datasets/bike.csv";
   const data = await d3.csv(csvFile, {crossOrigin: "anonymous"})
   set_data(data)
+
+  const catalogueFile = "https://raw.githubusercontent.com/akleinau/Stint/refs/heads/main/datasets/bike_catalogue.json"
+  const catalogue = await d3.json(catalogueFile)
+  set_catalogue(catalogue)
+
   target_selected("cnt")
 }
 
@@ -73,6 +78,20 @@ const set_data = (data: any) => {
   data = add_id(data)
   dataStore.feature_names = data.columns
   dataStore.data = data
+}
+
+const set_catalogue = (catalogue: any) => {
+
+  // reformat catalogue to be a map of feature names to feature objects
+  let features = {} as any
+  catalogue.features.forEach((f: any) => {
+    features[f.name] = f
+  })
+
+  dataStore.feature_catalogue = features
+  if (catalogue.target) {
+    target_selected(catalogue.target)
+  }
 }
 
 const target_selected = (col: string) => {

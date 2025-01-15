@@ -5,6 +5,7 @@ import {useDataStore} from "../stores/dataStore";
 import {useInfluenceStore} from "../stores/influence_store.ts";
 
 const dataStore = useDataStore()
+const lbl = dataStore.get_label
 const influenceStore = useInfluenceStore()
 
 // watch dataStore.influence_scores
@@ -138,12 +139,13 @@ const get_influence_sign_text = () => {
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
     <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      ... their combined influence is {{get_influence_sign_text()}}:
+      ... their combined influence is <span class="highlight">{{get_influence_sign_text()}}</span>:
     </h3>
     <div ref="container" class="px-5"/>
     <div class=" story_text" >
-      {{ get_prediction_change_text() }} the value of
-      <span class="highlight">{{ dataStore.target_feature }}</span>
+      <span class="highlight">{{ get_prediction_change_text() }}</span>
+      the value of
+      <span class="highlight">{{ lbl(dataStore.target_feature) }}</span>
         by
        <span class="highlight">{{ get_prediction_text() }}</span>
       compared
@@ -153,7 +155,7 @@ const get_influence_sign_text = () => {
     <v-icon icon="mdi-arrow-down" size="20"></v-icon>
     <div class="mb-4 story_text">
       When only considering the selected features,
-      <span class="highlight">{{ dataStore.target_feature }}</span>
+      <span class="highlight">{{ lbl(dataStore.target_feature) }}</span>
       would be
       <span class="highlight">{{influenceStore.influence.explanation_prediction.toFixed(0)}}</span>.
     </div>

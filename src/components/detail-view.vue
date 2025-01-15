@@ -9,6 +9,7 @@ import {onMounted, ref, useTemplateRef, watch} from "vue";
 import * as d3 from "d3"
 
 let dataStore = useDataStore()
+const lbl = dataStore.get_label
 let influenceStore = useInfluenceStore()
 let detailStore = useDetailStore()
 let featureStore = useFeatureStore()
@@ -72,11 +73,13 @@ watch(() => slider_value.value, () => {
   <div class="w-100 d-flex flex-column align-center justify-center" v-if="detailStore.selected_feature != null">
 
     <h3 v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      The selected feature: {{ detailStore.selected_feature.get_feature_names() }}
+      The selected feature: <span class="highlight">{{ lbl(detailStore.selected_feature.get_feature_names()) }}</span>
     </h3>
     <div class="d-flex flex-column align-center justify-center"  style="font-size:16px">
       <div class="mt-3" style="font-size:16px">
-        How do different values of {{ detailStore.selected_feature.get_feature_names() }} impact the combined influence?
+        How do different values of
+        <span class="highlight">{{lbl(detailStore.selected_feature.get_feature_names())}}</span>
+        impact the combined influence?
       </div>
       <ImpactVis />
       <div> {{ detailStore.selected_feature.get_name() }} </div>
@@ -89,7 +92,8 @@ watch(() => slider_value.value, () => {
     <!-- hint -->
     <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-3">
       <v-icon class="mr-1">mdi-arrow-left-right</v-icon>
-      <i> move the slider to change the value of {{detailStore.selected_feature.get_feature_names() }}! </i>
+      <i> move the slider to change the value of
+        <span class="highlight">{{lbl(detailStore.selected_feature.get_feature_names())}}</span>! </i>
     </div>
 
 

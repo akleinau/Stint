@@ -10,6 +10,7 @@ const props = defineProps(['feature', 'show_abnormal'])
 
 
 const dataStore = useDataStore()
+const lbl = dataStore.get_label
 const featureStore = useFeatureStore()
 
 const hasCorrelations = (key: string) => {
@@ -36,8 +37,11 @@ watch( () => dataStore.interacting_features, () => {
   <div class="mb-2 mx-5 d-flex flex-column justify-center align-center w-100" v-if="dataStore.selected_feature != null">
 
 
-    <h3 class="mb-2"> The selected feature: {{ props.feature }} =
-        {{ dataStore.instance[props.feature] }} </h3>
+    <h3 class="mb-2"> The selected feature is
+      <span class="highlight">
+        {{ lbl(props.feature) }}: {{ lbl(props.feature, dataStore.instance[props.feature]) }}
+      </span>
+    </h3>
     <div class="d-flex justify-center mt-2" v-if="props.show_abnormal">
       <AbnormalVis :feature_name="props.feature"/>
     </div>
@@ -56,7 +60,7 @@ watch( () => dataStore.interacting_features, () => {
       <span v-else>(No correlations)</span>
       <span v-for="(corr, other_feature) in dataStore.correlations[props.feature]">
             <v-chip class="mx-2" v-if="Math.abs(corr) > 0.05" variant="outlined">
-              {{ other_feature }}: {{ corr.toFixed(2) }}
+              {{ lbl(other_feature) }}: {{ corr.toFixed(2) }}
             </v-chip>
           </span>
     </div>

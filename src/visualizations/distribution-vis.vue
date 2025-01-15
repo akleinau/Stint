@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import * as d3 from "d3";
 import {useTemplateRef, onMounted, ref, watch} from 'vue'
-import {useFeatureStore} from "../stores/feature_store.ts";
+import {bin_discrete, useFeatureStore} from "../stores/feature_store.ts";
 import {useDataStore} from "../stores/dataStore.ts";
 
 const featureStore = useFeatureStore()
 const dataStore = useDataStore()
+const lbl = dataStore.get_label
 
 //refs
 const container = useTemplateRef('container')
@@ -55,11 +56,22 @@ const update_vis = () => {
   // add x-axis with padding
   const xAxis = d3.axisBottom(x)
 
-  if (bins.length <= 4) {
-    xAxis.tickValues(bins.map(d => 'value' in d? d.value : 1))
-  }
-  else {
+  // continuous  - check if bins are of bin_continuous type
+  if (featureStore.get_feature_type(props.feature_name) == 'continuous') {
     xAxis.tickValues([feature_min, feature_max])
+  }
+  // discrete
+  else {
+    if (bins.length <= 4) {
+      const bin_values = bins.map((d : bin_discrete) => d.value)
+      xAxis.tickValues(bin_values)
+      const bin_labels = bins.map((d : bin_discrete) => lbl(props.feature_name, d.value))
+      xAxis.tickFormat((_,i) => bin_labels[i])
+    }
+    else {
+      xAxis.tickValues([feature_min, feature_max])
+      xAxis.tickFormat(d => lbl(props.feature_name, d))
+    }
   }
 
   let axis = svg.append("g")
@@ -103,12 +115,14 @@ const update_vis = () => {
       .text((d :any) => ((d.count/full_count)*100).toFixed(1) + "%")
   bin_elements
       .append("text")
-      .text((d :any) => d.min == undefined ? d.value : d.min + " - " + d.max)
+      .text((d :any) => d.min == undefined ? lbl(props.feature_name,d.value) : d.min + " - " + d.max)
       .attr("x", (d :any) => x(d.min == undefined ? d.value : d.min))
       .attr("y", max_rect_height + 14)
       .attr("text-anchor", "middle")
       .attr("alignment-baseline", "middle")
       .attr("fill", "black")
+      .style("font-size", "12px")
+      .attr("dy", "0.1em")
       .style("opacity", "0")
 
 
