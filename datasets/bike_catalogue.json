@@ -1,0 +1,30 @@
+{
+	"target": "cnt",
+	"features": [
+		{
+			"name": "cnt",
+			"label": "nr of bike rentals",
+			"unit": "bikes"
+		},
+		{
+			"name": "hour",
+			"unit": "hr"
+		},
+		{
+			"name": "workingday",
+			"classes": [
+					{"value": 0, "label": "no"},
+					{"value": 1, "label": "yes"}
+				]
+		},
+		{
+			"name": "season",
+			"classes": [
+					{"value": 0, "label": "winter"},
+					{"value": 1, "label": "spring"},
+					{"value": 2, "label": "summer"},
+					{"value": 3, "label": "autumn"}
+				]
+		}
+	]
+}
