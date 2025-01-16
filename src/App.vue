@@ -147,11 +147,8 @@ html, body {
 }
 
 .highlight {
-  //font-family: monospace;
-  //font-style: italic;
-  //font-weight: bold;
-  background: #f0f0f0;
-  padding: 2px
+  font-family: "monospace", monospace;
+
 
 }
 
