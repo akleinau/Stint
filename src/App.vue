@@ -28,7 +28,7 @@ const nice_scroll = async (y_destination: number) => {
   let steps = Math.abs(y_destination - y) / step
   let direction = y_destination > y ? 1 : -1
   for (let i = 0; i < steps; i++) {
-    await sleep(10)
+    await sleep(5)
     window.scrollTo(0, y + direction * step)
     y = window.scrollY
   }
@@ -39,8 +39,9 @@ const explain = async () => {
   influenceStore.calculate_influences()
 
   for (let i = 0; i < 1; i++) {
-    await sleep(100)
-    await nice_scroll(window.innerHeight)
+    await sleep(50)
+    //scroll so that explainButton is on top of screen
+    await nice_scroll(document.getElementById("explainButton").getBoundingClientRect().top)
   }
 
 }
@@ -64,7 +65,7 @@ const explain = async () => {
 
     <div v-if="dataStore.interacting_features.length !== 0"
          class="mt-1 mb-3 d-flex flex-column align-center pt-4 pb-4">
-      <v-btn @click="explain" class="bg-blue">Explain</v-btn>
+      <v-btn @click="explain" class="bg-blue" id="explainButton">Explain</v-btn>
     </div>
 
     <v-card class="h-100 mb-5" v-show="dataStore.storyIsVisible">

@@ -221,26 +221,6 @@ export class Group extends GroupClass {
     add_bar(crawler: any, d: any, updater: any, group_elements: any, level: number=0) {
         // draw bars
         let rect = group_elements.append("rect")
-            .on("click", () => {
-                this.isFreezedOpen = !this.isFreezedOpen
-                console.log("freeze " + this.isFreezedOpen)
-
-                updater.value += 1
-            })
-            .on("mouseenter", (event: any, _:any) => {
-                if (!this.isOpen) {
-                    this.isOpen = true
-                    updater.value += 1
-                }
-
-              d3.select(event.target.parentNode).selectAll(".details")
-                .style("opacity", "1")
-
-            })
-            .on("mouseout", (event: any, _: any) => {
-                d3.select(event.target.parentNode).selectAll(".details")
-                    .style("opacity", "0")
-            })
             .attr("x", d.score < 0 ? crawler.get_value(d.value) : crawler.get_value(d.value - d.score))
             .attr("y", crawler.offset)
             .attr("class", "bars" + crawler.offset)
@@ -259,16 +239,34 @@ export class Group extends GroupClass {
             rect.attr("height", crawler.bar_height)
         }
 
+        // add transparent boundary box for feature selection
+        group_elements.append("rect")
+            .on("mouseenter", (event: any, _:any) => {
+                if (!this.isOpen) {
+                    this.isOpen = true
+                    updater.value += 1
+                }
+
+              d3.select(event.target.parentNode).selectAll(".details")
+                .style("opacity", "1")
+
+            })
+            .on("mouseout", (event: any, _: any) => {
+                d3.select(event.target.parentNode).selectAll(".details")
+                    .style("opacity", "0")
+            })
+            .style("cursor", this.parent != null ? "pointer" : "default")
+            .attr("x",0)
+            .attr("y", crawler.offset)
+            .attr("width", 10000)
+            .attr("height", crawler.bar_height)
+            .attr("opacity", 0.0)
+
     }
 
     add_group_box(crawler: any, initial_offset: number, final_offset: number, updater: any) {
         // add a rectangle around the group
         crawler.layers[0].append("rect")
-            .on("click", () => {
-                    this.isFreezedOpen = !this.isFreezedOpen
-                    console.log("freeze " + this.isFreezedOpen)
-                    updater.value += 1
-            })
             .attr("x", 0)
             .attr("y", initial_offset-5)
             .attr("width", 800)
@@ -350,8 +348,6 @@ export class Feature extends GroupClass {
         let rect = group_elements.append("rect")
             .on("click", () => {
                 if (this.parent != null) {
-                    this.parent.isFreezedOpen = !this.parent.isFreezedOpen
-                    console.log("freeze " + this.parent.isFreezedOpen)
                     useDetailStore().selected_feature = this
                     updater.value += 1
                 }
@@ -404,7 +400,6 @@ export class Feature extends GroupClass {
             .attr("y", crawler.offset)
             .attr("width", 10000)
             .attr("height", crawler.bar_height)
-            .attr("fill", "black")
             .attr("opacity", 0.0)
 
     }
@@ -427,14 +422,14 @@ const add_value_line = (crawler: any, d: any, isLast: boolean, group_elements: a
 
 const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: boolean) => {
 
-    let x_position = d.value
-    if ((d.value - d.score) < 0 && d.score > 0 || (d.value - d.score) > 0 && d.score < 0) {
-        x_position -= d.score
+    let x_position = 0
+    if (d.value * (d.value-d.score) < 0) {
+        x_position += (d.value - d.score)
     }
 
-    let padding =x_position < 0 ? 5 : -5
+    let padding = d.value >= 0 ? 5 : -5
 
-    let name = (!isFirst? "& ": "") + d.get_name()
+    let name = (!isFirst? "when ": "") + d.get_name()
     if (name.length > 22) {
         name = name.slice(0, 20) + "..."
     }
@@ -448,9 +443,11 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
             .attr("class", "text_feature_names" + crawler.offset)
             .style("font-size", "14px")
             .style("font-family", "Verdana")
-            .style("text-anchor", x_position < 0 ? "end": "start")
-            .style("fill", "grey")
+            .style("text-anchor", d.value >= 0 ? "end": "start")
+            .style("fill", "black")
             .style("pointer-events", "none")
+
+    x_position = d.value < 0 ? Math.min(d.value, d.value - d.score) : Math.max(d.value, d.value - d.score)
 
     // add feature values
     group_elements.append("text")
@@ -461,8 +458,8 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
         .attr("class", "text_feature_names" + crawler.offset)
         .style("font-size", "14px")
         .style("font-family", "Verdana")
-        .style("text-anchor", x_position < 0 ? "start": "end")
-        .style("fill", crawler.get_value(Math.abs(d.score)) - crawler.get_value(0) < 20 ? "black": "white")
+        .style("text-anchor", d.value < 0 ? "end": "start")
+        .style("fill", "grey")
         .style("pointer-events", "none")
 
 }
