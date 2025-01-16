@@ -58,9 +58,9 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
   }
 
   const range = dataStore.get_subset_influence_range()
-  min.value = range[0]
-  max.value = range[1]
-  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([100, 700])
+  min.value = to_percent(range[0])
+  max.value = to_percent(range[1])
+  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([100, 700]).nice()
 
   let layers = []
   for (let i = 0; i < 3; i++) {
@@ -70,12 +70,7 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
 
   // add axis and add a "+" in front of positive values
   let axis = d3.axisTop(scale.value)
-      .tickFormat((d) => {
-        if (d > 0) {
-          return "+" + d
-        }
-        return d
-      })
+      .tickFormat((d) => get_value_text(d))
       .ticks(10)
   layers[2].append("g")
       .attr("transform", "translate(0, " + (20) + ")")
@@ -94,9 +89,13 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
 
   d3.select(container.value).node().append(svg.node())
 
-  let crawler = {offset: 30, spacing_between_groups:spacing_between_groups, layers:layers,
+  const get_value = (value:number) => {
+    return scale.value(to_percent(value))
+  }
+
+  let crawler = {offset: 30, spacing_between_groups:spacing_between_groups, layers:layers, get_value:get_value,
       spacing_inside_group:spacing_inside_group, scale:scale, svg:svg, bar_height:bar_height, isSlow:isSlow,
-    areChangesSlow:areChangesSlow}
+    areChangesSlow:areChangesSlow, mean: dataStore.data_summary.mean}
   for (let i = 0; i < influenceStore.influence.groups.length; i++) {
     let group: Group = influenceStore.influence.groups[i]
     group.vis_group(crawler, true, true, updater)
@@ -113,6 +112,14 @@ const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+const get_value_text = (value:number) => {
+  //percentage
+  return (value > 0 ? "+" : "") + value.toFixed(0) + "%"
+}
+
+const to_percent = (value:number) => {
+  return value / dataStore.data_summary.mean * 100
+}
 
 
 </script>
@@ -123,7 +130,7 @@ const sleep = (ms: number) => {
       (compared to the average
       <span class="highlight" >{{ lbl(dataStore.target_feature)}}</span>
       of
-       <span class="highlight" v-if="dataStore.data_summary.mean !== undefined">
+       <span class="highlight2" v-if="dataStore.data_summary.mean !== undefined">
          {{dataStore.data_summary.mean.toFixed(0)}}
        </span>
       )

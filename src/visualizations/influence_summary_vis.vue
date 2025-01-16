@@ -96,7 +96,7 @@ const update_vis = async (isSlow:boolean=true) => {
     layers[1].append("text")
         .attr("x", scale.value(prediction))
         .attr("y", padding_top + bar_height + padding_bar + text_height)
-        .text( (prediction > 0 ? " +" : "") + prediction.toFixed(0))
+        .text( (prediction > 0 ? " +" : "-") + get_prediction_text())
         .style("font-size", "15px")
         .style("color", "#555555")
         .style("font-weight", "bold")
@@ -118,7 +118,13 @@ const get_prediction_change_text = () => {
 }
 
 const get_prediction_text = () => {
-  return Math.abs(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean).toFixed(0)
+  //absolute
+  //return Math.abs(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean).toFixed(0)
+
+  //percentage
+  return Math.abs((influenceStore.influence.explanation_prediction - dataStore.data_summary.mean) / dataStore.data_summary.mean * 100).toFixed(0) + "%"
+
+
 }
 
 const get_influence_sign_text = () => {
@@ -139,20 +145,21 @@ const get_influence_sign_text = () => {
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
     <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      ... their combined influence is <span class="highlight">{{get_influence_sign_text()}}</span>:
+      ... their combined influence is <span class="highlight2">{{get_influence_sign_text()}}</span>:
     </h3>
     <div ref="container" class="px-5"/>
     <div class=" story_text" >
-      <span class="highlight">{{ get_prediction_change_text() }} {{ lbl(dataStore.target_feature) }}</span>
+      {{ get_prediction_change_text() }}
+      <span class="highlight"> {{ lbl(dataStore.target_feature) }}</span>
         by
-       <span class="highlight">{{ get_prediction_text() }}</span>.
+       <span class="highlight2">{{ get_prediction_text() }}</span>.
     </div>
     <v-icon icon="mdi-arrow-down" size="20"></v-icon>
     <div class="mb-4 story_text">
       When only considering the selected features,
       <span class="highlight">{{ lbl(dataStore.target_feature) }}</span>
       would be
-      <span class="highlight">{{influenceStore.influence.explanation_prediction.toFixed(0)}}</span>.
+      <span class="highlight2">{{influenceStore.influence.explanation_prediction.toFixed(0)}}</span>.
     </div>
     <div v-if="false">
       Prediction: {{dataStore.instance[dataStore.target_feature] - dataStore.data_summary.mean}}

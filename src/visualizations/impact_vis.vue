@@ -36,11 +36,8 @@ watch(() => detailStore.selected_feature, () => {
 })
 
 const get_prediction = () => {
-  let value = Math.round(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean)
-  if (value > 0) {
-    return `+${value}`
-  }
-  return value
+  const value = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
+  return (value > 0 ? "+" : "-") + Math.abs(value / dataStore.data_summary.mean * 100).toFixed(0) + "%"
 }
 
 const get_feature_name = () => {
@@ -55,7 +52,7 @@ const update_vis = () => {
   const svg_height = 120
   const y_padding_below = 30
   const y_padding_top = 30
-  const padding_sides = 45
+  const padding_sides = 65
 
   let svg = d3.create("svg")
       .attr("width", svg_width + 20)
@@ -71,10 +68,10 @@ const update_vis = () => {
       .range([padding_sides/2, svg_width-padding_sides/2])
 
   const range = dataStore.get_subset_influence_range()
-  let min_y = range[0]
-  let max_y = range[1]
+  let min_y = to_percent(range[0])
+  let max_y = to_percent(range[1])
 
-  let y = d3.scaleLinear()
+  let y = d3.scaleLinear().nice()
       .domain([min_y, max_y])
       .range([svg_height- y_padding_below, y_padding_top])
 
@@ -93,7 +90,7 @@ const update_vis = () => {
   let area_below_zero = d3.area()
       .x(d => x(d.x))
       .y0(y(0))
-      .y1(d => y(d.impact < 0 ? d.impact : 0))
+      .y1(d => y(d.impact < 0 ? to_percent(d.impact) : 0))
   svg.append("path")
       .datum(values)
       .attr("d", area_below_zero)
@@ -102,7 +99,7 @@ const update_vis = () => {
   let area_above_zero = d3.area()
       .x(d => x(d.x))
       .y0(y(0))
-      .y1(d => y(d.impact > 0 ? d.impact : 0))
+      .y1(d => y(d.impact > 0 ? to_percent(d.impact) : 0))
   svg.append("path")
       .datum(values)
       .attr("d", area_above_zero)
@@ -111,7 +108,7 @@ const update_vis = () => {
   // add curve for vis_bins
   let line = d3.line()
       .x(d => x(d.x))
-      .y(d => y(d.impact))
+      .y(d => y(to_percent(d.impact)))
   svg.append("path")
       .datum(values)
       .attr("fill", "none")
@@ -169,12 +166,7 @@ const update_vis = () => {
   svg.append("g")
       .attr("transform", `translate(${padding_sides/2}, 0)`)
       .call(d3.axisLeft(y)
-          .tickFormat((d) => {
-            if (d > 0) {
-              return "+" + d
-            }
-            return d
-          })
+          .tickFormat((d) => get_value_text(d))
           .ticks(5))
 
   // turn around whole svg 90 degrees
@@ -187,6 +179,15 @@ const update_vis = () => {
   d3.select(container.value).selectAll("*").remove()
   d3.select(container.value).node().append(svg.node())
 
+}
+
+const get_value_text = (value:number) => {
+  //percentage
+  return (value > 0 ? "+" : "") + value.toFixed(0) + "%"
+}
+
+const to_percent = (value:number) => {
+  return value / dataStore.data_summary.mean * 100
 }
 
 </script>

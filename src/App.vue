@@ -147,8 +147,8 @@ html, body {
 }
 
 .highlight {
-  font-family: "monospace", monospace;
-
+  background: #f0f0f0;
+  padding: 2px
 
 }
 

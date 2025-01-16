@@ -241,10 +241,10 @@ export class Group extends GroupClass {
                 d3.select(event.target.parentNode).selectAll(".details")
                     .style("opacity", "0")
             })
-            .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
+            .attr("x", d.score < 0 ? crawler.get_value(d.value) : crawler.get_value(d.value - d.score))
             .attr("y", crawler.offset)
             .attr("class", "bars" + crawler.offset)
-            .attr("width", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0))
+            .attr("width", crawler.get_value(Math.abs(d.score)) - crawler.get_value(0))
             .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
             .style("cursor", "pointer")
 
@@ -365,10 +365,10 @@ export class Feature extends GroupClass {
                     .style("opacity", "0")
             })
             .style("cursor", this.parent != null ? "pointer" : "default")
-            .attr("x", d.score < 0 ? crawler.scale.value(d.value) : crawler.scale.value(d.value - d.score))
+            .attr("x", d.score < 0 ? crawler.get_value(d.value) : crawler.get_value(d.value - d.score))
             .attr("y", crawler.offset)
             .attr("class", "bars" + crawler.offset)
-            .attr("width", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0))
+            .attr("width", crawler.get_value(Math.abs(d.score)) - crawler.get_value(0))
             .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
 
         //optionally animate
@@ -415,9 +415,9 @@ const add_value_line = (crawler: any, d: any, isLast: boolean, group_elements: a
     if (!isLast) {
         // draw value lines, vertically
         group_elements.append("line")
-            .attr("x1", crawler.scale.value(d.value))
+            .attr("x1", crawler.get_value(d.value))
             .attr("y1", crawler.offset)
-            .attr("x2", crawler.scale.value(d.value))
+            .attr("x2", crawler.get_value(d.value))
             .attr("y2", crawler.offset + 2 * crawler.bar_height + crawler.spacing_inside_group)
             .attr("class", "line_vertical" + crawler.offset)
             .attr("stroke", "grey")
@@ -441,7 +441,7 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
 
     // add feature names
     group_elements.append("text")
-            .attr("x", crawler.scale.value(x_position) - padding)
+            .attr("x", crawler.get_value(x_position) - padding)
             .attr("y", crawler.offset + crawler.bar_height / 2)
             .text(name)
             .attr("dy", ".4em")
@@ -452,27 +452,39 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
             .style("fill", "grey")
             .style("pointer-events", "none")
 
-    let value = d.score.toFixed(0)
-
     // add feature values
     group_elements.append("text")
-        .attr("x", crawler.scale.value(x_position) + padding)
+        .attr("x", crawler.get_value(x_position) + padding)
         .attr("y", crawler.offset + crawler.bar_height / 2)
-        .text(value)
+        .text(get_value_text(d.score, crawler))
         .attr("dy", ".4em")
         .attr("class", "text_feature_names" + crawler.offset)
         .style("font-size", "14px")
         .style("font-family", "Verdana")
         .style("text-anchor", x_position < 0 ? "start": "end")
-        .style("fill", crawler.scale.value(Math.abs(d.score)) - crawler.scale.value(0) < 10 ? "black": "white")
+        .style("fill", crawler.get_value(Math.abs(d.score)) - crawler.get_value(0) < 20 ? "black": "white")
         .style("pointer-events", "none")
 
+}
+
+const get_value_text = (value:number, crawler: any) => {
+  //absolute
+  //return Math.abs(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean).toFixed(0)
+
+  //percentage
+  return (value > 0 ? "+" : "") + (value / crawler.mean * 100).toFixed(0) + "%"
+
+
+}
+
+const to_percent = (value:number, crawler: any) => {
+  return value / crawler.mean * 100
 }
 
 const add_bar_score = (crawler: any, d: any, group_elements: any) => {
 
     group_elements.append("text")
-            .attr("x", crawler.scale.value(d.value))
+            .attr("x", crawler.get_value(d.value))
             .attr("y", crawler.offset + crawler.bar_height / 2)
             .text(d.score.toFixed(0))
             .attr("dy", ".4em")
@@ -487,7 +499,7 @@ const add_bar_score = (crawler: any, d: any, group_elements: any) => {
 const add_bar_size= (crawler: any, d: any, group_elements: any) => {
 
     group_elements.append("text")
-            .attr("x", crawler.scale.value(0))
+            .attr("x", crawler.get_value(0))
             .attr("y", crawler.offset + crawler.bar_height / 2)
             .text(" #" + d.get_size().toFixed(0))
             .attr("dy", ".4em")
@@ -507,9 +519,9 @@ const add_zero_line = (crawler: any, isLast: boolean) => {
     }
   // add black vertical line at 0
   crawler.layers[2].append("line")
-      .attr("x1", crawler.scale.value(0))
+      .attr("x1", crawler.get_value(0))
       .attr("y1", crawler.offset)
-      .attr("x2", crawler.scale.value(0))
+      .attr("x2", crawler.get_value(0))
       .attr("y2", end_y)
       .attr("stroke", "black")
       .attr("stroke-width", 2)
@@ -696,17 +708,17 @@ class Influence {
             let text = ""
             let group = this.groups[0]
             if (group != null) {
-                text += "The strongest influence is <span class='highlight'>"
+                text += "The strongest influence is <span class='highlight2'>"
                 text += group.get_score() > 0 ? "positive" : "negative"
                 text += "</span> and comes from ("
                 text += group.get_nr_features() == 1 ? "<span class='highlight'>" + group.get_name() :
                     "<span class='highlight'>" + group.get_name()
-                text += ") </span>. "
+                text += "</span> ). "
             }
             group = this.groups[1]
             if (group != null) {
                 text += "<br> Additionally, (<span class='highlight'>" + group.get_name() + "</span>)"
-                text += " has a <span class='highlight'>"
+                text += " has a <span class='highlight2'>"
                 text += group.get_score() > 0 ? "positive" : "negative"
                 text += "</span> influence. "
             }
