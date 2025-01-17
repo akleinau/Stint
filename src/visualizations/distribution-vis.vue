@@ -28,6 +28,7 @@ watch(() => props.feature_name, () => {
 const update_vis = () => {
   const bins = featureStore.get_feature_bins(props.feature_name)
   const full_count = d3.sum(bins.map(d => d.count))
+  const padding_left = 30
 
   const svg_width = 400
 
@@ -43,15 +44,15 @@ const update_vis = () => {
 
   const max_rect_height = 30
   const y = d3.scaleLinear()
-      .domain([0, max_count])
+      .domain([max_count, 0])
       .range([0, max_rect_height])
 
-  const rect_width = svg_width / bins.length
+  const rect_width = (svg_width - padding_left) / bins.length
 
 
   const x = d3.scaleLinear()
       .domain([feature_min, feature_max])
-      .range([rect_width/2, svg_width-rect_width/2])
+      .range([padding_left + rect_width/2, svg_width-rect_width/2])
 
   // add x-axis with padding
   const xAxis = d3.axisBottom(x)
@@ -98,9 +99,9 @@ const update_vis = () => {
   bin_elements
       .append("rect")
       .attr("x", (d :any) => d.min == undefined ? x(d.value) - rect_width/2 : x(d.min))
-      .attr("y", (d :any) => max_rect_height - y(d.count))
+      .attr("y", (d :any) => y(d.count))
       .attr("width", rect_width)
-      .attr("height", (d :any) => y(d.count))
+      .attr("height", (d :any) => y(0) - y(d.count))
       .attr("fill", (_,i) => i == featureStore.get_instance_bin_index(props.feature_name,instance_value.value) ? "grey" : "darkgrey")
 
   bin_elements
@@ -135,6 +136,22 @@ const update_vis = () => {
         d3.select(event.target.parentNode).selectAll("text")
             .style("opacity", "0")
       })
+
+      // add y-axis
+  svg.append("g")
+      .attr("transform", `translate(${padding_left -5}, 0)`)
+      .call(d3.axisLeft(y)
+          .tickFormat((d) => d)
+          .ticks(3))
+
+  // add line as replacement for x-axis
+  svg.append("line")
+      .attr("x1", padding_left)
+      .attr("y1", max_rect_height)
+      .attr("x2", svg_width)
+      .attr("y2", max_rect_height)
+      .attr("stroke", "grey")
+      .attr("stroke-width", 1)
 
 
 

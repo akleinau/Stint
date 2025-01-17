@@ -5,6 +5,7 @@ import {useDataStore} from "../stores/dataStore.ts";
 import {useDetailStore} from "../stores/detail_store.ts";
 import {useInfluenceStore} from "../stores/influence_store.ts";
 import {bin_discrete, useFeatureStore} from "../stores/feature_store.ts";
+import Constants from "../stores/constants.ts";
 
 const dataStore = useDataStore()
 const lbl = dataStore.get_label
@@ -94,7 +95,7 @@ const update_vis = () => {
   svg.append("path")
       .datum(values)
       .attr("d", area_below_zero)
-      .attr("fill", "#ffadb6")
+      .attr("fill", Constants.overview_color_negative)
 
   let area_above_zero = d3.area()
       .x(d => x(d.x))
@@ -103,7 +104,7 @@ const update_vis = () => {
   svg.append("path")
       .datum(values)
       .attr("d", area_above_zero)
-      .attr("fill", "#a6cff4")
+      .attr("fill", Constants.overview_color_positive)
 
   // add curve for vis_bins
   let line = d3.line()

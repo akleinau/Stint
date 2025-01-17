@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import {ref, useTemplateRef, watch} from 'vue'
 import {useDataStore} from "../stores/dataStore";
 import {useInfluenceStore} from "../stores/influence_store.ts";
+import Constants from "../stores/constants.ts";
 
 const dataStore = useDataStore()
 const lbl = dataStore.get_label
@@ -31,7 +32,6 @@ const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0,
 const bar_height = 25
 const padding_top = 20
 const padding_bar = 10
-const text_height = 20
 
 const updater = ref(0)
 let prediction = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
@@ -50,7 +50,7 @@ const update_vis = async (isSlow:boolean=true) => {
     return
   }
 
-  const height = padding_top + bar_height + 2*padding_bar + text_height
+  const height = padding_top + bar_height + 2*padding_bar
 
   let svg = d3.create("svg")
       .attr("width", 800)
@@ -80,7 +80,7 @@ const update_vis = async (isSlow:boolean=true) => {
             .attr("x", prediction < 0 ? scale.value(prediction) : scale.value(0))
             .attr("y", padding_top + padding_bar)
             .attr("width", scale.value(Math.abs(prediction)) - scale.value(0))
-            .attr("fill", prediction < 0 ? "#ffadb6" : "#a6cff4")
+            .attr("fill", prediction < 0 ? Constants.overview_color_negative : Constants.overview_color_positive)
             .style("cursor", "pointer")
 
         //optionally animate
@@ -92,15 +92,16 @@ const update_vis = async (isSlow:boolean=true) => {
             rect.attr("height", bar_height)
         }
 
-   // add text under the bar stating prediction value
+   // add text next to the bar stating prediction value
     layers[1].append("text")
-        .attr("x", scale.value(prediction))
-        .attr("y", padding_top + bar_height + padding_bar + text_height)
+        .attr("x", scale.value(prediction) + (prediction < 0 ? -5 : 5))
+        .attr("y", padding_top + bar_height)
+        .attr("dy", "0.2em")
         .text( (prediction > 0 ? " +" : "-") + get_prediction_text())
         .style("font-size", "15px")
         .style("color", "#555555")
         .style("font-weight", "bold")
-        .style("text-anchor", "middle")
+        .style("text-anchor", (prediction > 0 ? "start" : "end"))
 
 
   d3.select(container.value).node().append(svg.node())

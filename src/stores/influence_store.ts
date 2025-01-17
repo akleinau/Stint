@@ -3,6 +3,7 @@ import {useDataStore} from "./dataStore";
 import {useFeatureStore} from "./feature_store.ts";
 import * as d3 from "d3";
 import {useDetailStore} from "./detail_store.ts";
+import Constants from "./constants.ts";
 
 const sort_by_score = (a: GroupClass, b: GroupClass) => {
     return Math.abs(b.get_score()) - Math.abs(a.get_score())
@@ -226,7 +227,7 @@ export class Group extends GroupClass {
             .attr("y", crawler.offset)
             .attr("class", "bars" + crawler.offset)
             .attr("width", crawler.get_value(Math.abs(d.score)) - crawler.get_value(0))
-            .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
+            .attr("fill", d.score < 0 ? Constants.influence_color_negative : Constants.influence_color_positive)
             .style("cursor", "pointer")
 
         //optionally animate
@@ -366,7 +367,7 @@ export class Feature extends GroupClass {
             .attr("y", crawler.offset)
             .attr("class", "bars" + crawler.offset)
             .attr("width", crawler.get_value(Math.abs(d.score)) - crawler.get_value(0))
-            .attr("fill", d.score < 0 ? "crimson" : "darkslateblue")
+            .attr("fill", d.score < 0 ? Constants.influence_color_negative : Constants.influence_color_positive)
 
         //optionally animate
         if ((crawler.isSlow || this.manual_slow) && !crawler.areChangesSlow) {
@@ -416,7 +417,7 @@ const add_value_line = (crawler: any, d: any, isLast: boolean, group_elements: a
             .attr("x2", crawler.get_value(d.value))
             .attr("y2", crawler.offset + 2 * crawler.bar_height + crawler.spacing_inside_group)
             .attr("class", "line_vertical" + crawler.offset)
-            .attr("stroke", "grey")
+            .attr("stroke", "#000000")
             .attr("stroke-width", 2)
     }
 }
@@ -429,17 +430,19 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
     }
 
     let padding = d.value >= 0 ? 5 : -5
+    padding = isFirst ? padding : 2*padding
 
-    let name = (!isFirst? "when ": "") + d.get_name()
+    let prefix = isFirst ? "" : " when "
+
+    let name = d.get_name()
     if (name.length > 22) {
         name = name.slice(0, 20) + "..."
     }
 
     // add feature names
-    group_elements.append("text")
+    let text_element = group_elements.append("text")
             .attr("x", crawler.get_value(x_position) - padding)
             .attr("y", crawler.offset + crawler.bar_height / 2)
-            .text(name)
             .attr("dy", ".4em")
             .attr("class", "text_feature_names" + crawler.offset)
             .style("font-size", "14px")
@@ -447,6 +450,13 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
             .style("text-anchor", d.value >= 0 ? "end": "start")
             .style("fill", "black")
             .style("pointer-events", "none")
+    text_element
+            .append("tspan")
+            .text(prefix)
+            .style("font-weight", "bold")
+    text_element
+            .append("tspan")
+            .text(name)
 
     x_position = d.value < 0 ? Math.min(d.value, d.value - d.score) : Math.max(d.value, d.value - d.score)
 
