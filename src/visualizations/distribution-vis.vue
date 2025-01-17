@@ -25,27 +25,33 @@ watch(() => props.feature_name, () => {
   update_vis()
 })
 
+const get_value = (value, full_count) => {
+  return ((value/full_count)*100)
+}
+
 const update_vis = () => {
   const bins = featureStore.get_feature_bins(props.feature_name)
   const full_count = d3.sum(bins.map(d => d.count))
   const padding_left = 30
+  const padding_top = 15
 
   const svg_width = 400
 
   let svg = d3.create("svg")
       .attr("width", svg_width + 20)
-      .attr("height", 60)
-      .attr("viewBox",[-10, 0, svg_width + 20, 60])
+      .attr("height", 90)
+      .attr("viewBox",[-10, 0, svg_width + 20, 90])
 
   // add a distribution heatmap over the counts of the bins
   const max_count = d3.max(bins.map(d => d.count))
   const feature_min = d3.min(bins.map(d => 'value' in d ? +(d.value as number) : 'min' in d? +(d.min as number) : 0))
   const feature_max = d3.max(bins.map(d => 'value' in d ? +(d.value as number)  : 'max' in d? +(d.max as number) : 0))
 
-  const max_rect_height = 30
+  const max_rect_height = 70
   const y = d3.scaleLinear()
-      .domain([max_count, 0])
-      .range([0, max_rect_height])
+      .domain([get_value(max_count, full_count), 0])
+      .range([padding_top, max_rect_height])
+      .nice()
 
   const rect_width = (svg_width - padding_left) / bins.length
 
@@ -99,21 +105,20 @@ const update_vis = () => {
   bin_elements
       .append("rect")
       .attr("x", (d :any) => d.min == undefined ? x(d.value) - rect_width/2 : x(d.min))
-      .attr("y", (d :any) => y(d.count))
+      .attr("y", (d :any) => y(get_value(d.count, full_count)))
       .attr("width", rect_width)
-      .attr("height", (d :any) => y(0) - y(d.count))
+      .attr("height", (d :any) => y(0) - y(get_value(d.count, full_count)))
       .attr("fill", (_,i) => i == featureStore.get_instance_bin_index(props.feature_name,instance_value.value) ? "grey" : "darkgrey")
 
   bin_elements
       .append("text")
       .attr("x", (d :any) => x(d.min == undefined ? d.value : d.min))
-      .attr("y", max_rect_height - 15)
-      .attr("dy", "0.4em")
+      .attr("y", d => y(get_value(d.count, full_count)) - 5)
       .attr("text-anchor", "middle")
-      .attr("alignment-baseline", "middle")
-      .attr("fill", (d :any) => d.count > max_count/2 ? "white" : "black")
+      .attr("alignment-baseline", "top")
+      .attr("fill", "black")
       .style("opacity", "0")
-      .text((d :any) => ((d.count/full_count)*100).toFixed(1) + "%")
+      .text((d :any) => get_value(d.count, full_count).toFixed(1) + "%")
   bin_elements
       .append("text")
       .text((d :any) => d.min == undefined ? lbl(props.feature_name,d.value) : d.min + " - " + d.max)
@@ -141,7 +146,7 @@ const update_vis = () => {
   svg.append("g")
       .attr("transform", `translate(${padding_left -5}, 0)`)
       .call(d3.axisLeft(y)
-          .tickFormat((d) => d)
+          .tickFormat((d) => d + "%")
           .ticks(3))
 
   // add line as replacement for x-axis
