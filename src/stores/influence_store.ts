@@ -47,10 +47,11 @@ abstract class GroupClass {
     vis_bars(crawler: any, updater: any, isLast: boolean, isFirst: boolean, level:number = 0) {
         crawler.svg.attr("height", crawler.offset + crawler.bar_height + crawler.spacing_inside_group)
         let group_elements = crawler.layers[1].append("g")
+        let top_group_elements = crawler.layers[2].append("g")
         this.add_bar(crawler, this, updater, group_elements, level)
         //add_bar_score(crawler, this, group_elements)
         //add_bar_size(crawler, this, group_elements)
-        add_value_line(crawler, this, isLast, group_elements)
+        add_value_line(crawler, this, isLast, top_group_elements)
         add_feature_names(crawler, this, group_elements, isFirst)
         add_zero_line(crawler, isLast)
         crawler.offset += crawler.bar_height + crawler.spacing_inside_group
