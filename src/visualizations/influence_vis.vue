@@ -24,6 +24,7 @@ watch(() => influenceStore.influence, () => {
 
 //refs
 const container = useTemplateRef('container')
+const textual_summary = ref<string>("")
 
 const min = ref<number>(0)
 const max = ref<number>(1)
@@ -36,6 +37,7 @@ const updater = ref(0)
 
 watch(() => updater.value, () => {
   update_vis(false)
+  textual_summary.value = influenceStore.influence.get_textual_summary()
 })
 
 const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
@@ -136,7 +138,7 @@ const to_percent = (value:number) => {
       )
     </div>
     <div ref="container" class="px-5 pt-5"/>
-    <div style="text-align:center" class="story_text" v-html="influenceStore.get_textual_summary()">
+    <div style="text-align:center" class="story_text" v-html="textual_summary">
     </div>
   </div>
 </template>

@@ -93,6 +93,8 @@ abstract class GroupClass {
 
     abstract get_features(): string[]
 
+    abstract get_textual_summary(): string
+
 }
 
 export class Group extends GroupClass {
@@ -300,6 +302,28 @@ export class Group extends GroupClass {
             .style("cursor", "pointer")
     }
 
+    get_textual_summary() {
+        const mean = useDataStore().data_summary.mean
+
+        // create base text
+        const direction = this.score > 0 ? "positive" : "negative"
+        let text = "<span class='highlight'>" +
+            this.get_name() +
+            "</span> have a <span class='highlight2'>" +
+            direction +
+            "</span> influence (" +
+            get_value_text(this.score, mean) + ")"
+
+        // collect visible features and add them to the text
+
+        if (this.isOpen) {
+            text += " and is influenced by "
+            text += this.features.map(f => f.get_name()).join(", ")
+        }
+
+        return text
+    }
+
 }
 
 export class Feature extends GroupClass {
@@ -357,10 +381,12 @@ export class Feature extends GroupClass {
             .on("mouseenter", (event: any, _: any) => {
                 d3.select(event.target.parentNode).selectAll(".details")
                     .style("opacity", 1)
+                updater.value += 1
             })
             .on("mouseout", (event: any, _: any) => {
                 d3.select(event.target.parentNode).selectAll(".details")
                     .style("opacity", "0")
+                updater.value += 1
             })
             .style("cursor", this.parent != null ? "pointer" : "default")
             .attr("x", d.score < 0 ? crawler.get_value(d.value) : crawler.get_value(d.value - d.score))
@@ -392,10 +418,12 @@ export class Feature extends GroupClass {
             .on("mouseenter", (event: any, _: any) => {
                 d3.select(event.target.parentNode).selectAll(".details")
                     .style("opacity", 1)
+                updater.value += 1
             })
             .on("mouseout", (event: any, _: any) => {
                 d3.select(event.target.parentNode).selectAll(".details")
                     .style("opacity", "0")
+                updater.value += 1
             })
             .style("cursor", this.parent != null ? "pointer" : "default")
             .attr("x",0)
@@ -404,6 +432,17 @@ export class Feature extends GroupClass {
             .attr("height", crawler.bar_height)
             .attr("opacity", 0.0)
 
+    }
+
+    get_textual_summary() {
+        const mean = useDataStore().data_summary.mean
+        const direction = this.score > 0 ? "positive" : "negative"
+        return "<span class='highlight'>" +
+            this.get_name() +
+            "</span> has a <span class='highlight2'>" +
+            direction +
+            "</span> influence (" +
+            get_value_text(this.score, mean) + ")."
     }
 
 }
@@ -435,8 +474,8 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
     let prefix = isFirst ? "" : " when "
 
     let name = d.get_name()
-    if (name.length > 22) {
-        name = name.slice(0, 20) + "..."
+    if (name.length > 32) {
+        name = name.slice(0, 30) + "..."
     }
 
     // add feature names
@@ -464,7 +503,7 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
     group_elements.append("text")
         .attr("x", crawler.get_value(x_position) + padding)
         .attr("y", crawler.offset + crawler.bar_height / 2)
-        .text(get_value_text(d.score, crawler))
+        .text(get_value_text(d.score, crawler.mean))
         .attr("dy", ".4em")
         .attr("class", "text_feature_names" + crawler.offset)
         .style("font-size", "14px")
@@ -475,12 +514,12 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
 
 }
 
-const get_value_text = (value:number, crawler: any) => {
+const get_value_text = (value:number, mean: any) => {
   //absolute
   //return Math.abs(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean).toFixed(0)
 
   //percentage
-  return (value > 0 ? "+" : "") + (value / crawler.mean * 100).toFixed(0) + "%"
+  return (value > 0 ? "+" : "") + (value / mean * 100).toFixed(0) + "%"
 
 
 }
@@ -712,24 +751,14 @@ class Influence {
         }
 
         get_textual_summary() {
-            // get the two most important groups and state if they are positive or negative
+            // print one summary for each group, separated by a line break
             let text = ""
-            let group = this.groups[0]
-            if (group != null) {
-                text += "The strongest influence is <span class='highlight2'>"
-                text += group.get_score() > 0 ? "positive" : "negative"
-                text += "</span> and comes from ("
-                text += group.get_nr_features() == 1 ? "<span class='highlight'>" + group.get_name() :
-                    "<span class='highlight'>" + group.get_name()
-                text += "</span> ). "
+
+            for (const group of this.groups) {
+                text += group.get_textual_summary() + "<br>"
             }
-            group = this.groups[1]
-            if (group != null) {
-                text += "<br> Additionally, (<span class='highlight'>" + group.get_name() + "</span>)"
-                text += " has a <span class='highlight2'>"
-                text += group.get_score() > 0 ? "positive" : "negative"
-                text += "</span> influence. "
-            }
+
+
             return text
         }
 
