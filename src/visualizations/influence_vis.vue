@@ -37,7 +37,6 @@ const updater = ref(0)
 
 watch(() => updater.value, () => {
   update_vis(false)
-  textual_summary.value = influenceStore.influence.get_textual_summary()
 })
 
 const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
@@ -108,10 +107,31 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
 
   }
 
+  update_textual_summary()
+
 }
 
 const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const update_textual_summary = () => {
+  let new_textual_summary = influenceStore.influence.get_textual_summary()
+  if (new_textual_summary != textual_summary.value) {
+      textual_summary.value = influenceStore.influence.get_textual_summary()
+      highlight_textual_summary()
+  }
+}
+
+const highlight_textual_summary = () => {
+  // hide the summary for a moment, then show it again
+  let summary = document.getElementById("textual_summary")
+  summary.style.transition = "color 200ms"
+  summary.style.color = "darkgrey"
+  setTimeout(() => {
+    summary.style.color = "black"
+  }, 400)
+
 }
 
 const get_value_text = (value:number) => {
@@ -138,7 +158,7 @@ const to_percent = (value:number) => {
       )
     </div>
     <div ref="container" class="px-5 pt-5"/>
-    <div style="text-align:center" class="story_text" v-html="textual_summary">
+    <div style="text-align:center" class="story_text" id="textual_summary" v-html="textual_summary">
     </div>
   </div>
 </template>

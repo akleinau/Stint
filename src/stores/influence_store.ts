@@ -19,6 +19,7 @@ abstract class GroupClass {
     parent: Group | null = null
     manual_slow: boolean = false
     influence_object: any
+    detailIsOpen: boolean = false
 
     protected constructor(influence_object) {
         this.parent = null
@@ -282,7 +283,7 @@ export class Group extends GroupClass {
         //add second boundary box to close the group again on move out
         crawler.layers[2].append("rect")
             .on("mouseover", () => {
-                if (this.isOpen && !this.isFreezedOpen) {
+                if (this.isOpen) {
                     this.isOpen = false
                     for (let j = 0; j < this.get_nr_features(); j++) {
                         this.features[j].isOpen = false
@@ -304,21 +305,48 @@ export class Group extends GroupClass {
 
     get_textual_summary() {
         const mean = useDataStore().data_summary.mean
-
-        // create base text
-        const direction = this.score > 0 ? "positive" : "negative"
-        let text = "<span class='highlight'>" +
-            this.get_name() +
-            "</span> have a <span class='highlight2'>" +
-            direction +
-            "</span> influence (" +
-            get_value_text(this.score, mean) + ")"
+        let text = ""
 
         // collect visible features and add them to the text
-
         if (this.isOpen) {
-            text += " and is influenced by "
-            text += this.features.map(f => f.get_name()).join(", ")
+            // get first feature/ group
+            let first = this.features[0]
+            let first_score = first.get_score()
+            let direction = first_score > 0 ? "positive" : "negative"
+            text += "<span class='highlight'>" + first.get_name() + "</span> " +
+                "has a <span class='highlight2'>" + direction + "</span> influence (" +
+                get_value_text(first.get_score(), mean) + ")."
+
+            //  get second feature/ group
+            if (this.features.length > 1) {
+                let second = this.features[1]
+                let second_score = second.get_score()
+                let direction = first_score * second_score > 0 ? "amplified" : "diminished"
+                if ((first_score + second_score) * first_score < 0) {
+                    direction = "reversed"
+                }
+                text += " When <span class='highlight'>" + second.get_name() + "</span>, " +
+                    "this effect is " + direction + " (by " + get_value_text(second.get_score(), mean) + ")."
+
+
+                // go through the rest of the features
+                for (let i = 2; i < this.features.length; i++) {
+                    let feature = this.features[i]
+                    let direction = first_score * feature.get_score() > 0 ? "amplified" : "diminished"
+                    text += " When <span class='highlight'>" + feature.get_name() + "</span>, " +
+                        "it is " + direction + " (by " + get_value_text(feature.get_score(), mean) + ")."
+                }
+
+            }
+        }
+        else {
+            const direction = this.score > 0 ? "positive" : "negative"
+            text += "<span class='highlight'>" +
+                this.get_name() +
+                "</span> has a <span class='highlight2'>" +
+                direction +
+                "</span> influence (" +
+                get_value_text(this.score, mean) + ")"
         }
 
         return text
@@ -379,14 +407,20 @@ export class Feature extends GroupClass {
                 }
             })
             .on("mouseenter", (event: any, _: any) => {
-                d3.select(event.target.parentNode).selectAll(".details")
-                    .style("opacity", 1)
-                updater.value += 1
+                if (!this.parent.detailIsOpen) {
+                    d3.select(event.target.parentNode).selectAll(".details")
+                        .style("opacity", 1)
+                    this.parent.detailIsOpen = true
+                    updater.value += 1
+                }
             })
             .on("mouseout", (event: any, _: any) => {
-                d3.select(event.target.parentNode).selectAll(".details")
-                    .style("opacity", "0")
-                updater.value += 1
+                if (this.parent.detailIsOpen) {
+                    d3.select(event.target.parentNode).selectAll(".details")
+                        .style("opacity", "0")
+                    this.parent.detailIsOpen = false
+                    updater.value += 1
+                }
             })
             .style("cursor", this.parent != null ? "pointer" : "default")
             .attr("x", d.score < 0 ? crawler.get_value(d.value) : crawler.get_value(d.value - d.score))
@@ -416,14 +450,20 @@ export class Feature extends GroupClass {
                 }
             })
             .on("mouseenter", (event: any, _: any) => {
-                d3.select(event.target.parentNode).selectAll(".details")
-                    .style("opacity", 1)
-                updater.value += 1
+                if (!this.parent.detailIsOpen) {
+                    d3.select(event.target.parentNode).selectAll(".details")
+                        .style("opacity", 1)
+                    this.parent.detailIsOpen = true
+                    updater.value += 1
+                }
             })
             .on("mouseout", (event: any, _: any) => {
-                d3.select(event.target.parentNode).selectAll(".details")
-                    .style("opacity", "0")
-                updater.value += 1
+                if (this.parent.detailIsOpen) {
+                    d3.select(event.target.parentNode).selectAll(".details")
+                        .style("opacity", "0")
+                    this.parent.detailIsOpen = false
+                    updater.value += 1
+                }
             })
             .style("cursor", this.parent != null ? "pointer" : "default")
             .attr("x",0)
