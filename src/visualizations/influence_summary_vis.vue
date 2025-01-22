@@ -57,9 +57,9 @@ const update_vis = async (isSlow:boolean=true) => {
       .attr("height", height)
 
   const range = dataStore.get_subset_influence_range()
-  min.value = range[0]
-  max.value = range[1]
-  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([100, 700])
+  min.value = to_percent(range[0])
+  max.value = to_percent(range[1])
+  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([100, 700]).nice()
 
   let layers = []
   for (let i = 0; i < 3; i++) {
@@ -77,9 +77,9 @@ const update_vis = async (isSlow:boolean=true) => {
 
   // add one bar for the prediction
           let rect = layers[1].append("rect")
-            .attr("x", prediction < 0 ? scale.value(prediction) : scale.value(0))
+            .attr("x", prediction < 0 ? scale.value(to_percent(prediction)) : scale.value(0))
             .attr("y", padding_top + padding_bar)
-            .attr("width", scale.value(Math.abs(prediction)) - scale.value(0))
+            .attr("width", scale.value(Math.abs(to_percent(prediction))) - scale.value(0))
             .attr("fill", prediction < 0 ? Constants.overview_color_negative : Constants.overview_color_positive)
             .style("cursor", "pointer")
 
@@ -94,7 +94,7 @@ const update_vis = async (isSlow:boolean=true) => {
 
    // add text next to the bar stating prediction value
     layers[1].append("text")
-        .attr("x", scale.value(prediction) + (prediction < 0 ? -5 : 5))
+        .attr("x", scale.value(to_percent(prediction)) + (prediction < 0 ? -5 : 5))
         .attr("y", padding_top + bar_height)
         .attr("dy", "0.2em")
         .text( (prediction > 0 ? " +" : "-") + get_prediction_text())
@@ -116,6 +116,10 @@ const get_prediction_change_text = () => {
   else {
     return "increasing"
   }
+}
+
+const to_percent = (value:number) => {
+  return value / dataStore.data_summary.mean * 100
 }
 
 const get_prediction_text = () => {

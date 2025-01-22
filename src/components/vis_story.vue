@@ -26,13 +26,14 @@ watch(() => dataStore.instance, () => {
       How do they influence <span class="highlight2">{{lbl(dataStore.target_feature)}}</span>?
     </h3>
     <InfluenceVis />
-    <InfluenceSummaryVis />
 
     <!-- hint -->
-    <div class="w-100 d-flex justify-end align-right align-content-end align-end">
+    <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-5">
       <v-icon class="mr-1">mdi-cursor-default-click-outline </v-icon>
       <i> click on one of the features to learn more about its influence! </i>
     </div>
+
+    <InfluenceSummaryVis />
 
   </div>
 </template>

@@ -154,8 +154,7 @@ const to_percent = (value:number) => {
       of
        <span class="highlight2" v-if="dataStore.data_summary.mean !== undefined">
          {{dataStore.data_summary.mean.toFixed(0)}}
-       </span>
-      )
+       </span>)
     </div>
     <div ref="container" class="px-5 pt-5"/>
     <div style="text-align:center" class="story_text" id="textual_summary" v-html="textual_summary">
