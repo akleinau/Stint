@@ -21,7 +21,8 @@ export const useDataStore = defineStore({
         selected_feature: null as string | null,
         correlations: {} as { [key: string]: CorrelationMap}, // feature name -> CorrelationMap
         feature_abnormality: {} as { [key: string]: number }, // feature name -> abnormality value
-        feature_catalogue: {} as any
+        feature_catalogue: {} as any,
+        target_decimals: 0 as number
     }),
     actions: {
 
@@ -34,6 +35,18 @@ export const useDataStore = defineStore({
             this.interacting_features = []
             this.instance = {}
             this.feature_catalogue = {}
+        },
+
+        set_target_decimals() {
+            // get the number of decimals for the target feature
+            const target_feature = this.target_feature
+            const values = this.data.map(d => d[target_feature])
+            const max_value = d3.max(values)
+            const min_value = d3.min(values)
+            const range = max_value - min_value
+            this.target_decimals = Math.max(0, -Math.floor(Math.log10(range)) + 2)
+            console.log("target decimals", this.target_decimals)
+            console.log("range", range)
         },
 
         calculate_correlations() {

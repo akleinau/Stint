@@ -153,7 +153,7 @@ const to_percent = (value:number) => {
       <span class="highlight" >{{ lbl(dataStore.target_feature)}}</span>
       of
        <span class="highlight2" v-if="dataStore.data_summary.mean !== undefined">
-         {{dataStore.data_summary.mean.toFixed(0)}}
+         {{dataStore.data_summary.mean.toFixed(dataStore.target_decimals)}}
        </span>)
     </div>
     <div ref="container" class="px-5 pt-5"/>

@@ -56,13 +56,15 @@ watch( () => dataStore.interacting_features, () => {
     <DistributionVis :feature_name="dataStore.selected_feature"/>
     <div class="mb-2"  style="font-size:16px"> It has the following correlations with other features: </div>
     <div class="d-flex mb-2 justify-center">
-      <span v-if="hasCorrelations(props.feature)" class="text-grey-darken-1"></span>
-      <span v-else>(No correlations)</span>
-      <span v-for="(corr, other_feature) in dataStore.correlations[props.feature]">
+      <span v-if="hasCorrelations(props.feature)" class="text-grey-darken-1">
+        <span v-for="(corr, other_feature) in dataStore.correlations[props.feature]">
             <v-chip class="mx-2" v-if="Math.abs(corr) > 0.05" variant="outlined">
               {{ lbl(other_feature) }}: {{ corr.toFixed(2) }}
             </v-chip>
-          </span>
+        </span>
+      </span>
+      <span v-else>(No correlations)</span>
+
     </div>
 
   </div>
