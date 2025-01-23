@@ -46,7 +46,8 @@ const update_vis = async () => {
   xAxis.tickSize(10)
 
   // discrete
-  const classes = dataStore.feature_catalogue[dataStore.target_feature].classes
+  const target_catalogue = dataStore.feature_catalogue[dataStore.target_feature]
+  const classes = target_catalogue?.classes
 
   if (classes !== undefined) {
     xAxis.tickValues(classes.map((d : any) => d.value))
