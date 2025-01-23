@@ -49,7 +49,9 @@ export const useFeatureStore = defineStore({
             let target_feature = useDataStore().target_feature
 
             for (let feature of this.feature_names) {
-                const values = data.map((d) => d[feature])
+                const data_view = data.filter((d) => !isNaN(d[feature]))
+                const values = data_view.map((d) => d[feature])
+
                 const unique_values = Array.from(new Set(values)).sort()
 
                 //continuous

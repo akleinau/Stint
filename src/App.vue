@@ -58,6 +58,14 @@ const explain = async () => {
       </v-card-item>
       <v-card-text>
 
+        <div class="d-flex flex-column align-center mb-5 story_text px-10" style="text-align:center">
+          <i>
+
+            Stint shows you interactions in your data set relevant for predicting a target.
+            Use it before model training to understand your data set or after model training to understand your model's predictions.
+          </i>
+        </div>
+
         <DataInput/>
 
       </v-card-text>

@@ -159,13 +159,6 @@ const get_influence_sign_text = () => {
         by
        <span class="highlight2">{{ get_prediction_text() }}</span>.
     </div>
-    <v-icon icon="mdi-arrow-down" size="20"></v-icon>
-    <div class="mb-4 story_text">
-      When only considering the selected features,
-      <span class="highlight">{{ lbl(dataStore.target_feature) }}</span>
-      would be
-      <span class="highlight2">{{influenceStore.influence.explanation_prediction.toFixed(dataStore.target_decimals)}}</span>.
-    </div>
     <div v-if="false">
       Prediction: {{dataStore.instance[dataStore.target_feature] - dataStore.data_summary.mean}}
       Explanation: {{influenceStore.influence.explanation_prediction  - dataStore.data_summary.mean}}

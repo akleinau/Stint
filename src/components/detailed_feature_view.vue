@@ -37,7 +37,7 @@ watch( () => dataStore.interacting_features, () => {
   <div class="mb-2 mx-5 d-flex flex-column justify-center align-center w-100" v-if="dataStore.selected_feature != null">
 
 
-    <h3 class="mb-2"> The selected feature is
+    <h3 class="mb-2"> The selected attribute is
       <span class="highlight">
         {{ lbl(props.feature) }}: {{ lbl(props.feature, dataStore.instance[props.feature]) }}
       </span>
@@ -54,7 +54,7 @@ watch( () => dataStore.interacting_features, () => {
     </div>
     <div class="mb-2" style="font-size:16px"> It has the following value distribution: </div>
     <DistributionVis :feature_name="dataStore.selected_feature"/>
-    <div class="mb-2"  style="font-size:16px"> It has the following correlations with other features: </div>
+    <div class="mb-2"  style="font-size:16px"> It has the following correlations with other attributes: </div>
     <div class="d-flex mb-2 justify-center">
       <span v-if="hasCorrelations(props.feature)" class="text-grey-darken-1">
         <span v-for="(corr, other_feature) in dataStore.correlations[props.feature]">

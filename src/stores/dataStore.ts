@@ -35,6 +35,7 @@ export const useDataStore = defineStore({
             this.interacting_features = []
             this.instance = {}
             this.feature_catalogue = {}
+            this.storyIsVisible = false
         },
 
         set_target_decimals() {

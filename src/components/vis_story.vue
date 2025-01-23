@@ -4,6 +4,7 @@ import InfluenceSummaryVis from "../visualizations/influence_summary_vis.vue";
 import {useDataStore} from "../stores/dataStore";
 import {useInfluenceStore} from "../stores/influence_store.ts";
 import {watch} from "vue";
+import TargetVis from "../visualizations/target_vis.vue";
 
 const dataStore = useDataStore()
 const lbl = dataStore.get_label
@@ -34,6 +35,7 @@ watch(() => dataStore.instance, () => {
     </div>
 
     <InfluenceSummaryVis />
+    <TargetVis />
 
   </div>
 </template>

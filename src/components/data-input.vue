@@ -16,19 +16,36 @@ const isCustomInstance = ref(true)
 const isCustomDataset = ref(false)
 
 const make_numeric = (data: any) => {
-  // convert all columns to numeric
-  data.columns.forEach((col: string) => {
-    data.forEach((d: any) => {
-      d[col] = +d[col]
-    })
-  })
 
-  // delete all columns with non-numeric values
+  // delete all columns with too many non-numeric values
   let delete_cols = [] as string[]
   data.columns.forEach((col: string) => {
-    if (data.map((d: any) => d[col]).some((v: any) => isNaN(v))) {
-      console.log("Deleting column", col, "because it contains non-numeric values")
+    let uniques = Array.from(new Set(data.map((d: any) => d[col])))
+    let non_numeric_uniques = uniques.filter((u: any) => isNaN(u))
+    let non_numeric_uniques_cleaned = non_numeric_uniques.filter((u: any) => u !== "" && u !== "NA" && u != "NaN")
+
+    // features that are not useful
+    if (non_numeric_uniques_cleaned.length > 20) {
+      console.log("Deleting column", col, "because it contains too many non-numeric values")
       delete_cols.push(col)
+    }
+
+    // categorical features
+    else if (non_numeric_uniques_cleaned.length > 0) {
+      // add original labels to the feature catalogue
+      if (dataStore.feature_catalogue[col] == undefined) {
+        dataStore.feature_catalogue[col] = {name: col, classes: []}
+      }
+      let feature_calatogue = dataStore.feature_catalogue[col]
+      feature_calatogue.classes = non_numeric_uniques_cleaned.map((e, i) => { return {value: i, label: e}})
+
+      // and replace the values with the indices
+      data.forEach((d: any) => {
+        const d_class = feature_calatogue.classes.find((c: any) => c.label == d[col])
+        d[col] = d_class !== undefined ? d_class.value : null
+      })
+
+      console.log("Converting ", col, "to categorical")
     }
   })
   delete_cols.forEach((col: string) => {
@@ -37,6 +54,22 @@ const make_numeric = (data: any) => {
       delete d[col]
     })
   })
+
+
+  // convert all columns to numeric
+  data.forEach((d: any) => {
+    for (let key in d) {
+        let value = d[key]
+        if (isNaN(value || value === "")) {
+          d[key] = null
+        } else {
+          d[key] = +value
+        }
+    }
+  })
+
+  console.log(dataStore.feature_catalogue)
+
 
   return data
 }
@@ -95,12 +128,52 @@ const set_data = (data: any) => {
 const set_catalogue = (catalogue: any) => {
 
   // reformat catalogue to be a map of feature names to feature objects
-  let features = {} as any
   catalogue.features.forEach((f: any) => {
-    features[f.name] = f
+    let current_feature = dataStore.feature_catalogue[f.name]
+    if (current_feature == undefined) {
+      dataStore.feature_catalogue[f.name] = f
+    } else {
+      let old_classes = current_feature.classes
+      dataStore.feature_catalogue[f.name] = f
+
+      let new_classes = f.classes
+      if (new_classes == undefined) {
+        dataStore.feature_catalogue[f.name].classes = old_classes
+      }
+      else if (old_classes != undefined) {
+        // mesh the two class objects to one with the old_value, value and label
+        new_classes.forEach((new_class: any) => {
+          let old_class = old_classes.find((c: any) => c.label == new_class.value)
+          if (old_class != undefined) {
+            new_class.old_value = old_class.value
+            new_class.value = new_classes.indexOf(new_class)
+            if (new_class.label == undefined) {
+              new_class.label = old_class.label
+            }
+          }
+        })
+        // for all remaining classes that are not in the catalogue.json, add them
+        let next_value = new_classes.length
+        old_classes.forEach((old_class: any) => {
+          let new_class = new_classes.find((c: any) => c.value == old_class.label)
+          if (new_class == undefined) {
+            new_classes.push({value: next_value, label: old_class.label, old_value: old_class.value})
+            next_value += 1
+          }
+        })
+
+        // now go through the data and replace the old values with the new values
+        dataStore.data.forEach((d: any) => {
+          d[f.name] = new_classes.find((c: any) => c.old_value == d[f.name]).value
+        })
+
+      }
+
+
+    }
   })
 
-  dataStore.feature_catalogue = features
+  // select target specified in catalogue
   if (catalogue.target) {
     target_selected(catalogue.target)
   }
@@ -188,7 +261,7 @@ const get_feature_select_list = () => {
                           @update:modelValue="catalogue_uploaded"></v-file-input>
           </div>
           <div v-if="dataStore.feature_names.length !== 0" class=" w-50">
-            <v-autocomplete v-model="dataStore.target_feature" class="px-5" label="Select target feature"
+            <v-autocomplete v-model="dataStore.target_feature" class="px-5" label="Select the column containing your prediction/ ground truth"
                             :items="get_feature_select_list()"
                             item-value="value" item-title="title"
                             variant="underlined"
@@ -196,13 +269,18 @@ const get_feature_select_list = () => {
           </div>
         </div>
       </div>
-      <div v-else class="mx-3 align-center justify-center">
-        <div class="d-flex align-center justify-center">
+      <div v-else class="mx-3 align-center justify-center story_text">
+        <div class="d-flex flex-column align-center justify-center" style="text-align:center">
           Example data set: Bike rentals
+          <br>
+          This data set is used to predict the number of bike rentals per hour.
+          <br>
+          <a href="https://archive.ics.uci.edu/ml/datasets/Bike+Sharing+Dataset" target="_blank">
+            Click here for more information.
+          </a>
         </div>
 
       </div>
-
 
       <!-- Instance -->
       <div class="d-flex flex-column align-center justify-center mt-2" v-if="dataStore.target_feature !== ''">
@@ -254,7 +332,8 @@ const get_feature_select_list = () => {
       <!-- Interacting features -->
       <div class="d-flex flex-column align-center justify-center w-100 mt-3">
         <div v-if="dataStore.target_feature !== ''" class="mt-1 w-100">
-          <v-autocomplete v-model="dataStore.interacting_features" class="px-5" label="Select interacting features"
+          <v-autocomplete v-model="dataStore.interacting_features" class="px-5"
+                          label="Select the attributes you are interested in"
                           :items="dataStore.non_target_features"
                           multiple
                           @update:modelValue="interacting_features_selected"/>

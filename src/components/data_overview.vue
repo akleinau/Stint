@@ -73,7 +73,7 @@ const get_bin_percent = (feature: string) => {
   <div class="d-flex justify-center flex-column" v-if="dataStore.storyIsVisible">
 
     <div class="d-flex justify-center mb-5">
-      <h3 > The following feature values are given: </h3>
+      <h3 > The following attributes are given: </h3>
     </div>
 
     <!-- background features -->
