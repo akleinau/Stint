@@ -1,5 +1,6 @@
 import {defineStore} from "pinia";
 import {useDataStore} from "./dataStore.ts";
+import constants from "./constants.ts";
 
 export interface bin {
     count: number,
@@ -15,8 +16,6 @@ export interface bin_continuous extends bin {
 export interface bin_discrete extends bin {
     value: number,
 }
-
-const max_discrete_bins = 24
 
 const make_binsize_pretty = (size: number) : number => {
     // round up n to nearest multiple of five
@@ -55,7 +54,7 @@ export const useFeatureStore = defineStore({
                 const unique_values = Array.from(new Set(values)).sort()
 
                 //continuous
-                if (unique_values.length > max_discrete_bins) {
+                if (unique_values.length > constants.max_discrete_bins) {
                     this.feature_types[feature] = "continuous"
                     let bin_number = 20
                     let min = Math.min(...values)

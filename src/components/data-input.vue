@@ -4,6 +4,7 @@ import * as d3 from "d3";
 
 import {useDataStore} from "../stores/dataStore.ts";
 import {useFeatureStore} from "../stores/feature_store.ts";
+import constants from "../stores/constants.ts";
 
 const dataStore = useDataStore()
 const lbl = dataStore.get_label
@@ -25,7 +26,7 @@ const make_numeric = (data: any) => {
     let non_numeric_uniques_cleaned = non_numeric_uniques.filter((u: any) => u !== "" && u !== "NA" && u != "NaN")
 
     // features that are not useful
-    if (non_numeric_uniques_cleaned.length > 20) {
+    if (non_numeric_uniques_cleaned.length > constants.max_discrete_bins) {
       console.log("Deleting column", col, "because it contains too many non-numeric values")
       delete_cols.push(col)
     }
