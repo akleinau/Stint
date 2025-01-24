@@ -4,6 +4,7 @@ import AbnormalVis from "../visualizations/abnormal-vis.vue";
 import {useDataStore} from "../stores/dataStore.ts";
 import {useFeatureStore} from "../stores/feature_store.ts";
 import {watch} from "vue";
+import constants from "../stores/constants.ts";
 
 
 const props = defineProps(['feature', 'show_abnormal'])
@@ -14,7 +15,7 @@ const lbl = dataStore.get_label
 const featureStore = useFeatureStore()
 
 const hasCorrelations = (key: string) => {
-  return Object.values(dataStore.correlations[key]).some((v: number) => Math.abs(v) > 0.2)
+  return Object.values(dataStore.correlations[key]).some((v: number) => Math.abs(v) > constants.show_correlation_threshold)
 }
 
 const get_bin_percent = (feature: string) => {
@@ -45,7 +46,7 @@ watch( () => dataStore.interacting_features, () => {
     <div class="d-flex justify-center mt-2" v-if="props.show_abnormal">
       <AbnormalVis :feature_name="props.feature"/>
     </div>
-    <div style="font-size:15px" class="mb-5" v-if="dataStore.feature_abnormality[feature] > 0.5">
+    <div style="font-size:15px" class="mb-5" v-if="dataStore.feature_abnormality[feature] > constants.abnormal_boundary">
       {{ get_bin_percent(props.feature)}} of the instances have this value.
     </div>
 
@@ -58,7 +59,7 @@ watch( () => dataStore.interacting_features, () => {
     <div class="d-flex mb-2 justify-center">
       <span v-if="hasCorrelations(props.feature)" class="text-grey-darken-1">
         <span v-for="(corr, other_feature) in dataStore.correlations[props.feature]">
-            <v-chip class="mx-2" v-if="Math.abs(corr) > 0.05" variant="outlined">
+            <v-chip class="mx-2" v-if="Math.abs(corr) > constants.show_correlation_threshold" variant="outlined">
               {{ lbl(other_feature) }}: {{ corr.toFixed(2) }}
             </v-chip>
         </span>

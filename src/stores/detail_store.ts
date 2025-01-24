@@ -2,12 +2,15 @@ import {defineStore} from 'pinia'
 import {Feature, useInfluenceStore} from './influence_store.ts'
 import {bin_continuous, bin_discrete, useFeatureStore} from "./feature_store.ts";
 import {useDataStore} from "./dataStore.ts";
+import * as d3 from "d3";
 
 export const useDetailStore = defineStore({
     id: 'detail',
     state: () => ({
         selected_feature: null as Feature | null,
-        change_impacts: [] as {x: number, impact: number}[]
+        change_impacts: [] as {x: number, impact: number}[],
+        min_x: 0,
+        max_x: 0,
 
     }),
     actions: {
@@ -131,6 +134,8 @@ export const useDetailStore = defineStore({
             }
 
             this.change_impacts = impacts
+            this.min_x = d3.min(impacts.map(d => +d.x))
+            this.max_x = d3.max(impacts.map(d => +d.x))
 
         }
 

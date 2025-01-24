@@ -4,6 +4,7 @@ import {useFeatureStore} from "./feature_store.ts";
 import * as d3 from "d3";
 import {useDetailStore} from "./detail_store.ts";
 import Constants from "./constants.ts";
+import constants from "./constants.ts";
 
 const sort_by_score = (a: GroupClass, b: GroupClass) => {
     return Math.abs(b.get_score()) - Math.abs(a.get_score())
@@ -634,6 +635,18 @@ class Influence {
         }
     }
 
+    // the margin around the instance feature value in which we consider instances to be similar
+    get_similarity_margin(feature: string) {
+        const extent = d3.extent(useDataStore().data.map(d => d[feature]))
+        const range = extent[1] - extent[0]
+        return range * constants.similarity_margin_percent
+    }
+
+    // how strong the (pure) interaction effect has to be for the feature to be grouped in an interaction group
+    get_interaction_boundary() {
+        return useDataStore().data_summary.range * constants.interaction_effect_percent // at least 2% of the range
+    }
+
     calculate_main_effects() {
             const dataStore = useDataStore()
             const center = dataStore.data_summary.mean
@@ -657,7 +670,7 @@ class Influence {
             const feature_type = featureStore.feature_types[feature]
             if (feature_type === "continuous") {
                 // get similar instances in some margin around the instance value
-                const margin = d3.deviation(dataStore.data.map(d => d[feature])) * 0.2
+                const margin = this.get_similarity_margin(feature)
                 const min = instance_value - margin
                 const max = instance_value + margin
                 return dataStore.data.filter((d) => d[feature] >= min && d[feature] <= max)
@@ -678,20 +691,18 @@ class Influence {
             const dataStore = useDataStore()
             let groups = [] as Group[]
             let features = dataStore.interacting_features
-            let isReduced = false
 
-            const correlation_threshold = 0.8
             let main_players = [] as (Feature | Group)[]
 
             //first group all features that have a high correlation together
             let remaining_features = [...features]
             for (const feature of features) {
-                let correlated_features = remaining_features.filter(f => dataStore.correlations[feature][f] > correlation_threshold)
+                let correlated_features = remaining_features.filter(f => dataStore.correlations[feature][f] > constants.correlation_group_threshold)
                 if (correlated_features.length > 0) {
                     correlated_features.push(feature)
                     correlated_features.sort((a, b) => Math.abs(this.main_effects[b].average) - Math.abs(this.main_effects[a].average))
 
-                    if (isReduced) {
+                    if (constants.is_reduced) {
                         // get the feature with the highest main effect and only add it
                         let main_feature = correlated_features[0]
                         main_players.push(new Feature(main_feature, this))
@@ -714,7 +725,7 @@ class Influence {
             main_players.sort(sort_by_score)
 
             //then go through them and either add them to a previous group when they interact, or create a new group
-            const interaction_boundary = dataStore.data_summary.range * 0.001
+            const interaction_boundary = this.get_interaction_boundary()
             const size_boundary = dataStore.get_min_subset_size()
 
             while (main_players.length > 0) {
@@ -746,7 +757,7 @@ class Influence {
             //sort groups by Math.abs(score)
             groups.sort(sort_by_score)
 
-            if (isReduced) {
+            if (constants.is_reduced) {
                 // delete all groups whose score is below the boundary
                 let boundary = dataStore.data_summary.std * 0.05
                 groups = groups.filter(g => Math.abs(g.get_score()) > boundary)

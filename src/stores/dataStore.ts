@@ -1,6 +1,7 @@
 import {defineStore} from 'pinia'
 import * as d3 from 'd3'
 import {useFeatureStore} from './feature_store'
+import constants from "./constants.ts";
 
 export interface CorrelationMap {
     [key: string]: number // feature name -> correlation value
@@ -87,7 +88,7 @@ export const useDataStore = defineStore({
         },
 
         get_min_subset_size(): number {
-            return Math.max(50, this.data.length * 0.001)
+            return Math.max(constants.min_subset_absolute, this.data.length * constants.min_subset_percent)
         },
 
         get_subset_influence_range(): [number, number]{

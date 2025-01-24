@@ -18,14 +18,6 @@ const container = useTemplateRef('container')
 
 const slider_value = ref<number>(0)
 
-const min_feature_value = (feature_name: string) => {
-  return d3.min(dataStore.data.map(d => d[feature_name]))
-}
-
-const max_feature_value = (feature_name: string) => {
-  return d3.max(dataStore.data.map(d => d[feature_name]))
-}
-
 const get_name = () => {
   return detailStore.selected_feature.get_feature_names()
 }
@@ -52,7 +44,7 @@ watch(() => slider_value.value, () => {
   // for continuous features, set the value to something reasonably rounded
   if (featureStore.get_feature_type(get_name()) == 'continuous') {
 
-    let range = max_feature_value(get_name()) - min_feature_value(get_name())
+    let range = detailStore.max_x - detailStore.min_x
     let step = Math.min(1, range / 100)
     let fraction_digits = Math.log10(1/step)
     dataStore.instance[get_name()] = +slider_value.value.toFixed(fraction_digits)
@@ -82,8 +74,8 @@ watch(() => slider_value.value, () => {
       </div>
       <ImpactVis />
       <div> {{ detailStore.selected_feature.get_name() }} </div>
-      <VSlider v-model="slider_value" :min="min_feature_value(get_name())"
-               :max="max_feature_value(get_name())" hide-details
+      <VSlider v-model="slider_value" :min="detailStore.min_x"
+               :max="detailStore.max_x" hide-details
                width="460px"/>
 
     </div>

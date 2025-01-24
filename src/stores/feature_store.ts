@@ -57,7 +57,7 @@ export const useFeatureStore = defineStore({
                 //continuous
                 if (unique_values.length > constants.max_discrete_bins) {
                     this.feature_types[feature] = "continuous"
-                    let bin_number = 20
+                    let bin_number = constants.continuous_bin_nr as number
                     let min = Math.min(...values)
                     let max = Math.max(...values)
                     const bin_size = make_binsize_pretty((max - min) / bin_number)

@@ -10,6 +10,7 @@ const featureStore = useFeatureStore()
 import AbnormalVis from "../visualizations/abnormal-vis.vue";
 import {ref, watch} from "vue";
 import DetailedFeatureView from "./detailed_feature_view.vue";
+import constants from "../stores/constants.ts";
 
 let show_details = ref<string>("")
 let show_details_background = ref<string>("")
@@ -42,7 +43,6 @@ const update = () => {
   show_details.value = ""
   background_features.value = []
   focus_features.value = []
-  const abnormal_boundary = 0.5
 
   if (!dataStore.storyIsVisible) {
     return
@@ -51,7 +51,7 @@ const update = () => {
   dataStore.calculate_abnormality()
 
   for (let feature of dataStore.shown_features) {
-    if (dataStore.feature_abnormality[feature] < abnormal_boundary) {
+    if (dataStore.feature_abnormality[feature] < constants.abnormal_boundary) {
       focus_features.value.push(feature)
     } else {
       background_features.value.push(feature)

@@ -60,8 +60,8 @@ const update_vis = () => {
       .attr("viewBox", [-10, 0, svg_width + 20, svg_height])
 
   // create x-axis based on keys of vis_bins and set_vis_bins
-  let min_x = d3.min(values.map(d => +d.x))
-  let max_x = d3.max(values.map(d => +d.x))
+  let min_x = detailStore.min_x
+  let max_x = detailStore.max_x
 
   let x = d3.scaleLinear()
       .domain([min_x,max_x])
