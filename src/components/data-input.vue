@@ -69,8 +69,6 @@ const make_numeric = (data: any) => {
     }
   })
 
-  console.log(dataStore.feature_catalogue)
-
 
   return data
 }
@@ -222,11 +220,6 @@ const interacting_features_selected = (cols: string[]) => {
 const get_discrete_select_list = (key: string) => {
   let bins = featureStore.get_feature_bins(key)
   let bin_values = bins.map((d: any) => d.value)
-
-  // check if bin_values are numerical and sort them accordingly
-  if (bin_values.every((v: any) => typeof v === 'number')) {
-    bin_values = bin_values.sort((a: any, b: any) => a - b)
-  }
 
   let bin_labels = bin_values.map((v: any) => lbl(key, v))
   return bin_values.map((v: any, i: number) => {

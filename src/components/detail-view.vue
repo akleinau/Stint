@@ -37,7 +37,6 @@ onMounted(() => {
 
 // trigger update on detailStore.selected_feature change
 watch(() => detailStore.selected_feature, () => {
-  console.log("update detail view")
   slider_value.value = dataStore.instance[get_name()]
 })
 

@@ -44,8 +44,6 @@ const update_vis = () => {
 
   // add a distribution heatmap over the counts of the bins
   const max_count = d3.max(bins.map(d => d.count))
-  const feature_min = d3.min(bins.map(d => 'value' in d ? +(d.value as number) : 'min' in d? +(d.min as number) : 0))
-  const feature_max = d3.max(bins.map(d => 'value' in d ? +(d.value as number)  : 'max' in d? +(d.max as number) : 0))
 
   const max_rect_height = 70
   const y = d3.scaleLinear()
@@ -53,12 +51,27 @@ const update_vis = () => {
       .range([padding_top, max_rect_height])
       .nice()
 
-  const rect_width = (svg_width - padding_left) / bins.length
+
+  const feature_min = d3.min(bins.map(d => 'value' in d ? +(d.value as number) : 'min' in d? +(d.min as number) : 0))
+  const feature_max = d3.max(bins.map(d => 'value' in d ? +(d.value as number)  : 'max' in d? +(d.max as number) : 0))
 
 
-  const x = d3.scaleLinear()
+
+  let rect_width = (svg_width - padding_left) / bins.length
+
+  let x = undefined
+
+  if (featureStore.get_feature_type(props.feature_name) == 'continuous') {
+    x = d3.scaleLinear()
       .domain([feature_min, feature_max])
-      .range([padding_left + rect_width/2, svg_width-rect_width/2])
+      .range([padding_left, svg_width])
+  }
+  else {
+    x = d3.scaleBand()
+        .domain(bins.map(d => d.value))
+        .range([padding_left, svg_width])
+    rect_width = x.bandwidth()
+  }
 
   // add x-axis with padding
   const xAxis = d3.axisBottom(x)
@@ -96,7 +109,7 @@ const update_vis = () => {
       .enter()
       .append("g")
       .attr("class", "bin_elements")
-        .attr("x", (d :any) => d.min == undefined ? x(d.value) - rect_width/2 : x(d.min))
+      .attr("x", (d :any) => (d.center == undefined ? x(d.value) : x(d.center)) )
       .attr("y", 5)
       .attr("width", rect_width)
       .attr("height", d => y(d.count))
@@ -104,15 +117,15 @@ const update_vis = () => {
   // add rectangles with size based on count, going upwards
   bin_elements
       .append("rect")
-      .attr("x", (d :any) => d.min == undefined ? x(d.value) - rect_width/2 : x(d.min))
+      .attr("x", (d :any) => (d.center == undefined ? x(d.value) : x(d.min)))
       .attr("y", (d :any) => y(get_value(d.count, full_count)))
-      .attr("width", rect_width)
+      .attr("width", (d : any) => (d.min == undefined ? rect_width : x(d.max) - x(d.min)))
       .attr("height", (d :any) => y(0) - y(get_value(d.count, full_count)))
       .attr("fill", (_,i) => i == featureStore.get_instance_bin_index(props.feature_name,instance_value.value) ? "grey" : "darkgrey")
 
   bin_elements
       .append("text")
-      .attr("x", (d :any) => x(d.min == undefined ? d.value : d.min))
+      .attr("x", (d :any) => d.center == undefined ? x(d.value) + rect_width/2 : x(d.center))
       .attr("y", d => y(get_value(d.count, full_count)) - 5)
       .attr("text-anchor", "middle")
       .attr("alignment-baseline", "top")
@@ -122,7 +135,7 @@ const update_vis = () => {
   bin_elements
       .append("text")
       .text((d :any) => d.min == undefined ? lbl(props.feature_name,d.value) : d.min + " - " + d.max)
-      .attr("x", (d :any) => x(d.min == undefined ? d.value : d.min))
+      .attr("x", (d :any) => d.center == undefined ? x(d.value) + rect_width/2 : x(d.center))
       .attr("y", max_rect_height + 14)
       .attr("text-anchor", "middle")
       .attr("alignment-baseline", "middle")

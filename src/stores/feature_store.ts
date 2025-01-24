@@ -11,6 +11,7 @@ export interface bin {
 export interface bin_continuous extends bin {
     min: number,
     max: number,
+    center: number,
 }
 
 export interface bin_discrete extends bin {
@@ -60,20 +61,20 @@ export const useFeatureStore = defineStore({
                     let min = Math.min(...values)
                     let max = Math.max(...values)
                     const bin_size = make_binsize_pretty((max - min) / bin_number)
-                    min = Math.floor(min / bin_size) * bin_size
-                    max = Math.ceil(max / bin_size) * bin_size
-                    bin_number = Math.round((max - min) / bin_size)
                     const logStep = Math.max(0, -Math.floor(Math.log10(bin_size)))
+                    min = Math.floor(min / bin_size) * bin_size
+                    max = Math.ceil((max + 1/(10**logStep)) / bin_size) * bin_size
+                    bin_number = Math.round((max - min) / bin_size)
+
 
                     const bins = Array.from({length: bin_number}, (_, i) => {
                         const i_min = (min + i * bin_size)
                         let i_max = i_min + bin_size
-                        if (i === bin_number - 1) {
-                            i_max = i_max + bin_size //makes sure the max value is included in the last bin
-                        }
+
                         return {
                             min: i_min.toFixed(logStep),
                             max: i_max.toFixed(logStep),
+                            center: (i_min + bin_size / 2).toFixed(logStep),
                             count: 0,
                             prediction_sum: 0,
                             prediction_mean: 0
@@ -103,6 +104,12 @@ export const useFeatureStore = defineStore({
                 //categorical/ discrete
                 else {
                     this.feature_types[feature] = "discrete"
+
+                    // sort unique values if they are numbers
+                    if (unique_values.every((value) => typeof value === "number")) {
+                        unique_values.sort((a, b) => a - b)
+                    }
+
                     const bins = unique_values.map((value) => {
                         return {
                             value: value,

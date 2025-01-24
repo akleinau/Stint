@@ -46,8 +46,6 @@ export const useDataStore = defineStore({
             const min_value = d3.min(values)
             const range = max_value - min_value
             this.target_decimals = Math.max(0, -Math.floor(Math.log10(range)) + 2)
-            console.log("target decimals", this.target_decimals)
-            console.log("range", range)
         },
 
         calculate_correlations() {

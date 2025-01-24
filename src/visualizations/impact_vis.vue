@@ -31,7 +31,6 @@ watch(() => dataStore.instance[detailStore.selected_feature.get_feature_names()]
 })
 
 watch(() => detailStore.selected_feature, () => {
-  console.log("update detail view")
   detailStore.calculate_feature_change_impact_values()
   update_vis()
 })
