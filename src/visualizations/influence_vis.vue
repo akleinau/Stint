@@ -25,6 +25,7 @@ watch(() => influenceStore.influence, () => {
 //refs
 const container = useTemplateRef('container')
 const textual_summary = ref<string>("")
+const short_textual_summary = ref<string>("")
 
 const min = ref<number>(0)
 const max = ref<number>(1)
@@ -118,7 +119,16 @@ const sleep = (ms: number) => {
 const update_textual_summary = () => {
   let new_textual_summary = influenceStore.influence.get_textual_summary()
   if (new_textual_summary != textual_summary.value) {
-      textual_summary.value = influenceStore.influence.get_textual_summary()
+      textual_summary.value = new_textual_summary
+
+      // split text at <br>, only keep the first two lines. If there are more than that, add ...
+      let lines = new_textual_summary.split("<br>")
+      if (lines.length > 3) {
+        lines = lines.slice(0,2)
+        lines.push("<b>...</b>")
+      }
+      short_textual_summary.value = lines.join("<br>")
+
       highlight_textual_summary()
   }
 }
@@ -157,8 +167,16 @@ const to_percent = (value:number) => {
        </span>)
     </div>
     <div ref="container" class="px-5 pt-5"/>
-    <div style="text-align:center" class="story_text" id="textual_summary" v-html="textual_summary">
+    <div>
+    <v-hover v-slot="{isHovering, props}" open-delay="200" close-delay="100">
+     <div v-bind="props" v-show="isHovering" style="text-align:center" class="story_text" v-html="textual_summary"
+       ></div>
+
+      <div v-bind="props" v-show="!isHovering" style="text-align:center" class="story_text" id="textual_summary" v-html="short_textual_summary"></div>
+
+    </v-hover>
     </div>
+
   </div>
 </template>
 
