@@ -14,28 +14,36 @@ const influenceStore = useInfluenceStore()
 // also watch dataStore.instance
 watch(() => dataStore.instance, () => {
   if (dataStore.storyIsVisible) {
-      influenceStore.calculate_influences()
+    influenceStore.calculate_influences()
   }
 
-}, {deep:true})
+}, {deep: true})
 
 </script>
 
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
     <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      How do they influence <span class="highlight2">{{lbl(dataStore.target_feature)}}</span>?
+      How do they influence <span class="highlight2">{{ lbl(dataStore.target_feature) }}</span>?
     </h3>
-    <InfluenceVis />
 
-    <!-- hint -->
-    <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-5">
-      <v-icon class="mr-1">mdi-cursor-default-click-outline </v-icon>
-      <i> click on one of the features to learn more about its influence! </i>
+    <div v-if="!isNaN(influenceStore.influence.explanation_prediction)">
+      <InfluenceVis/>
+
+      <!-- hint -->
+      <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-5">
+        <v-icon class="mr-1">mdi-cursor-default-click-outline</v-icon>
+        <i> click on one of the features to learn more about its influence! </i>
+      </div>
+
+      <InfluenceSummaryVis/>
+      <TargetVis/>
+
     </div>
-
-    <InfluenceSummaryVis />
-    <TargetVis />
+    <div class="story_text d-flex flex-column align-center" v-else>
+      <h3 class="pt-5">No data available</h3>
+      <span>Please check if there are any inconsistencies or impossible value combinations.</span>
+    </div>
 
   </div>
 </template>

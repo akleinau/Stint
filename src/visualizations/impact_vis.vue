@@ -36,6 +36,11 @@ watch(() => detailStore.selected_feature, () => {
 })
 
 const get_prediction = () => {
+
+  if (isNaN(influenceStore.influence.explanation_prediction)) {
+    return "(no data available)"
+  }
+
   const value = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
   return (value > 0 ? "+" : "-") + Math.abs(value / dataStore.data_summary.mean * 100).toFixed(0) + "%"
 }
@@ -47,6 +52,9 @@ const get_feature_name = () => {
 const update_vis = () => {
 
   let values = detailStore.change_impacts
+
+  // save NAN values extra and replace them in "values" with 0
+  let nan_values = values.filter(d => isNaN(d.impact))
 
   const svg_width = 500
   const svg_height = 120
@@ -107,6 +115,7 @@ const update_vis = () => {
 
   // add curve for vis_bins
   let line = d3.line()
+      .defined(d => !isNaN(d.impact))
       .x(d => x(d.x))
       .y(d => y(to_percent(d.impact)))
   svg.append("path")
