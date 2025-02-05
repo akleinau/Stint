@@ -16,7 +16,6 @@ abstract class GroupClass {
     score: number = 0
     value: number = 0
     isOpen: boolean = false
-    isFreezedOpen: boolean = false
     parent: Group | null = null
     manual_slow: boolean = false
     influence_object: any
@@ -401,28 +400,6 @@ export class Feature extends GroupClass {
     add_bar(crawler: any, d: any, updater: any, group_elements: any, level: number=0) {
        // draw bars
         let rect = group_elements.append("rect")
-            .on("click", () => {
-                if (this.parent != null) {
-                    useDetailStore().selected_feature = this
-                    updater.value += 1
-                }
-            })
-            .on("mouseenter", (event: any, _: any) => {
-                if (!this.parent.detailIsOpen) {
-                    d3.select(event.target.parentNode).selectAll(".details")
-                        .style("opacity", 1)
-                    this.parent.detailIsOpen = true
-                    updater.value += 1
-                }
-            })
-            .on("mouseout", (event: any, _: any) => {
-                if (this.parent.detailIsOpen) {
-                    d3.select(event.target.parentNode).selectAll(".details")
-                        .style("opacity", "0")
-                    this.parent.detailIsOpen = false
-                    updater.value += 1
-                }
-            })
             .style("cursor", this.parent != null ? "pointer" : "default")
             .attr("x", d.score < 0 ? crawler.get_value(d.value) : crawler.get_value(d.value - d.score))
             .attr("y", crawler.offset)
@@ -442,13 +419,22 @@ export class Feature extends GroupClass {
 
        // add transparent boundary box for feature selection
         group_elements.append("rect")
-           .on("click", () => {
-                if (this.parent != null) {
-                    this.parent.isFreezedOpen = !this.parent.isFreezedOpen
-                    console.log("freeze " + this.parent.isFreezedOpen)
-                    useDetailStore().selected_feature = this
-                    updater.value += 1
-                }
+            .style("cursor", this.parent != null ? "pointer" : "default")
+            .attr("x",0)
+            .attr("y", crawler.offset)
+            .attr("width", 10000)
+            .attr("height", crawler.bar_height)
+            .style("opacity", 0.0)
+            .style("fill", "#fdfbf1")
+           .on("click", async (event: any, _:any) =>  {
+               let target = d3.select(event.target)
+               target.style("opacity", 0.5)
+               // sleep a bit to make the opacity change visible before resetting the visualization
+               await new Promise(r => setTimeout(r, 60));
+
+                useDetailStore().selected_feature = this
+                updater.value += 1
+
             })
             .on("mouseenter", (event: any, _: any) => {
                 if (!this.parent.detailIsOpen) {
@@ -466,12 +452,6 @@ export class Feature extends GroupClass {
                     updater.value += 1
                 }
             })
-            .style("cursor", this.parent != null ? "pointer" : "default")
-            .attr("x",0)
-            .attr("y", crawler.offset)
-            .attr("width", 10000)
-            .attr("height", crawler.bar_height)
-            .attr("opacity", 0.0)
 
     }
 
