@@ -5,7 +5,7 @@ import {useDataStore} from "../stores/dataStore.ts";
 import {useInfluenceStore} from "../stores/influence_store.ts";
 import {useDetailStore} from "../stores/detail_store.ts";
 import {bin_discrete, useFeatureStore} from "../stores/feature_store.ts";
-import {onMounted, ref, useTemplateRef, watch} from "vue";
+import {onMounted, onUnmounted, ref, useTemplateRef, watch} from "vue";
 import * as d3 from "d3"
 
 let dataStore = useDataStore()
@@ -25,6 +25,11 @@ const get_name = () => {
 // on mount
 onMounted(() => {
   slider_value.value = dataStore.instance[get_name()]
+})
+
+// on demount
+onUnmounted(() => {
+  detailStore.selected_feature = null
 })
 
 // trigger update on detailStore.selected_feature change
