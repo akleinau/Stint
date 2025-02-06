@@ -61,8 +61,8 @@ const explain = async () => {
         <div class="d-flex flex-column align-center mb-5 story_text px-10" style="text-align:center">
           <i>
 
-            STINT shows you interactions in your data set relevant for predicting a target. <br>
-            <span style="color:#6a6c75"> eg. how are bike rentals influenced by the season and temperature? </span> <br>
+            STINT shows you interactions in your data set relevant for predicting a target, <br>
+            <span style="color:#6a6c75"> eg. how the hour and weekday play together when predicting bike rentals. </span> <br>
             Use it before model training to understand your data set or after model training to understand your models' predictions.
           </i>
         </div>

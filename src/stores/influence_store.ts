@@ -96,6 +96,8 @@ abstract class GroupClass {
 
     abstract get_textual_summary(): string
 
+    abstract close_all(): void
+
 }
 
 export class Group extends GroupClass {
@@ -256,9 +258,22 @@ export class Group extends GroupClass {
                 .style("opacity", "1")
 
             })
-            .on("mouseout", (event: any, _: any) => {
-                d3.select(event.target.parentNode).selectAll(".details")
-                    .style("opacity", "0")
+            .on("click", (event: any, _:any) => {
+                if (!this.isOpen) {
+
+                    //useInfluenceStore().influence.groups.forEach(g => g.close_all())
+
+                    this.isOpen = true
+                    updater.value += 1
+                }
+                else {
+                    this.isOpen = false
+                    updater.value += 1
+                }
+
+              d3.select(event.target.parentNode).selectAll(".details")
+                .style("opacity", "1")
+
             })
             .style("cursor", this.parent != null ? "pointer" : "default")
             .attr("x",0)
@@ -282,12 +297,10 @@ export class Group extends GroupClass {
 
         //add second boundary box to close the group again on move out
         crawler.layers[2].append("rect")
-            .on("mouseover", () => {
+            .on("mouseout", () => {
+                console.log("mouse over")
                 if (this.isOpen) {
-                    this.isOpen = false
-                    for (let j = 0; j < this.get_nr_features(); j++) {
-                        this.features[j].isOpen = false
-                    }
+                    this.close_all()
                     updater.value += 1
                 }
             })
@@ -298,8 +311,8 @@ export class Group extends GroupClass {
             //remove fill, only keep border
             .attr("fill", "none")
             .attr("stroke", "black")
-            .attr("stroke-width", 4)
-            .style("opacity", 0)
+            .attr("stroke-width", 1)
+            .style("opacity", 0.0)
             .style("cursor", "pointer")
     }
 
@@ -350,6 +363,13 @@ export class Group extends GroupClass {
         }
 
         return text
+    }
+
+    close_all() {
+        this.isOpen = false
+        for (let j = 0; j < this.get_nr_features(); j++) {
+            this.features[j].close_all()
+        }
     }
 
 }
@@ -426,16 +446,6 @@ export class Feature extends GroupClass {
             .attr("height", crawler.bar_height)
             .style("opacity", 0.0)
             .style("fill", "#fdfbf1")
-           .on("click", async (event: any, _:any) =>  {
-               let target = d3.select(event.target)
-               target.style("opacity", 0.5)
-               // sleep a bit to make the opacity change visible before resetting the visualization
-               await new Promise(r => setTimeout(r, 60));
-
-                useDetailStore().selected_feature = this
-                updater.value += 1
-
-            })
             .on("mouseenter", (event: any, _: any) => {
                 if (!this.parent.detailIsOpen) {
                     d3.select(event.target.parentNode).selectAll(".details")
@@ -444,13 +454,27 @@ export class Feature extends GroupClass {
                     updater.value += 1
                 }
             })
-            .on("mouseout", (event: any, _: any) => {
-                if (this.parent.detailIsOpen) {
-                    d3.select(event.target.parentNode).selectAll(".details")
-                        .style("opacity", "0")
-                    this.parent.detailIsOpen = false
-                    updater.value += 1
+            .on("click", async (event: any, _: any) => {
+                if (!this.parent.isOpen) {
+                    //useInfluenceStore().influence.groups.forEach(g => g.close_all())
+                    this.parent.isOpen = true
+                    d3.select(event.target).style("opacity", 0.5)
+                    // sleep a bit to make the opacity change visible before resetting the visualization
+                    await new Promise(r => setTimeout(r, 60));
                 }
+
+                useDetailStore().selected_feature = this
+                updater.value += 1
+            })
+            .on("touchstart", async (event: any, _: any) => {
+                useInfluenceStore().influence.groups.forEach(g => g.close_all())
+                this.parent.isOpen = true
+                d3.select(event.target).style("opacity", 0.5)
+                // sleep a bit to make the opacity change visible before resetting the visualization
+                await new Promise(r => setTimeout(r, 60));
+
+                useDetailStore().selected_feature = this
+                updater.value += 1
             })
 
     }
@@ -464,6 +488,10 @@ export class Feature extends GroupClass {
             direction +
             "</span> influence (" +
             get_value_text(this.score, mean) + ")."
+    }
+
+    close_all() {
+        this.isOpen = false
     }
 
 }
