@@ -88,6 +88,32 @@ const update_vis = async () => {
       .text(lbl(dataStore.target_feature))
       .style("font-size", "15px")
 
+  // add line for mean prediction with tooltip stating its value
+  svg.append("line")
+      .attr("x1", scale(dataStore.data_summary.mean))
+      .attr("y1", 20)
+      .attr("x2", scale(dataStore.data_summary.mean))
+      .attr("y2", 40)
+      .attr("stroke", "#606060")
+      .attr("stroke-width", 2)
+      .on("mouseover", function() {
+        svg.append("text")
+            .attr("class", "tooltip")
+            .attr("x", scale(dataStore.data_summary.mean))
+            .attr("y", 15)
+            .attr("text-anchor", "middle")
+            .style("stroke", "white")
+            .style("stroke-width", 7)
+            .style("fill", "#606060")
+            .style("font-size", "15px")
+            .style("paint-order", "stroke")
+            .style("stroke-linejoin", "round")
+            .text("average: " + dataStore.data_summary.mean.toFixed(dataStore.target_decimals))
+      })
+      .on("mouseout", function() {
+        svg.selectAll(".tooltip").remove()
+      })
+
   // add a circle for the prediction
   svg.append("circle")
       .attr("cx", scale(prediction))
