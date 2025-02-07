@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import * as d3 from "d3";
-import {useTemplateRef, watch} from "vue";
+import {onMounted, useTemplateRef, watch} from "vue";
 import {useDataStore} from "../stores/dataStore.ts";
 import {useInfluenceStore} from "../stores/influence_store.ts";
 
 const dataStore = useDataStore()
 const lbl = dataStore.get_label
 const influenceStore = useInfluenceStore()
+
+onMounted(() => {
+  update_vis()
+})
 
 // watch dataStore.influence_scores
 watch (() => influenceStore.influence.groups, (_) => {
