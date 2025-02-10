@@ -70,7 +70,7 @@ const explain = async () => {
             predictions.
           </i>
 
-          <img src="../public/stint1.png" alt="STINT" style="height: 40px" class="ma-4"/>
+          <img src="/stint1.png" alt="STINT" style="height: 40px" class="ma-4"/>
         </div>
       </v-card-item>
       <v-card-text>
