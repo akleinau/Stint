@@ -79,7 +79,7 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
       .attr("width", width)
       .attr("height", height)
       .attr("fill", "white")
-      .on("mouseenter", () => {
+      .on("mouseover", () => {
         influenceStore.close_all()
         updater.value += 1
       })

@@ -15,6 +15,7 @@ const catalogue_files = ref(null)
 const instance_nr = ref(26)
 const isCustomInstance = ref(true)
 const isCustomDataset = ref(false)
+const added_feature = ref(null)
 
 const make_numeric = (data: any) => {
 
@@ -233,6 +234,12 @@ const get_feature_select_list = () => {
   })
 }
 
+const add_feature = (item: any) => {
+  console.log(added_feature.value)
+  dataStore.interacting_features.push(added_feature.value[0])
+  added_feature.value = null
+}
+
 </script>
 
 <template>
@@ -276,63 +283,74 @@ const get_feature_select_list = () => {
 
       </div>
 
-      <!-- Instance -->
-      <div class="d-flex flex-column align-center justify-center mt-2" v-if="dataStore.target_feature !== ''">
+      <h3 class="mt-5"> Selected Attributes</h3>
 
-          <div v-for="key in dataStore.interacting_features" class="mt-1 w-100 d-flex flex-row align-center">
 
-            <!-- continuous -->
-            <div v-if="featureStore.get_feature_type(key) == 'continuous'" class="w-100">
-            <v-text-field v-model.number="dataStore.instance[key]" class="px-5 w-100" :label="key" type="number"
-                          :suffix="'(' + d3.min(dataStore.data.map(d => d[key])) + ' - ' + d3.max(dataStore.data.map(d => d[key])) + ')'"
-                          variant="underlined" hide-details density="compact" single-line>
-              <template v-slot:prepend-inner>
-                <div class="d-flex">
-                  <span> {{ key }} </span>
-                  <span> : </span>
-                </div>
-              </template>
-            </v-text-field>
-            </div>
+        <!-- Instance -->
+        <div class="d-flex flex-column align-center justify-center mt-0 w-50 px-5" v-if="dataStore.target_feature !== ''">
 
-            <!-- discrete -->
-            <div v-else class="w-100">
-              <v-select v-model="dataStore.instance[key]" class="px-5 w-100" :label="key"
-                        :items="get_discrete_select_list(key)"
-                        item-value="value"
-                        item-title="title"
-                        variant="underlined" hide-details density="compact" single-line>
+            <div v-for="key in dataStore.interacting_features" class="mt-1 w-100 d-flex flex-row align-center">
+
+              <!-- continuous -->
+              <div v-if="featureStore.get_feature_type(key) == 'continuous'" class="w-100">
+              <v-text-field v-model.number="dataStore.instance[key]" class="px-5 w-100" :label="key" type="number"
+                            :suffix="'(' + d3.min(dataStore.data.map(d => d[key])) + ' - ' + d3.max(dataStore.data.map(d => d[key])) + ')'"
+                            variant="underlined" hide-details density="compact" single-line>
                 <template v-slot:prepend-inner>
                   <div class="d-flex">
                     <span> {{ key }} </span>
                     <span> : </span>
                   </div>
                 </template>
-              </v-select>
+              </v-text-field>
+              </div>
+
+              <!-- discrete -->
+              <div v-else class="w-100">
+                <v-select v-model="dataStore.instance[key]" class="px-5 w-100" :label="key"
+                          :items="get_discrete_select_list(key)"
+                          item-value="value"
+                          item-title="title"
+                          variant="underlined" hide-details density="compact" single-line>
+                  <template v-slot:prepend-inner>
+                    <div class="d-flex">
+                      <span> {{ key }} </span>
+                      <span> : </span>
+                    </div>
+                  </template>
+                </v-select>
+
+              </div>
+
+              <!-- clear button -->
+              <v-btn @click="dataStore.interacting_features = dataStore.interacting_features.filter(a => a != key) "
+                     icon size="2" class="mb-2 text-grey">
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+
 
             </div>
 
-            <!-- clear button -->
-            <v-btn @click="dataStore.interacting_features = dataStore.interacting_features.filter(a => a != key) "
-                   icon size="2" class="mb-2 text-grey">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-
-
-          </div>
-
-      </div>
-
-      <!-- Interacting features -->
-      <div class="d-flex flex-column align-center justify-center w-100 mt-3">
-        <div v-if="dataStore.target_feature !== ''" class="mt-1 w-100">
-          <v-autocomplete v-model="dataStore.interacting_features" class="px-5"
-                          label="Select the attributes you are interested in"
-                          :items="dataStore.non_target_features"
-                          multiple
-                          @update:modelValue="interacting_features_selected"/>
         </div>
-      </div>
+
+        <!-- Interacting features -->
+        <div class="text-center mt-3">
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-btn variant="outlined" v-bind="props">
+                Add Attribute
+              </v-btn>
+            </template>
+
+            <v-list @click="add_feature" v-model:selected="added_feature">
+              <v-list-item v-for="(item, index) in dataStore.non_target_features.filter(f => !dataStore.interacting_features.includes(f))"
+                :key="index" :value="item"
+              >
+                <v-list-item-title>{{ item }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </div>
 
     </div>
   </div>

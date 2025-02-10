@@ -248,14 +248,20 @@ export class Group extends GroupClass {
 
         // add transparent boundary box for feature selection
         group_elements.append("rect")
+            .style("cursor", this.parent != null ? "pointer" : "default")
+            .attr("x",0)
+            .attr("y", crawler.offset)
+            .attr("width", 10000)
+            .attr("height", crawler.bar_height)
+            .attr("opacity", 0.0)
             .on("mouseenter", (event: any, _:any) => {
                 if (!this.isOpen) {
                     this.isOpen = true
                     updater.value += 1
                 }
 
-              d3.select(event.target.parentNode).selectAll(".details")
-                .style("opacity", "1")
+                d3.select(event.target.parentNode).selectAll(".details")
+                    .style("opacity", "1")
 
             })
             .on("click", (event: any, _:any) => {
@@ -275,12 +281,7 @@ export class Group extends GroupClass {
                 .style("opacity", "1")
 
             })
-            .style("cursor", this.parent != null ? "pointer" : "default")
-            .attr("x",0)
-            .attr("y", crawler.offset)
-            .attr("width", 10000)
-            .attr("height", crawler.bar_height)
-            .attr("opacity", 0.0)
+
 
     }
 
@@ -365,10 +366,8 @@ export class Group extends GroupClass {
     }
 
     close_all() {
-        if (this.isOpen) {
-            this.isOpen = false
-            this.features.forEach(f => f.close_all())
-        }
+        this.isOpen = false
+        this.features.forEach(f => f.close_all())
     }
 
 }
@@ -417,24 +416,6 @@ export class Feature extends GroupClass {
     }
 
     add_bar(crawler: any, d: any, updater: any, group_elements: any, level: number=0) {
-       // draw bars
-        let rect = group_elements.append("rect")
-            .style("cursor", this.parent != null ? "pointer" : "default")
-            .attr("x", d.score < 0 ? crawler.get_value(d.value) : crawler.get_value(d.value - d.score))
-            .attr("y", crawler.offset)
-            .attr("class", "bars" + crawler.offset)
-            .attr("width", crawler.get_value(Math.abs(d.score)) - crawler.get_value(0))
-            .attr("fill", d.score < 0 ? Constants.influence_color_negative : Constants.influence_color_positive)
-
-        //optionally animate
-        if ((crawler.isSlow || this.manual_slow) && !crawler.areChangesSlow) {
-            rect.transition()
-            .attr("height", crawler.bar_height)
-            this.manual_slow = false
-        }
-       else {
-            rect.attr("height", crawler.bar_height)
-        }
 
        // add transparent boundary box for feature selection
         group_elements.append("rect")
@@ -443,8 +424,11 @@ export class Feature extends GroupClass {
             .attr("y", crawler.offset)
             .attr("width", crawler.width - 20)
             .attr("height", crawler.bar_height)
+            .attr("class", "boundary_bars" + crawler.offset)
             .style("opacity", 0.0)
-            .style("fill", "#fdfbf1")
+            .style("fill", "#fffdf0")
+            .style("stroke", "#fffdf0")
+            .style("stroke-opacity", 0.0)
             .on("mouseenter", (event: any, _: any) => {
                 if (!this.parent.detailIsOpen) {
                     d3.select(event.target.parentNode).selectAll(".details")
@@ -452,15 +436,25 @@ export class Feature extends GroupClass {
                     this.parent.detailIsOpen = true
                     updater.value += 1
                 }
+
+                // add slight shadow to indicate that the group can be opened
+                d3.select(event.target).style("opacity", 0.7)
+                    .style("stroke-opacity", 0.5)
+
+            })
+            .on("mouseleave", (event: any, _: any) => {
+                d3.select(event.target).style("opacity", 0.0)
             })
             .on("click", async (event: any, _: any) => {
                 if (!this.parent.isOpen) {
                     //useInfluenceStore().influence.groups.forEach(g => g.close_all())
                     this.parent.isOpen = true
-                    d3.select(event.target).style("opacity", 0.5)
-                    // sleep a bit to make the opacity change visible before resetting the visualization
-                    await new Promise(r => setTimeout(r, 60));
                 }
+
+                d3.select(event.target)
+                    .style("fill", "#fffdd3")
+                // sleep a bit to make the opacity change visible before resetting the visualization
+                await new Promise(r => setTimeout(r, 60));
 
                 useDetailStore().selected_feature = this
                 updater.value += 1
@@ -468,13 +462,32 @@ export class Feature extends GroupClass {
             .on("touchstart", async (event: any, _: any) => {
                 this.influence_object.close_all()
                 this.parent.isOpen = true
-                d3.select(event.target).style("opacity", 0.5)
+                d3.select(event.target).style("opacity", 0.7)
                 // sleep a bit to make the opacity change visible before resetting the visualization
                 await new Promise(r => setTimeout(r, 60));
 
                 useDetailStore().selected_feature = this
                 updater.value += 1
             })
+
+               // draw bars
+            let rect = group_elements.append("rect")
+                .style("pointer-events", "none")
+                .attr("x", d.score < 0 ? crawler.get_value(d.value) : crawler.get_value(d.value - d.score))
+                .attr("y", crawler.offset)
+                .attr("class", "bars" + crawler.offset)
+                .attr("width", crawler.get_value(Math.abs(d.score)) - crawler.get_value(0))
+                .attr("fill", d.score < 0 ? Constants.influence_color_negative : Constants.influence_color_positive)
+
+            //optionally animate
+            if ((crawler.isSlow || this.manual_slow) && !crawler.areChangesSlow) {
+                rect.transition()
+                .attr("height", crawler.bar_height)
+                this.manual_slow = false
+            }
+           else {
+                rect.attr("height", crawler.bar_height)
+            }
 
     }
 

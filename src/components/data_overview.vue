@@ -16,10 +16,15 @@ let show_details = ref<string>("")
 let show_details_background = ref<string>("")
 let background_features = ref<string[]>([])
 let focus_features = ref<string[]>([])
+let selected_feature = ref<string>("")
 
 const toggle_details = (key: string) => {
   dataStore.selected_feature = dataStore.selected_feature === key ? null : key
 }
+
+watch(() => selected_feature.value, () => {
+  console.log("selected_feature", selected_feature.value)
+})
 
 const toggle_details_background = (key: string) => {
   dataStore.selected_feature = dataStore.selected_feature === key ? null : key
@@ -78,11 +83,11 @@ const get_bin_percent = (feature: string) => {
 
     <!-- background features -->
     <div  class="d-flex justify-center mb-3 flex-wrap">
-      <div v-for="key in background_features" class="pa-1">
-        <v-chip @click="toggle_details_background(key)" :variant="show_details_background == key? 'elevated' : 'tonal' ">
+      <v-chip-group v-for="key in background_features" class="pa-1" selected-class="selectedChip" v-model="dataStore.selected_feature">
+        <v-chip :variant="show_details_background == key? 'elevated' : 'tonal' " :value="key"  >
           {{lbl(key)}}: {{lbl(key, dataStore.instance[key])}}
         </v-chip>
-      </div>
+      </v-chip-group>
     </div>
 
     <div v-if="focus_features.length > 0" class="d-flex justify-center mb-5">
@@ -103,7 +108,7 @@ const get_bin_percent = (feature: string) => {
     </div>
 
     <!-- hint -->
-    <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-3">
+    <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-3 text-grey-darken-3">
       <v-icon class="mr-1">mdi-cursor-default-click-outline </v-icon>
       <i> click on the features for details! </i>
     </div>
@@ -113,5 +118,10 @@ const get_bin_percent = (feature: string) => {
 </template>
 
 <style scoped>
+
+.selectedChip{
+  background-color: rgb(143, 143, 143) !important;
+  color: white !important
+}
 
 </style>

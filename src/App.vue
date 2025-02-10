@@ -86,7 +86,7 @@ const explain = async () => {
       <v-btn @click="explain" class="bg-blue" id="explainButton">Explain</v-btn>
     </div>
 
-    <v-card class="h-100 mb-5" v-show="dataStore.storyIsVisible">
+    <v-card class="h-100 mb-3" v-show="dataStore.storyIsVisible">
       <v-card-text>
 
         <DataOverview/>
@@ -109,7 +109,7 @@ const explain = async () => {
       </v-card-actions>
     </v-card>
 
-    <v-card class="h-100 mb-5" v-show="dataStore.storyIsVisible" id="storyCard">
+    <v-card class="h-100 mb-3" v-show="dataStore.storyIsVisible" id="storyCard">
 
       <v-card-text>
 
@@ -171,6 +171,13 @@ html, body {
 .highlight {
   background: #f0f0f0;
   padding: 2px
+
+}
+
+.detailCard {
+  //border: 3px solid #000000 !important;
+  /* inset shadow */
+  //box-shadow: inset 0 0 10px #000000 !important;
 
 }
 
