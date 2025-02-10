@@ -34,7 +34,7 @@ const min = ref<number>(0)
 const max = ref<number>(1)
 const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, 800]))
 const bar_height = 25
-const padding_top = 20
+const padding_top = 10
 const padding_bar = 10
 
 const updater = ref(0)
@@ -144,10 +144,10 @@ const get_influence_sign_text = () => {
 const get_prediction_change_text = () => {
   const prediction = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
   if (prediction < 0) {
-    return "reducing"
+    return "reduce"
   }
   else {
-    return "increasing"
+    return "increase"
   }
 }
 
@@ -157,14 +157,12 @@ const get_prediction_change_text = () => {
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center pt-5">
     <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      Their combined influence is <span class="highlight2">{{get_influence_sign_text()}}</span>...
-    </h3>
-    <div class="pt-3 story_text" >
-       {{ get_prediction_change_text() }}
+      Combined, they
+        {{ get_prediction_change_text() }}
       <span class="highlight"> {{ lbl(dataStore.target_feature) }}</span>
         by
-       <span class="highlight2">{{ get_prediction_text() }}</span>.
-    </div>
+       <span class="highlight2">{{ get_prediction_text() }}</span>
+    </h3>
     <div ref="container" class="px-5"/>
     <div v-if="false">
       Prediction: {{dataStore.instance[dataStore.target_feature] - dataStore.data_summary.mean}}

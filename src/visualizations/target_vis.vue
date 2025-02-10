@@ -95,6 +95,7 @@ const update_vis = async () => {
       .attr("text-anchor", "middle")
       .text(lbl(dataStore.target_feature))
       .style("font-size", "15px")
+      .style("fill", "#555555")
 
   // add line for mean prediction with tooltip stating its value
   svg.append("line")
@@ -148,8 +149,8 @@ const update_vis = async () => {
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center mt-2">
     <v-icon icon="mdi-arrow-down" size="30"></v-icon>
-    <div class="story_text">
-      When only considering the selected features,
+    <div class="story_text mt-3">
+      When only considering the selected attributes,
       <span class="highlight">{{ lbl(dataStore.target_feature) }}</span>
       would be
       <span
