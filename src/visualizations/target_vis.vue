@@ -143,37 +143,11 @@ const update_vis = async () => {
 
 }
 
-const get_prediction_change_text = () => {
-  const prediction = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
-  if (prediction < 0) {
-    return "reducing"
-  }
-  else {
-    return "increasing"
-  }
-}
-
-const get_prediction_text = () => {
-  //absolute
-  //return Math.abs(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean).toFixed(0)
-
-  //percentage
-  return Math.abs((influenceStore.influence.explanation_prediction - dataStore.data_summary.mean) / dataStore.data_summary.mean * 100).toFixed(0) + "%"
-
-
-}
-
 </script>
 
 <template>
-  <div class="w-100 d-flex flex-column align-center justify-center mt-5">
-      <div class=" story_text" >
-      ... {{ get_prediction_change_text() }}
-      <span class="highlight"> {{ lbl(dataStore.target_feature) }}</span>
-        by
-       <span class="highlight2">{{ get_prediction_text() }}</span>.
-    </div>
-    <v-icon icon="mdi-arrow-down" size="20"></v-icon>
+  <div class="w-100 d-flex flex-column align-center justify-center mt-2">
+    <v-icon icon="mdi-arrow-down" size="30"></v-icon>
     <div class="story_text">
       When only considering the selected features,
       <span class="highlight">{{ lbl(dataStore.target_feature) }}</span>
@@ -181,7 +155,7 @@ const get_prediction_text = () => {
       <span
           class="highlight2">{{ influenceStore.influence.explanation_prediction.toFixed(dataStore.target_decimals) }}</span>.
     </div>
-    <div ref="container" class="px-5"/>
+    <div ref="container" class="px-5 pt-3"/>
   </div>
 </template>
 

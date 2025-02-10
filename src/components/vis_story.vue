@@ -37,7 +37,7 @@ watch(() => dataStore.instance, () => {
         <i> click on one of the features to learn more about its influence! </i>
       </div>
 
-      <InfluenceSummaryVis v-if="influenceStore.get_nr_of_groups() > 1"/>
+      <InfluenceSummaryVis v-if="dataStore.interacting_features.length > 1"/>
       <TargetVis/>
 
     </div>

@@ -141,13 +141,30 @@ const get_influence_sign_text = () => {
   }
 }
 
+const get_prediction_change_text = () => {
+  const prediction = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
+  if (prediction < 0) {
+    return "reducing"
+  }
+  else {
+    return "increasing"
+  }
+}
+
+
 </script>
 
 <template>
-  <div class="w-100 d-flex flex-column align-center justify-center">
+  <div class="w-100 d-flex flex-column align-center justify-center pt-5">
     <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
       Their combined influence is <span class="highlight2">{{get_influence_sign_text()}}</span>...
     </h3>
+    <div class="pt-3 story_text" >
+       {{ get_prediction_change_text() }}
+      <span class="highlight"> {{ lbl(dataStore.target_feature) }}</span>
+        by
+       <span class="highlight2">{{ get_prediction_text() }}</span>.
+    </div>
     <div ref="container" class="px-5"/>
     <div v-if="false">
       Prediction: {{dataStore.instance[dataStore.target_feature] - dataStore.data_summary.mean}}
