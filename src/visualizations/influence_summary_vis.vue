@@ -44,6 +44,16 @@ watch(() => updater.value, () => {
   update_vis(false)
 })
 
+const get_prediction_text = () => {
+  //absolute
+  //return Math.abs(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean).toFixed(0)
+
+  //percentage
+  return Math.abs((influenceStore.influence.explanation_prediction - dataStore.data_summary.mean) / dataStore.data_summary.mean * 100).toFixed(0) + "%"
+
+
+}
+
 const update_vis = async (isSlow:boolean=true) => {
 
   d3.select(container.value).selectAll("*").remove()
@@ -112,29 +122,11 @@ const update_vis = async (isSlow:boolean=true) => {
 
 }
 
-const get_prediction_change_text = () => {
-  const prediction = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
-  if (prediction < 0) {
-    return "reducing"
-  }
-  else {
-    return "increasing"
-  }
-}
-
 const to_percent = (value:number) => {
   return value / dataStore.data_summary.mean * 100
 }
 
-const get_prediction_text = () => {
-  //absolute
-  //return Math.abs(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean).toFixed(0)
 
-  //percentage
-  return Math.abs((influenceStore.influence.explanation_prediction - dataStore.data_summary.mean) / dataStore.data_summary.mean * 100).toFixed(0) + "%"
-
-
-}
 
 const get_influence_sign_text = () => {
   const influence = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
@@ -154,15 +146,9 @@ const get_influence_sign_text = () => {
 <template>
   <div class="w-100 d-flex flex-column align-center justify-center">
     <h3 class="pt-5" v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      ... their combined influence is <span class="highlight2">{{get_influence_sign_text()}}</span>:
+      Their combined influence is <span class="highlight2">{{get_influence_sign_text()}}</span>...
     </h3>
     <div ref="container" class="px-5"/>
-    <div class=" story_text" >
-      {{ get_prediction_change_text() }}
-      <span class="highlight"> {{ lbl(dataStore.target_feature) }}</span>
-        by
-       <span class="highlight2">{{ get_prediction_text() }}</span>.
-    </div>
     <div v-if="false">
       Prediction: {{dataStore.instance[dataStore.target_feature] - dataStore.data_summary.mean}}
       Explanation: {{influenceStore.influence.explanation_prediction  - dataStore.data_summary.mean}}

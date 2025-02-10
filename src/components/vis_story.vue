@@ -5,6 +5,7 @@ import {useDataStore} from "../stores/dataStore";
 import {useInfluenceStore} from "../stores/influence_store.ts";
 import {watch} from "vue";
 import TargetVis from "../visualizations/target_vis.vue";
+import {da} from "vuetify/locale";
 
 const dataStore = useDataStore()
 const lbl = dataStore.get_label
@@ -36,7 +37,7 @@ watch(() => dataStore.instance, () => {
         <i> click on one of the features to learn more about its influence! </i>
       </div>
 
-      <InfluenceSummaryVis/>
+      <InfluenceSummaryVis v-if="influenceStore.get_nr_of_groups() > 1"/>
       <TargetVis/>
 
     </div>

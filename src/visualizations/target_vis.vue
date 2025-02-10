@@ -35,6 +35,10 @@ const update_vis = async () => {
 
   const prediction = influenceStore.influence.explanation_prediction
 
+  if (isNaN(prediction) || !dataStore.storyIsVisible) {
+    return
+  }
+
    let svg = d3.create("svg")
       .attr("width", 800)
       .attr("height", 100)
@@ -139,10 +143,36 @@ const update_vis = async () => {
 
 }
 
+const get_prediction_change_text = () => {
+  const prediction = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
+  if (prediction < 0) {
+    return "reducing"
+  }
+  else {
+    return "increasing"
+  }
+}
+
+const get_prediction_text = () => {
+  //absolute
+  //return Math.abs(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean).toFixed(0)
+
+  //percentage
+  return Math.abs((influenceStore.influence.explanation_prediction - dataStore.data_summary.mean) / dataStore.data_summary.mean * 100).toFixed(0) + "%"
+
+
+}
+
 </script>
 
 <template>
-  <div class="w-100 d-flex flex-column align-center justify-center mt-2">
+  <div class="w-100 d-flex flex-column align-center justify-center mt-5">
+      <div class=" story_text" >
+      ... {{ get_prediction_change_text() }}
+      <span class="highlight"> {{ lbl(dataStore.target_feature) }}</span>
+        by
+       <span class="highlight2">{{ get_prediction_text() }}</span>.
+    </div>
     <v-icon icon="mdi-arrow-down" size="20"></v-icon>
     <div class="story_text">
       When only considering the selected features,

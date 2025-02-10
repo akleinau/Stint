@@ -287,9 +287,9 @@ export class Group extends GroupClass {
     add_group_box(crawler: any, initial_offset: number, final_offset: number, updater: any) {
         // add a rectangle around the group
         crawler.layers[0].append("rect")
-            .attr("x", 0)
+            .attr("x", 10)
             .attr("y", initial_offset-5)
-            .attr("width", 800)
+            .attr("width", crawler.width - 20)
             .attr("height", final_offset - initial_offset +5)
             .attr("fill", "#CCCCCC")
             .style("opacity", 0.2)
@@ -297,16 +297,15 @@ export class Group extends GroupClass {
 
         //add second boundary box to close the group again on move out
         crawler.layers[2].append("rect")
-            .on("mouseout", () => {
-                console.log("mouse over")
+            .on("mouseenter", () => {
                 if (this.isOpen) {
                     this.close_all()
                     updater.value += 1
                 }
             })
-            .attr("x", 0)
+            .attr("x", 10)
             .attr("y", initial_offset-5)
-            .attr("width", 800)
+            .attr("width", crawler.width - 20)
             .attr("height", final_offset - initial_offset +5)
             //remove fill, only keep border
             .attr("fill", "none")
@@ -366,9 +365,9 @@ export class Group extends GroupClass {
     }
 
     close_all() {
-        this.isOpen = false
-        for (let j = 0; j < this.get_nr_features(); j++) {
-            this.features[j].close_all()
+        if (this.isOpen) {
+            this.isOpen = false
+            this.features.forEach(f => f.close_all())
         }
     }
 
@@ -440,9 +439,9 @@ export class Feature extends GroupClass {
        // add transparent boundary box for feature selection
         group_elements.append("rect")
             .style("cursor", this.parent != null ? "pointer" : "default")
-            .attr("x",0)
+            .attr("x", 10)
             .attr("y", crawler.offset)
-            .attr("width", 10000)
+            .attr("width", crawler.width - 20)
             .attr("height", crawler.bar_height)
             .style("opacity", 0.0)
             .style("fill", "#fdfbf1")
@@ -467,7 +466,7 @@ export class Feature extends GroupClass {
                 updater.value += 1
             })
             .on("touchstart", async (event: any, _: any) => {
-                useInfluenceStore().influence.groups.forEach(g => g.close_all())
+                this.influence_object.close_all()
                 this.parent.isOpen = true
                 d3.select(event.target).style("opacity", 0.5)
                 // sleep a bit to make the opacity change visible before resetting the visualization
@@ -523,8 +522,8 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
     let prefix = isFirst ? "" : " when "
 
     let name = d.get_name()
-    if (name.length > 32) {
-        name = name.slice(0, 30) + "..."
+    if (name.length > 22) {
+        name = name.slice(0, 20) + "..."
     }
 
     // add feature names
@@ -821,6 +820,10 @@ class Influence {
             return text
         }
 
+        close_all() {
+            this.groups.forEach(g => g.close_all())
+        }
+
 
 
 
@@ -848,6 +851,14 @@ export const useInfluenceStore = defineStore({
 
         get_textual_summary() {
             return this.influence.get_textual_summary()
+        },
+
+        get_nr_of_groups() {
+            return this.influence.groups.length
+        },
+
+        close_all() {
+            this.influence.close_all()
         }
 
 

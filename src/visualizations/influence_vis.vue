@@ -53,9 +53,10 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
   }
 
   const height = influenceStore.influence.groups.length * 20 + d3.sum(influenceStore.influence.groups.map(g => g.get_nr_bars())) * (bar_height+10)
+  const width = 800
 
   let svg = d3.create("svg")
-      .attr("width", 800)
+      .attr("width", width)
       .attr("height", height)
 
   let data = influenceStore.influence.groups.flat()
@@ -72,6 +73,16 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
   for (let i = 0; i < 3; i++) {
     layers.push(svg.append("g"))
   }
+
+  // add background rectangle for capturing leave events
+  layers[0].append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "white")
+      .on("mouseenter", () => {
+        influenceStore.close_all()
+        updater.value += 1
+      })
 
 
   // add axis and add a "+" in front of positive values
@@ -101,7 +112,7 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
 
   let crawler = {offset: 30, spacing_between_groups:spacing_between_groups, layers:layers, get_value:get_value,
       spacing_inside_group:spacing_inside_group, scale:scale, svg:svg, bar_height:bar_height, isSlow:isSlow,
-    areChangesSlow:areChangesSlow, mean: dataStore.data_summary.mean}
+    areChangesSlow:areChangesSlow, mean: dataStore.data_summary.mean, width:width}
   for (let i = 0; i < influenceStore.influence.groups.length; i++) {
     let group: Group = influenceStore.influence.groups[i]
     group.vis_group(crawler, true, true, updater)
