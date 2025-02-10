@@ -83,6 +83,10 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
         influenceStore.close_all()
         updater.value += 1
       })
+      .on("touchstart", () => {
+        influenceStore.close_all()
+        updater.value += 1
+      })
 
 
   // add axis and add a "+" in front of positive values
