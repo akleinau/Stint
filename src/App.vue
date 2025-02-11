@@ -95,19 +95,21 @@ const explain = async () => {
 
     </v-card>
 
-    <v-card class="h-100 mb-5 detailCard mt-2" v-show="dataStore.storyIsVisible && dataStore.selected_feature != null">
+    <transition name="fade">
+      <v-card class="h-100 mb-5 detailCard mt-2" v-show="dataStore.storyIsVisible && dataStore.selected_feature != null">
 
-      <v-card-text class="d-flex flex-column align-center">
+        <v-card-text class="d-flex flex-column align-center">
 
-        <DetailedFeatureView :feature="dataStore.selected_feature" :show_abnormal="false"/>
+          <DetailedFeatureView :show_abnormal="false"/>
 
-      </v-card-text>
+        </v-card-text>
 
-      <v-card-actions class="bg-grey-lighten-2 justify-center">
-        <v-btn class="w-100" @click="dataStore.selected_feature = null" variant="text" prepend-icon="mdi-close">close
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+        <v-card-actions class="bg-grey-lighten-2 justify-center">
+          <v-btn class="w-100" @click="dataStore.selected_feature = null" variant="text" prepend-icon="mdi-close">close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </transition>
 
     <v-card class="h-100 mt-7" v-show="dataStore.storyIsVisible" id="storyCard">
 
@@ -118,22 +120,24 @@ const explain = async () => {
       </v-card-text>
     </v-card>
 
-    <v-card class="h-100 detailCard mt-2" v-if="dataStore.storyIsVisible && detailStore.selected_feature !== null">
+    <transition name="fade">
+      <v-card class="h-100 detailCard mt-2" v-if="dataStore.storyIsVisible && detailStore.selected_feature !== null">
 
 
-      <v-card-text>
+        <v-card-text>
 
-        <DetailView/>
+          <DetailView/>
 
-      </v-card-text>
+        </v-card-text>
 
-      <v-card-actions class="bg-grey-lighten-2 justify-center">
-        <v-btn class="w-100" @click="detailStore.selected_feature = null" variant="text" prepend-icon="mdi-close">
-          close
-        </v-btn>
-      </v-card-actions>
+        <v-card-actions class="bg-grey-lighten-2 justify-center">
+          <v-btn class="w-100" @click="detailStore.selected_feature = null" variant="text" prepend-icon="mdi-close">
+            close
+          </v-btn>
+        </v-card-actions>
 
-    </v-card>
+      </v-card>
+    </transition>
 
     <div v-if="dataStore.interacting_features.length !== 0"
          class="mt-1 mb-3 d-flex flex-column align-center pt-4 pb-4">
@@ -172,6 +176,14 @@ html, body {
   background: #f0f0f0;
   padding: 2px
 
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 2s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 
 .detailCard {

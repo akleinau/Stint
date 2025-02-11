@@ -30,6 +30,12 @@ const get_value = (value, full_count) => {
 }
 
 const update_vis = () => {
+
+  if (props.feature_name == null) {
+    return
+  }
+
+
   const bins = featureStore.get_feature_bins(props.feature_name)
   const full_count = d3.sum(bins.map(d => d.count))
   const padding_left = 30
