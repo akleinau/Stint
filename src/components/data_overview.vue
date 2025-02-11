@@ -110,7 +110,7 @@ const get_bin_percent = (feature: string) => {
     <!-- hint -->
     <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-3 text-grey-darken-3">
       <v-icon class="mr-1">mdi-cursor-default-click-outline </v-icon>
-      <i> click on the features for details! </i>
+      <i> click on the attributes for details! </i>
     </div>
 
 

@@ -186,6 +186,13 @@ const to_percent = (value:number) => {
        </span>)
     </div>
     <div ref="container" class="px-5 pt-5"/>
+
+    <!-- hint -->
+    <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-2 mb-5 text-grey-darken-3">
+      <v-icon class="mr-1">mdi-cursor-default-click-outline</v-icon>
+      <i> click on one of the attributes to learn more about its influence! </i>
+    </div>
+
     <div>
     <v-hover v-slot="{isHovering, props}" open-delay="200" close-delay="100">
      <div v-bind="props" v-show="isHovering" style="text-align:center" class="story_text" v-html="textual_summary"

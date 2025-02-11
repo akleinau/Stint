@@ -156,7 +156,7 @@ const update_vis = async () => {
       <span
           class="highlight2">{{ influenceStore.influence.explanation_prediction.toFixed(dataStore.target_decimals) }}</span>.
     </div>
-    <div ref="container" class="px-5 pt-3"/>
+    <div ref="container" class="px-5 pt-2"/>
   </div>
 </template>
 

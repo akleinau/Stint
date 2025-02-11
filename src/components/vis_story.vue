@@ -30,13 +30,6 @@ watch(() => dataStore.instance, () => {
 
     <div v-if="!isNaN(influenceStore.influence.explanation_prediction)">
       <InfluenceVis/>
-
-      <!-- hint -->
-      <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-5 text-grey-darken-3">
-        <v-icon class="mr-1">mdi-cursor-default-click-outline</v-icon>
-        <i> click on one of the features to learn more about its influence! </i>
-      </div>
-
       <InfluenceSummaryVis v-if="dataStore.interacting_features.length > 1"/>
       <TargetVis/>
 
