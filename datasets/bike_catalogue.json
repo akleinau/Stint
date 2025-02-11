@@ -3,7 +3,7 @@
 	"features": [
 		{
 			"name": "cnt",
-			"label": "nr of bike rentals"
+			"label": "hourly bike rentals"
 		},
 		{
 			"name": "workingday",

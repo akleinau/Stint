@@ -280,10 +280,8 @@ const interacting_features_updated = () => {
         </div>
       </div>
       <div v-else class="mx-3 align-center justify-center story_text">
-        <div class="d-flex flex-column align-center justify-center" style="text-align:center">
-          Example data set: Bike rentals
-          <br>
-          This data set is used to predict the number of bike rentals per hour.
+        <div class="d-flex flex-column align-center justify-center text-grey-darken-3" style="text-align:center">
+          Data set of hourly bike rentals depending on season, month, temperature, ...
           <br>
           <a href="https://archive.ics.uci.edu/ml/datasets/Bike+Sharing+Dataset" target="_blank">
             Click here for more information.
