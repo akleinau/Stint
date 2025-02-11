@@ -95,7 +95,6 @@ const update_vis = async (isSlow:boolean=true) => {
             .attr("y", padding_top + padding_bar)
             .attr("width", scale.value(Math.abs(to_percent(prediction))) - scale.value(0))
             .attr("fill", prediction < 0 ? Constants.overview_color_negative : Constants.overview_color_positive)
-            .style("cursor", "pointer")
 
         //optionally animate
         if (isSlow) {

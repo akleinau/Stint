@@ -86,7 +86,7 @@ const explain = async () => {
       <v-btn @click="explain" class="bg-blue" id="explainButton">Explain</v-btn>
     </div>
 
-    <v-card class="h-100 mb-3" v-show="dataStore.storyIsVisible">
+    <v-card class="h-100" v-show="dataStore.storyIsVisible">
       <v-card-text>
 
         <DataOverview/>
@@ -95,7 +95,7 @@ const explain = async () => {
 
     </v-card>
 
-    <v-card class="h-100 mb-5 detailCard" v-show="dataStore.storyIsVisible && dataStore.selected_feature != null">
+    <v-card class="h-100 mb-5 detailCard mt-2" v-show="dataStore.storyIsVisible && dataStore.selected_feature != null">
 
       <v-card-text class="d-flex flex-column align-center">
 
@@ -109,7 +109,7 @@ const explain = async () => {
       </v-card-actions>
     </v-card>
 
-    <v-card class="h-100 mb-3" v-show="dataStore.storyIsVisible" id="storyCard">
+    <v-card class="h-100 mt-7" v-show="dataStore.storyIsVisible" id="storyCard">
 
       <v-card-text>
 
@@ -118,7 +118,7 @@ const explain = async () => {
       </v-card-text>
     </v-card>
 
-    <v-card class="h-100 detailCard" v-if="dataStore.storyIsVisible && detailStore.selected_feature !== null">
+    <v-card class="h-100 detailCard mt-2" v-if="dataStore.storyIsVisible && detailStore.selected_feature !== null">
 
 
       <v-card-text>

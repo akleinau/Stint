@@ -4,11 +4,13 @@ import * as d3 from "d3";
 
 import {useDataStore} from "../stores/dataStore.ts";
 import {useFeatureStore} from "../stores/feature_store.ts";
+import {useInfluenceStore} from "../stores/influence_store.ts";
 import constants from "../stores/constants.ts";
 
 const dataStore = useDataStore()
 const lbl = dataStore.get_label
 const featureStore = useFeatureStore()
+const influenceStore = useInfluenceStore()
 
 const files = ref(null)
 const catalogue_files = ref(null)
@@ -234,10 +236,17 @@ const get_feature_select_list = () => {
   })
 }
 
-const add_feature = (item: any) => {
-  console.log(added_feature.value)
+const add_feature = (_: any) => {
   dataStore.interacting_features.push(added_feature.value[0])
   added_feature.value = null
+  interacting_features_updated()
+}
+
+const interacting_features_updated = () => {
+  dataStore.calculate_correlations()
+  if (dataStore.storyIsVisible) {
+    influenceStore.calculate_influences()
+  }
 }
 
 </script>
@@ -283,37 +292,36 @@ const add_feature = (item: any) => {
 
       </div>
 
-      <h3 class="mt-5"> Selected Attributes</h3>
+      <h3 class="mt-9"> Select Attributes</h3>
 
 
         <!-- Instance -->
-        <div class="d-flex flex-column align-center justify-center mt-0 w-50 px-5" v-if="dataStore.target_feature !== ''">
+        <div class="d-flex flex-column align-center justify-center mt-0 w-75 px-5" v-if="dataStore.target_feature !== ''">
 
-            <div v-for="key in dataStore.interacting_features" class="mt-1 w-100 d-flex flex-row align-center">
+            <div v-for="key in dataStore.interacting_features" class="mt-1 w-100 d-flex flex-row align-center ">
 
               <!-- continuous -->
-              <div v-if="featureStore.get_feature_type(key) == 'continuous'" class="w-100">
-              <v-text-field v-model.number="dataStore.instance[key]" class="px-5 w-100" :label="key" type="number"
-                            :suffix="'(' + d3.min(dataStore.data.map(d => d[key])) + ' - ' + d3.max(dataStore.data.map(d => d[key])) + ')'"
-                            variant="underlined" hide-details density="compact" single-line>
-                <template v-slot:prepend-inner>
-                  <div class="d-flex">
-                    <span> {{ key }} </span>
-                    <span> : </span>
-                  </div>
-                </template>
-              </v-text-field>
+              <div v-if="featureStore.get_feature_type(key) == 'continuous'" class="w-100 px-3">
+              <v-slider v-model="dataStore.instance[key]" :label="key" :min="d3.min(dataStore.data.map(d => d[key]))"
+                        :max="d3.max(dataStore.data.map(d => d[key]))" step="0.01" thumb-label color="grey-darken-1"
+                        thumb-size="20" hide-details single-line density="compact">
+                 <template v-slot:append>
+                   <v-text-field v-model="dataStore.instance[key]" density="compact" variant="underlined"
+                       style="width: 80px" type="number" hide-details single-line
+                   ></v-text-field>
+                 </template>
+              </v-slider>
               </div>
 
               <!-- discrete -->
-              <div v-else class="w-100">
-                <v-select v-model="dataStore.instance[key]" class="px-5 w-100" :label="key"
+              <div v-else class="w-100 px-5">
+                <v-select v-model="dataStore.instance[key]" class="w-100" :label="key"
                           :items="get_discrete_select_list(key)"
                           item-value="value"
                           item-title="title"
                           variant="underlined" hide-details density="compact" single-line>
                   <template v-slot:prepend-inner>
-                    <div class="d-flex">
+                    <div class="d-flex text-grey-darken-1">
                       <span> {{ key }} </span>
                       <span> : </span>
                     </div>
@@ -334,10 +342,11 @@ const add_feature = (item: any) => {
         </div>
 
         <!-- Interacting features -->
-        <div class="text-center mt-3">
+        <div class="text-center mt-3 mb-3">
           <v-menu>
             <template v-slot:activator="{ props }">
               <v-btn variant="outlined" v-bind="props">
+                 <v-icon>mdi-plus</v-icon>
                 Add Attribute
               </v-btn>
             </template>
