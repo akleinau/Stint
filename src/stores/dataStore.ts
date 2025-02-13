@@ -132,9 +132,10 @@ export const useDataStore = defineStore({
                 }
             }
 
+        },
+
+        get_interacting_features_reversed(): string[] {
+            return this.interacting_features.slice().reverse()
         }
-
-
-
     },
 })

@@ -40,7 +40,7 @@ export const useFeatureStore = defineStore({
 
         set_features() {
             const data = useDataStore().data
-            this.feature_names = data.columns
+            this.feature_names = Object.keys(data[0])
             this.calculate_feature_bins(data)
         },
 

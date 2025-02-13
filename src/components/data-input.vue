@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, onMounted} from 'vue'
+import {ref, onMounted, watch, nextTick} from 'vue'
 import * as d3 from "d3";
 
 import {useDataStore} from "../stores/dataStore.ts";
@@ -18,6 +18,10 @@ const instance_nr = ref(26)
 const isCustomInstance = ref(true)
 const isCustomDataset = ref(false)
 const added_feature = ref(null)
+const target = ref("")
+const target_is_categorical = ref(false)
+const target_categorical_value = ref("")
+const original_data = ref(null)
 
 const make_numeric = (data: any) => {
 
@@ -108,6 +112,7 @@ const uploaded = (files: any) => {
     set_data(data)
   }
   reader.readAsText(csvFile)
+  target.value = null
 }
 
 const catalogue_uploaded = (files: any) => {
@@ -124,6 +129,7 @@ const set_data = (data: any) => {
   data = make_numeric(data)
   data = add_id(data)
   dataStore.feature_names = data.columns
+  original_data.value = JSON.parse(JSON.stringify(data))
   dataStore.data = data
 }
 
@@ -182,8 +188,40 @@ const set_catalogue = (catalogue: any) => {
 }
 
 const target_selected = (col: string) => {
+  target.value = col
+  set_target(col)
+
+  // if target is categorical
+  target_is_categorical.value = featureStore.get_feature_type(col) == "discrete"
+  target_categorical_value.value = ""
+}
+
+const set_categorical_target_class = (col: string) => {
+
+  // if cleared, reset target
+  if (col == null) {
+    dataStore.data = JSON.parse(JSON.stringify(original_data.value))
+    set_target(target.value)
+    return
+  }
+
+  // create a new column with the selected class and set it as target
+  let new_col = target.value + " = " + lbl(target.value, +col)
+  dataStore.data = JSON.parse(JSON.stringify(original_data.value))
+  dataStore.data.forEach((d: any) => {
+    d[new_col] = d[target.value] == col ? 1 : 0
+  })
+
+  // add new column to catalogue with 0 as "No" and 1 as "Yes"
+  dataStore.feature_catalogue[new_col] = {name: new_col, classes: [{value: 0, label: "No"}, {value: 1, label: "Yes"}]}
+
+  set_target(new_col)
+
+}
+
+const set_target = (col: string) => {
+
   dataStore.target_feature = col
-  dataStore.instance = JSON.parse(JSON.stringify(dataStore.data[instance_nr.value])) //makes sure there is always an instance selected
   dataStore.non_target_features = dataStore.feature_names.filter((f: string) => f !== col)
   let summary = {} as any
   summary.mean = dataStore.data.map((d: any) => d[col]).reduce((a: number, b: number) => a + b) / dataStore.data.length
@@ -193,10 +231,9 @@ const target_selected = (col: string) => {
   summary.range = summary.max - summary.min
   dataStore.data_summary = summary
   dataStore.set_target_decimals()
-  //interacting_features_selected(dataStore.non_target_features)
 
+  dataStore.instance = JSON.parse(JSON.stringify(dataStore.data[instance_nr.value])) //makes sure there is always an instance selected
   featureStore.set_features()
-
 }
 
 const instance_selected = (_:any) => {
@@ -237,10 +274,23 @@ const get_feature_select_list = () => {
 }
 
 const add_feature = (_: any) => {
-  dataStore.interacting_features.push(added_feature.value[0])
+  let feature = added_feature.value
+  dataStore.interacting_features.push(feature)
   added_feature.value = null
   interacting_features_updated()
+
+  // focus next element
+  nextTick(() => {
+    const el = document.getElementById("instance_" + dataStore.get_interacting_features_reversed()[0])
+    if (el) {
+      // click on the element to open the select
+      el.focus()
+    }
+  })
+
 }
+
+
 
 const interacting_features_updated = () => {
   dataStore.calculate_correlations()
@@ -270,12 +320,30 @@ const interacting_features_updated = () => {
                           accept=".json"
                           @update:modelValue="catalogue_uploaded"></v-file-input>
           </div>
-          <div v-if="dataStore.feature_names.length !== 0" class=" w-50">
-            <v-autocomplete v-model="dataStore.target_feature" class="px-5" label="Select the column containing your prediction/ ground truth"
+          <div v-if="dataStore.feature_names.length !== 0" class="d-flex flex-column w-50 align-center justify-center">
+            <h3> Target </h3>
+            <v-autocomplete v-model="target" class="px-5 w-100" label="Select the column containing your prediction/ ground truth"
                             :items="get_feature_select_list()"
                             item-value="value" item-title="title"
                             variant="underlined"
                             @update:modelValue="target_selected"/>
+
+
+            <!-- if categorical, optionally select a class -->
+              <v-select v-if="target_is_categorical" v-model="target_categorical_value"
+                        class="w-100 mt-3" :label="target" clearable
+                        :items="get_discrete_select_list(target)"
+                        item-value="value"
+                        item-title="title"
+                        @update:modelValue="set_categorical_target_class"
+                        variant="underlined" hide-details density="compact" single-line>
+                <template v-slot:prepend-inner>
+                  <div class="d-flex text-grey-darken-1">
+                    <span> {{ target }} </span>
+                    <span> : </span>
+                  </div>
+                </template>
+              </v-select>
           </div>
         </div>
       </div>
@@ -292,17 +360,32 @@ const interacting_features_updated = () => {
 
       <h3 class="mt-9"> Select Attributes</h3>
 
+      <!-- Interacting features -->
+        <div class="text-center mt-3 w-50">
+          <!-- Interacting features -->
+          <div class="d-flex flex-column align-center justify-center w-100 mt-3">
+            <div v-if="dataStore.target_feature !== ''" class="mt-1 w-100">
+              <v-autocomplete v-model="added_feature" class="px-5"
+                              label="Add attribute" variant="outlined" id="attribute_add_component"
+                              :items="dataStore.non_target_features.filter(f => !dataStore.interacting_features.includes(f))"
+                              @update:modelValue="add_feature"/>
+            </div>
+          </div>
+
+        </div>
+
 
         <!-- Instance -->
-        <div class="d-flex flex-column align-center justify-center mt-0 w-75 px-5" v-if="dataStore.target_feature !== ''">
+        <div class="d-flex flex-column align-center justify-center mt-0 w-75 px-5 mb-5" v-if="dataStore.target_feature !== ''">
 
-            <div v-for="key in dataStore.interacting_features" class="mt-1 w-100 d-flex flex-row align-center ">
+            <div v-for="key in dataStore.get_interacting_features_reversed()"
+                 class="mt-1 w-100 d-flex flex-row align-center ">
 
               <!-- continuous -->
               <div v-if="featureStore.get_feature_type(key) == 'continuous'" class="w-100 px-3">
               <v-slider v-model="dataStore.instance[key]" :label="key" :min="d3.min(dataStore.data.map(d => d[key]))"
                         :max="d3.max(dataStore.data.map(d => d[key]))" step="0.01" thumb-label color="grey-darken-1"
-                        thumb-size="20" hide-details single-line density="compact">
+                        thumb-size="20" hide-details single-line density="compact" :id="'instance_' + key">
                  <template v-slot:append>
                    <v-text-field v-model="dataStore.instance[key]" density="compact" variant="underlined"
                        style="width: 80px" type="number" hide-details single-line
@@ -314,7 +397,7 @@ const interacting_features_updated = () => {
               <!-- discrete -->
               <div v-else class="w-100 px-5">
                 <v-select v-model="dataStore.instance[key]" class="w-100" :label="key"
-                          :items="get_discrete_select_list(key)"
+                          :items="get_discrete_select_list(key)" :id="'instance_' + key"
                           item-value="value"
                           item-title="title"
                           variant="underlined" hide-details density="compact" single-line>
@@ -339,25 +422,7 @@ const interacting_features_updated = () => {
 
         </div>
 
-        <!-- Interacting features -->
-        <div class="text-center mt-3 mb-3">
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn variant="outlined" v-bind="props">
-                 <v-icon>mdi-plus</v-icon>
-                Add Attribute
-              </v-btn>
-            </template>
 
-            <v-list @click="add_feature" v-model:selected="added_feature">
-              <v-list-item v-for="(item, index) in dataStore.non_target_features.filter(f => !dataStore.interacting_features.includes(f))"
-                :key="index" :value="item"
-              >
-                <v-list-item-title>{{ item }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </div>
 
     </div>
   </div>
