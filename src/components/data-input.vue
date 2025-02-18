@@ -320,7 +320,7 @@ const interacting_features_updated = () => {
                           accept=".json"
                           @update:modelValue="catalogue_uploaded"></v-file-input>
           </div>
-          <div v-if="dataStore.feature_names.length !== 0" class="d-flex flex-column w-50 align-center justify-center">
+          <div v-if="dataStore.feature_names.length !== 0" class="d-flex flex-column width75 align-center justify-center">
             <h3> Target </h3>
             <v-autocomplete v-model="target" class="px-5 w-100" label="Select the column containing your prediction/ ground truth"
                             :items="get_feature_select_list()"
@@ -361,7 +361,7 @@ const interacting_features_updated = () => {
       <h3 class="mt-9"> Select Attributes</h3>
 
       <!-- Interacting features -->
-        <div class="text-center mt-1 w-50">
+        <div class="text-center mt-1 width75 px-10">
           <!-- Interacting features -->
           <div class="d-flex flex-column align-center justify-center w-100 mt-3">
             <div v-if="dataStore.target_feature !== ''" class="mt-1 w-100">
@@ -380,7 +380,8 @@ const interacting_features_updated = () => {
 
 
         <!-- Instance -->
-        <div class="d-flex flex-column align-center justify-center mt-0 w-75 px-5 mb-5" v-if="dataStore.target_feature !== ''">
+        <div class="d-flex flex-column align-center justify-center mt-0 px-5 mb-5 width75"
+             v-if="dataStore.target_feature !== ''">
 
             <div v-for="key in dataStore.get_interacting_features_reversed()"
                  class="mt-1 w-100 d-flex flex-row align-center ">

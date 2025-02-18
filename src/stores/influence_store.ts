@@ -845,7 +845,8 @@ class Influence {
 export const useInfluenceStore = defineStore({
     id: 'influence',
     state: () => ({
-        influence: new Influence()
+        influence: new Influence(),
+        svg_width: 650,
     }),
     actions: {
         calculate_influences() {

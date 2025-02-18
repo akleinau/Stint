@@ -32,7 +32,7 @@ const container = useTemplateRef('container')
 
 const min = ref<number>(0)
 const max = ref<number>(1)
-const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, 800]))
+const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, influenceStore.svg_width]))
 const bar_height = 25
 const padding_top = 10
 const padding_bar = 10
@@ -67,7 +67,7 @@ const update_vis = async (isSlow:boolean=true) => {
   const height = padding_top + bar_height + 2*padding_bar
 
   let svg = d3.create("svg")
-      .attr("width", 800)
+      .attr("width", influenceStore.svg_width)
       .attr("height", height)
 
   const range = dataStore.get_subset_influence_range()

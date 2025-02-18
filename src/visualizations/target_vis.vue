@@ -40,13 +40,13 @@ const update_vis = async () => {
   }
 
    let svg = d3.create("svg")
-      .attr("width", 800)
+      .attr("width", influenceStore.svg_width)
       .attr("height", 100)
 
   const min = dataStore.data_summary.min
   const max = dataStore.data_summary.max
 
-  let scale = d3.scaleLinear().domain([min, max]).range([100, 700]).nice()
+  let scale = d3.scaleLinear().domain([min, max]).range([50, influenceStore.svg_width - 50]).nice()
 
   const xAxis = d3.axisBottom(scale)
 

@@ -33,7 +33,8 @@ const short_textual_summary = ref<string>("")
 
 const min = ref<number>(0)
 const max = ref<number>(1)
-const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, 800]))
+const width = influenceStore.svg_width
+const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, width]))
 const bar_height = 25
 const spacing_between_groups = 10
 const spacing_inside_group = 5
@@ -53,7 +54,7 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
   }
 
   const height = influenceStore.influence.groups.length * 20 + d3.sum(influenceStore.influence.groups.map(g => g.get_nr_bars())) * (bar_height+10)
-  const width = 800
+
 
   let svg = d3.create("svg")
       .attr("width", width)

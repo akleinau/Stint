@@ -28,7 +28,7 @@ watch(() => dataStore.instance, () => {
       How do they influence <span class="highlight2">{{ lbl(dataStore.target_feature) }}</span>?
     </h3>
 
-    <div v-if="!isNaN(influenceStore.influence.explanation_prediction)">
+    <div v-if="!isNaN(influenceStore.influence.explanation_prediction)" class="w-100">
       <InfluenceVis/>
       <InfluenceSummaryVis v-if="dataStore.interacting_features.length > 1"/>
       <TargetVis/>

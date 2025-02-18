@@ -49,7 +49,7 @@ const explain = async () => {
 </script>
 
 <template>
-  <div id="app">
+  <div id="app" class="px-2">
     <v-card class="mt-5 h-100 mb-2">
       <v-card-item>
         <v-card-title class="d-flex flex-column align-center mb-0">
@@ -59,7 +59,7 @@ const explain = async () => {
           </div>
         </v-card-title>
 
-        <div class="d-flex flex-column align-center story_text px-10 mt-0" style="text-align:center">
+        <div class="d-flex flex-column align-center story_text px-0 mt-0" style="text-align:center">
           <i>
 
             STINT shows you interactions in your data set relevant for predictions, <br>
@@ -82,7 +82,7 @@ const explain = async () => {
     </v-card>
 
     <div v-if="dataStore.interacting_features.length !== 0"
-         class="mt-1 mb-3 d-flex flex-column align-center pt-4 pb-4">
+         class="mt-1 mb-3 d-flex flex-column align-center pt-2 pb-4">
       <v-btn @click="explain" class="bg-blue" id="explainButton">Explain</v-btn>
     </div>
 
@@ -164,8 +164,12 @@ html, body {
 
 .v-card {
   margin: auto !important;
-  width: 900px !important;
+  max-width: 900px !important;
   font-size: 16px;
+}
+
+.width75 {
+  width: 650px;
 }
 
 .story_text {
