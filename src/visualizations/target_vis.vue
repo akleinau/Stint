@@ -147,9 +147,9 @@ const update_vis = async () => {
 </script>
 
 <template>
-  <div class="w-100 d-flex flex-column align-center justify-center mt-2">
+  <div class="w-100 d-flex flex-column align-center justify-center mt-0">
     <v-icon icon="mdi-arrow-down" size="30"></v-icon>
-    <div class="story_text mt-3">
+    <div class="story_text mt-2">
       When only considering the selected attributes,
       <span class="highlight">{{ lbl(dataStore.target_feature) }}</span>
       would be

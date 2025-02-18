@@ -57,8 +57,8 @@ const update_vis = () => {
   let nan_values = values.filter(d => isNaN(d.impact))
 
   const svg_width = 500
-  const svg_height = 120
-  const y_padding_below = 30
+  const svg_height = 115
+  const y_padding_below = 20
   const y_padding_top = 30
   const padding_sides = 65
 

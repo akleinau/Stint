@@ -35,7 +35,7 @@ const min = ref<number>(0)
 const max = ref<number>(1)
 const scale = ref<any>(d3.scaleLinear().domain([min.value, max.value]).range([0, 800]))
 const bar_height = 25
-const spacing_between_groups = 15
+const spacing_between_groups = 10
 const spacing_inside_group = 5
 
 const updater = ref(0)
@@ -188,12 +188,12 @@ const to_percent = (value:number) => {
     <div ref="container" class="px-5 pt-5"/>
 
     <!-- hint -->
-    <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-2 mb-5 text-grey-darken-3">
+    <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-1 mb-4 text-grey-darken-3">
       <v-icon class="mr-1">mdi-cursor-default-click-outline</v-icon>
       <i> click on one of the attributes to learn more about its influence! </i>
     </div>
 
-    <div>
+    <div class="mb-1">
     <v-hover v-slot="{isHovering, props}" open-delay="200" close-delay="100">
      <div v-bind="props" v-show="isHovering" style="text-align:center" class="story_text" v-html="textual_summary"
        ></div>

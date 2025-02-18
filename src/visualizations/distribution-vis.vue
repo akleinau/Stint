@@ -129,6 +129,16 @@ const update_vis = () => {
       .attr("height", (d :any) => y(0) - y(get_value(d.count, full_count)))
       .attr("fill", (_,i) => i == featureStore.get_instance_bin_index(props.feature_name,instance_value.value) ? "grey" : "darkgrey")
 
+  // extra: label of current bin
+  let current_bin = bins[featureStore.get_instance_bin_index(props.feature_name,instance_value.value)]
+  svg.append("text")
+      .attr("x", (current_bin.center == undefined) ? x(current_bin.value) + rect_width/2 : x(current_bin.center))
+      .attr("y", y(get_value(current_bin.count, full_count)) - 5)
+      .attr("text-anchor", "middle")
+      .attr("alignment-baseline", "top")
+      .attr("fill", "black")
+      .text((current_bin.count/full_count*100).toFixed(1) + "%")
+
   bin_elements
       .append("text")
       .attr("x", (d :any) => d.center == undefined ? x(d.value) + rect_width/2 : x(d.center))
@@ -136,7 +146,7 @@ const update_vis = () => {
       .attr("text-anchor", "middle")
       .attr("alignment-baseline", "top")
       .attr("fill", "black")
-      .style("opacity", "0")
+      .style("opacity", 0)
       .text((d :any) => get_value(d.count, full_count).toFixed(1) + "%")
   bin_elements
       .append("text")

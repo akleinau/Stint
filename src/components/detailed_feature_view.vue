@@ -66,17 +66,19 @@ watch( () => dataStore.selected_feature, () => {
     <div class="d-flex justify-center mt-2" v-if="props.show_abnormal">
       <AbnormalVis :feature_name="feature"/>
     </div>
-    <div style="font-size:15px" class="mb-5" v-if="dataStore.feature_abnormality[feature] > constants.abnormal_boundary">
-      {{ get_bin_percent(feature)}} of the instances have this value.
-    </div>
+    <div>
+      <span class="mb-1" style="font-size:16px"> Looking at its distribution,  </span>
+      <span style="font-size:15px" class="mb-5" v-if="dataStore.feature_abnormality[feature] > constants.abnormal_boundary">
+        {{ get_bin_percent(feature)}} of the instances have this value.
+      </span>
 
-    <div style="font-size:15px; color:darkred" class="mb-5" v-else>
-      {{ get_bin_percent(feature)}} of the instances
+      <span style="font-size:15px; color:darkred" class="mb-5" v-else>
+        {{ get_bin_percent(feature)}} of the instances have this value.
+      </span>
     </div>
-    <div class="mb-2" style="font-size:16px"> It has the following value distribution: </div>
     <DistributionVis :feature_name="feature"/>
-    <div class="mb-2"  style="font-size:16px"> It has the following correlations with other attributes: </div>
-    <div class="d-flex mb-2 justify-center">
+    <div class="mb-2 mt-4"  style="font-size:16px"> It has the following correlations with other attributes: </div>
+    <div class="d-flex justify-center">
       <span v-if="hasCorrelations(feature)" class="text-grey-darken-1">
         <span v-for="(corr, other_feature) in dataStore.correlations[feature]">
             <v-chip class="mx-2" v-if="Math.abs(corr) > constants.show_correlation_threshold" variant="outlined">

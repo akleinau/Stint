@@ -361,14 +361,18 @@ const interacting_features_updated = () => {
       <h3 class="mt-9"> Select Attributes</h3>
 
       <!-- Interacting features -->
-        <div class="text-center mt-3 w-50">
+        <div class="text-center mt-1 w-50">
           <!-- Interacting features -->
           <div class="d-flex flex-column align-center justify-center w-100 mt-3">
             <div v-if="dataStore.target_feature !== ''" class="mt-1 w-100">
-              <v-autocomplete v-model="added_feature" class="px-5"
-                              label="Add attribute" variant="outlined" id="attribute_add_component"
+              <v-autocomplete v-model="added_feature" class="px-5 w-100" density="compact" hide-details single-line
+                              label="Add" variant="outlined" id="attribute_add_component"
                               :items="dataStore.non_target_features.filter(f => !dataStore.interacting_features.includes(f))"
-                              @update:modelValue="add_feature"/>
+                              @update:modelValue="add_feature">
+                <template v-slot:prepend>
+                  <v-icon>mdi-plus</v-icon>
+                </template>
+              </v-autocomplete>
             </div>
           </div>
 

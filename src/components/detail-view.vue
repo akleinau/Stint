@@ -69,7 +69,7 @@ watch(() => slider_value.value, () => {
   <div class="w-100 d-flex flex-column align-center justify-center" v-if="detailStore.selected_feature != null">
 
     <h3 v-if="influenceStore.influence.groups.length>0 && dataStore.storyIsVisible ">
-      The selected attribute: <span class="highlight2">{{ lbl(detailStore.selected_feature.get_feature_names()) }}</span>
+      The selected attribute is <span class="highlight">{{ lbl(detailStore.selected_feature.get_feature_names()) }}</span>
     </h3>
     <div class="d-flex flex-column align-center justify-center"  style="font-size:16px">
       <div class="mt-3" style="font-size:16px">
@@ -86,7 +86,7 @@ watch(() => slider_value.value, () => {
     </div>
 
     <!-- hint -->
-    <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-3">
+    <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-2">
       <v-icon class="mr-1">mdi-arrow-left-right</v-icon>
       <i> move the slider to change the value of
         <span class="highlight">{{lbl(detailStore.selected_feature.get_feature_names())}}</span>! </i>
