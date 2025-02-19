@@ -46,7 +46,7 @@ const update_vis = async () => {
   const min = dataStore.data_summary.min
   const max = dataStore.data_summary.max
 
-  let scale = d3.scaleLinear().domain([min, max]).range([50, influenceStore.svg_width - 50]).nice()
+  let scale = d3.scaleLinear().domain([min, max]).range([100, influenceStore.svg_width - 100]).nice()
 
   const xAxis = d3.axisBottom(scale)
 

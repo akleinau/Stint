@@ -105,17 +105,14 @@ export class Group extends GroupClass {
 
     constructor(features: (Feature| Group)[], type: string, influence_object: any) {
         super(influence_object)
+        this.type = type
+        this.ids = new Set(useDataStore().data.map((d, i) => i))
         //first sort the features by score
         features.sort(sort_by_score)
-        this.features = features
-        for (const feature of this.features) {
-            feature.set_parent(this)
+
+        for (const feature of features) {
+            this.push(feature)
         }
-
-        this.set_new_influences(new Set([...features[0].get_ids()]), 0)
-        this.type = type
-
-        this.check_open()
 
     }
 

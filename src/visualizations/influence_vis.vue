@@ -68,7 +68,7 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
   const range = dataStore.get_subset_influence_range()
   min.value = to_percent(range[0])
   max.value = to_percent(range[1])
-  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([100, 700]).nice()
+  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([100, width-100]).nice()
 
   let layers = []
   for (let i = 0; i < 3; i++) {
@@ -186,7 +186,7 @@ const to_percent = (value:number) => {
          {{dataStore.data_summary.mean.toFixed(dataStore.target_decimals)}}
        </span>)
     </div>
-    <div ref="container" class="px-5 pt-5"/>
+    <div ref="container" class="pt-5"/>
 
     <!-- hint -->
     <div class="w-100 d-flex justify-end align-right align-content-end align-end mt-1 mb-4 text-grey-darken-3">

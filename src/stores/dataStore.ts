@@ -63,6 +63,7 @@ export const useDataStore = defineStore({
         },
 
         calculate_correlation(feature1: string, feature2: string): number {
+            // Pearson correlation coefficient
             const values1 = this.data.map((d) => d[feature1])
             const values2 = this.data.map((d) => d[feature2])
             const mean1 = values1.reduce((acc, v) => acc + v, 0) / values1.length
