@@ -5,6 +5,7 @@ import * as d3 from "d3";
 import {useDetailStore} from "./detail_store.ts";
 import Constants from "./constants.ts";
 import constants from "./constants.ts";
+import {ttest, tscore} from "jstat";
 
 const sort_by_score = (a: GroupClass, b: GroupClass) => {
     return Math.abs(b.get_score()) - Math.abs(a.get_score())
@@ -155,6 +156,26 @@ export class Group extends GroupClass {
         return Math.abs(combined_score - our_score - their_score)
     }
 
+    calculate_significant_interaction_effect(feature: Feature | Group) {
+        let our_score = this.get_score()
+        let their_score = feature.get_score()
+        let added_score = our_score + their_score
+
+        let combined_ids = new Set([...this.get_ids()].filter(x => feature.get_ids().has(x)))
+        let average = this.influence_object.get_average_influence(combined_ids)
+        let std = this.influence_object.get_std_influence(combined_ids)
+        let n = combined_ids.size
+
+        let t_score = tscore(added_score, std, average, n)
+        let p_value = ttest(t_score, n, 2)
+        if (p_value < 0.05 && n > constants.min_subset_absolute) {
+            return Math.abs(average - our_score - their_score)
+        }
+        else {
+            return -1
+        }
+    }
+
     calculate_added_score(feature: Feature | Group) {
         let our_score = this.get_score()
         let combined_ids = new Set([...this.get_ids()].filter(x => feature.get_ids().has(x)))
@@ -168,22 +189,6 @@ export class Group extends GroupClass {
         }
 
         return this.features.map(f => f.get_name()).join(", ")
-    }
-
-    get_feature_names() : string {
-        if (this.type == "correlation") {
-            return this.features[0].get_feature_names() + "*"
-        }
-
-        return this.features.map(f => f.get_feature_names()).join(", ")
-    }
-
-    get_feature_labels() : string {
-        if (this.type == "correlation") {
-            return this.features[0].get_feature_labels() + "*"
-        }
-
-        return this.features.map(f => f.get_feature_labels()).join(", ")
     }
 
     get_nr_features() {
@@ -582,40 +587,6 @@ const get_value_text = (value:number, mean: any) => {
 
 }
 
-const to_percent = (value:number, crawler: any) => {
-  return value / crawler.mean * 100
-}
-
-const add_bar_score = (crawler: any, d: any, group_elements: any) => {
-
-    group_elements.append("text")
-            .attr("x", crawler.get_value(d.value))
-            .attr("y", crawler.offset + crawler.bar_height / 2)
-            .text(d.score.toFixed(0))
-            .attr("dy", ".4em")
-            .attr("class", "details")
-            .style("font-size", "12px")
-            .style("font-family", "Verdana")
-            .style("text-anchor", d.value < 0 ? "end": "start")
-            .style("color", "black")
-            .style("opacity", 0)
-}
-
-const add_bar_size= (crawler: any, d: any, group_elements: any) => {
-
-    group_elements.append("text")
-            .attr("x", crawler.get_value(0))
-            .attr("y", crawler.offset + crawler.bar_height / 2)
-            .text(" #" + d.get_size().toFixed(0))
-            .attr("dy", ".4em")
-            .attr("class", "details")
-            .style("font-size", "12px")
-            .style("font-family", "Verdana")
-            .style("text-anchor", d.value > 0 ? "end": "start")
-            .style("color", "black")
-            .style("opacity", 0)
-}
-
 const add_zero_line = (crawler: any, isLast: boolean) => {
 
     let end_y = crawler.offset + crawler.bar_height + crawler.spacing_inside_group
@@ -698,12 +669,6 @@ class Influence {
             }
         }
 
-        calculate_interaction_effect(feature1: string, feature2: string) {
-            const instance_subset = new Set([...this.instance_subsets[feature1]].filter(x => this.instance_subsets[feature2].has(x)))
-            const average = this.get_average_influence(instance_subset)
-            return Math.abs(average - this.main_effects[feature1].average - this.main_effects[feature2].average)
-        }
-
         calculate_groups() {
             const dataStore = useDataStore()
             let groups = [] as Group[]
@@ -742,9 +707,6 @@ class Influence {
             main_players.sort(sort_by_score)
 
             //then go through them and either add them to a previous group when they interact, or create a new group
-            const interaction_boundary = this.get_interaction_boundary()
-            const size_boundary = dataStore.get_min_subset_size()
-
             while (main_players.length > 0) {
                 // find main player with highest score. Conveniently, this is the first one as it is ordered
                 let main_player = main_players.shift() as Feature | Group
@@ -753,12 +715,12 @@ class Influence {
 
                 let interactions_present = true
                 while (interactions_present && main_players.length > 0) {
-                    let interaction_effects:any[] = main_players.map(mp => group.calculate_interaction_effect(mp))
-                    let interaction_size = main_players.map(mp => new Set([...group.get_ids()].filter(x => mp.get_ids().has(x))).size)
-                    interaction_effects = interaction_effects.map((e, i) => interaction_size[i] > size_boundary ? e: 0)
-                    let best_interaction = Math.max(...interaction_effects)
-                    let best_interaction_index = interaction_effects.indexOf(best_interaction)
-                    if (best_interaction > interaction_boundary) {
+
+                    let significant_interaction_effects = main_players.map(mp => group.calculate_significant_interaction_effect(mp))
+
+                    let best_interaction = Math.max(...significant_interaction_effects)
+                    let best_interaction_index = significant_interaction_effects.indexOf(best_interaction)
+                    if (best_interaction > 0) {
                         group.push(main_players[best_interaction_index])
                         main_players = main_players.filter((_, i) => i != best_interaction_index)
                     }
@@ -814,8 +776,11 @@ class Influence {
             return average - center
         }
 
-        sort_by_main_effect(a: string, b: string) {
-            return Math.abs(this.main_effects[b].average) - Math.abs(this.main_effects[a].average)
+        get_std_influence(ids: Set<number>): number {
+            let subset = useDataStore().data.filter((_, i) => ids.has(i))
+            let average = subset.reduce((acc, d) => acc + d[useDataStore().target_feature], 0) / subset.length
+            let std = Math.sqrt(subset.reduce((acc, d) => acc + (d[useDataStore().target_feature] - average)**2, 0) / subset.length)
+            return std
         }
 
         get_textual_summary() {
@@ -862,10 +827,6 @@ export const useInfluenceStore = defineStore({
 
         get_textual_summary() {
             return this.influence.get_textual_summary()
-        },
-
-        get_nr_of_groups() {
-            return this.influence.groups.length
         },
 
         close_all() {

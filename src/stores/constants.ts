@@ -7,7 +7,7 @@ export default Object.freeze({
     is_reduced: false,
     correlation_group_threshold: 0.8,
     show_correlation_threshold: 0.2,
-    min_subset_absolute: 50,
+    min_subset_absolute: 20,
     min_subset_percent: 0.001,
     continuous_bin_nr: 20,
     abnormal_boundary: 0.5,
