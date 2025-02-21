@@ -66,8 +66,10 @@ const update_vis = async (isSlow:boolean=true) => {
 
   const height = padding_top + bar_height + 2*padding_bar
 
+  let width = influenceStore.svg_width
+
   let svg = d3.create("svg")
-      .attr("width", influenceStore.svg_width)
+      .attr("width", width)
       .attr("height", height)
 
   const range = dataStore.get_subset_influence_range()
