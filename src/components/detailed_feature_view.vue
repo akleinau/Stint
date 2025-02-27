@@ -22,6 +22,10 @@ const hasCorrelations = (key: string) => {
     return ""
   }
 
+  if (dataStore.correlations[key] == null) {
+    return ""
+  }
+
 
   return Object.values(dataStore.correlations[key]).some((v: number) => Math.abs(v) > constants.show_correlation_threshold)
 }
@@ -36,7 +40,7 @@ const get_bin_percent = (feature: string) => {
   const bins = featureStore.get_feature_bins(feature)
   const bin_nr = featureStore.get_instance_bin_index(feature, dataStore.instance[feature])
   const bin_size = bins[bin_nr].count
-  return ((bin_size / dataset_size) * 100).toFixed(0) + "%"
+  return ((bin_size / dataset_size) * 100).toFixed(1) + "%"
 }
 
 watch( () => dataStore.interacting_features, () => {

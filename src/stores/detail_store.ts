@@ -3,6 +3,7 @@ import {Feature, useInfluenceStore} from './influence_store.ts'
 import {bin_continuous, bin_discrete, useFeatureStore} from "./feature_store.ts";
 import {useDataStore} from "./dataStore.ts";
 import * as d3 from "d3";
+import Constants from "./constants.ts";
 
 export const useDetailStore = defineStore({
     id: 'detail',
@@ -11,6 +12,7 @@ export const useDetailStore = defineStore({
         change_impacts: [] as {x: number, impact: number}[],
         min_x: 0,
         max_x: 0,
+        bin_size: 0
 
     }),
     actions: {
@@ -71,8 +73,11 @@ export const useDetailStore = defineStore({
 
             // calculate new prediction_means
             for (let bin of vis_bins) {
-                if (bin.count > 0) {
+                if (bin.count > Constants.min_subset_absolute) {
                     bin.prediction_mean = bin.prediction_sum / bin.count
+                }
+                else {
+                    bin.prediction_mean = NaN
                 }
 
             }
@@ -107,35 +112,39 @@ export const useDetailStore = defineStore({
             let type = featureStore.get_feature_type(feature_name)
 
             // get one value per bin
-            let values = []
+            let pretty_bins = []
             if (type == "continuous") {
                 for (let bin of bins as bin_continuous[]) {
-                    values.push((+bin.min + +bin.max) / 2)
+                    pretty_bins.push({value: +((+bin.min + +bin.max) / 2).toFixed(featureStore.logsteps[feature_name]), count: bin.count})
                 }
             }
             else {
                 for (let bin of bins as bin_discrete[]) {
-                    values.push(bin.value)
+                    pretty_bins.push({value: bin.value, count:bin.count})
                 }
             }
 
             // also sort values
-            values.sort((a, b) => +a - +b)
+            pretty_bins.sort((a, b) => +a.value - +b.value)
 
             // calculate impact for each value
             let influenceStore = useInfluenceStore()
             let impacts = []
-            for (let value of values) {
+            for (let bin of pretty_bins) {
                 let instance = JSON.parse(JSON.stringify(dataStore.instance))
-                instance[feature_name] = value
-                let impact = influenceStore.get_explanation_prediction(instance)
-                impact -= dataStore.data_summary.mean
-                impacts.push({"x": value, "impact": impact})
+                instance[feature_name] = bin.value
+                let impact = NaN
+                if (bin.count > Constants.min_subset_absolute) {
+                    impact = influenceStore.get_explanation_prediction(instance)
+                    impact -= dataStore.data_summary.mean
+                }
+                impacts.push({"x": bin.value, "impact": impact})
             }
 
             this.change_impacts = impacts
             this.min_x = d3.min(impacts.map(d => +d.x))
             this.max_x = d3.max(impacts.map(d => +d.x))
+            this.bin_size = featureStore.bin_sizes[feature_name]
 
         }
 

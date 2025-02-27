@@ -4,7 +4,7 @@ import ImpactVis from "../visualizations/impact_vis.vue";
 import {useDataStore} from "../stores/dataStore.ts";
 import {useInfluenceStore} from "../stores/influence_store.ts";
 import {useDetailStore} from "../stores/detail_store.ts";
-import {bin_discrete, useFeatureStore} from "../stores/feature_store.ts";
+import {bin_continuous, bin_discrete, useFeatureStore} from "../stores/feature_store.ts";
 import {onMounted, onUnmounted, ref, useTemplateRef, watch} from "vue";
 import * as d3 from "d3"
 
@@ -41,18 +41,16 @@ watch( () => dataStore.interacting_features, () => {
   detailStore.selected_feature = null
 })
 
-watch(() => slider_value.value, () => {
-
+const slider_changed = (() => {
 
   let bins = featureStore.get_feature_bins(get_name())
 
-  // for continuous features, set the value to something reasonably rounded
+  // for continuous features, set the value to the bin of this value
   if (featureStore.get_feature_type(get_name()) == 'continuous') {
 
-    let range = detailStore.max_x - detailStore.min_x
-    let step = Math.min(1, range / 100)
-    let fraction_digits = Math.log10(1/step)
-    dataStore.instance[get_name()] = +slider_value.value.toFixed(fraction_digits)
+   let bin = bins.find((d: bin_continuous) => d.min <= slider_value.value && d.max >= slider_value.value) as bin_continuous
+    dataStore.instance[get_name()] = +((+bin.min + +bin.max) / 2).toFixed(featureStore.logsteps[get_name()])
+
 
   // for discrete features, set the value to the closest bin
   } else {
@@ -80,7 +78,7 @@ watch(() => slider_value.value, () => {
       <ImpactVis />
       <div> {{ detailStore.selected_feature.get_name() }} </div>
       <VSlider v-model="slider_value" :min="detailStore.min_x"
-               :max="detailStore.max_x" hide-details
+               :max="detailStore.max_x" hide-details @update:modelValue="slider_changed"
                width="460px"/>
 
     </div>

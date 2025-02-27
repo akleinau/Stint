@@ -35,14 +35,19 @@ watch(() => detailStore.selected_feature, () => {
   update_vis()
 })
 
-const get_prediction = () => {
+const get_prediction = (nan_values) => {
 
   if (isNaN(influenceStore.influence.explanation_prediction)) {
     return "(no data available)"
   }
 
+  if (nan_values.map(a => a.x).includes(instance_value.value)) {
+    return "(no data available)"
+  }
+
   const value = influenceStore.influence.explanation_prediction - dataStore.data_summary.mean
-  return (value > 0 ? "+" : "-") + Math.abs(value / dataStore.data_summary.mean * 100).toFixed(0) + "%"
+  const percent = value / Math.abs(dataStore.data_summary.mean) * 100
+  return (percent > 0 ? "+" : "") +  percent.toFixed(0) + "%"
 }
 
 const get_feature_name = () => {
@@ -96,6 +101,7 @@ const update_vis = () => {
 
   // add area for vis_bins, color in red if below zero, blue if above zero
   let area_below_zero = d3.area()
+      .defined(d => !isNaN(d.impact))
       .x(d => x(d.x))
       .y0(y(0))
       .y1(d => y(d.impact < 0 ? to_percent(d.impact) : 0))
@@ -105,6 +111,7 @@ const update_vis = () => {
       .attr("fill", Constants.overview_color_negative)
 
   let area_above_zero = d3.area()
+      .defined(d => !isNaN(d.impact))
       .x(d => x(d.x))
       .y0(y(0))
       .y1(d => y(d.impact > 0 ? to_percent(d.impact) : 0))
@@ -139,7 +146,7 @@ const update_vis = () => {
   svg.append("text")
       .attr("x", x(instance_value.value))
       .attr("y", 20)
-      .text(get_prediction())
+      .text(get_prediction(nan_values))
       .style("text-anchor", "middle")
       .style("fill", "grey")
 
@@ -196,7 +203,7 @@ const get_value_text = (value:number) => {
 }
 
 const to_percent = (value:number) => {
-  return value / dataStore.data_summary.mean * 100
+  return value / Math.abs(dataStore.data_summary.mean) * 100
 }
 
 </script>

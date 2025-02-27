@@ -204,6 +204,12 @@ const to_percent = (value:number) => {
     </v-hover>
     </div>
 
+    <div class="mb-1 mt-1" v-if="influenceStore.influence.excluded_features.length > 0">
+      <v-icon class="mr-1">mdi-alert-circle</v-icon>
+      <i> The influence of the following attributes is not shown here, as there was not enough data for them: </i>
+      {{ influenceStore.influence.excluded_features.map(v => v + " = " + dataStore.instance[v]).join(", ") }}
+    </div>
+
   </div>
 </template>
 

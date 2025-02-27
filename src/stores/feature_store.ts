@@ -1,6 +1,7 @@
 import {defineStore} from "pinia";
 import {useDataStore} from "./dataStore.ts";
 import constants from "./constants.ts";
+import Constants from "./constants.ts";
 
 export interface bin {
     count: number,
@@ -35,6 +36,8 @@ export const useFeatureStore = defineStore({
         feature_names: [] as string[],
         feature_bins: {} as { [key: string]: bin[] },
         feature_types: {} as { [key: string]: string },
+        bin_sizes: {} as { [key: string]: number },
+        logsteps: {} as { [key: string]: number }
     }),
     actions: {
 
@@ -96,9 +99,15 @@ export const useFeatureStore = defineStore({
                     let mean = useDataStore().data_summary.mean
                     for (let bin of bins) {
                         bin.prediction_mean = bin.prediction_sum / bin.count - mean
+
+                        if (bin.count < Constants.min_subset_absolute) {
+                            bin.prediction_mean = NaN
+                        }
                     }
 
                     this.feature_bins[feature] = bins
+                    this.bin_sizes[feature] = bin_size
+                    this.logsteps[feature] = logStep
                 }
 
                 //categorical/ discrete

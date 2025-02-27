@@ -610,6 +610,7 @@ class Influence {
     instance_subsets: { [key: string]: Set<number> } = {}
     explanation_prediction: number = 0
     instance: { [key: string]: number } = {}
+    excluded_features: string[] = []
 
     constructor(instance: any = null) {
         this.groups = []
@@ -645,10 +646,16 @@ class Influence {
                 const similar_instances = this.get_similar_instances(feature)
                 const sum = similar_instances.reduce((acc, d) => acc + d[dataStore.target_feature], 0)
                 const size = similar_instances.length
-                this.main_effects[feature] = {value: instance_value, average: sum / size - center, size: size}
-                //also create set of ids for each feature
-                const ids = similar_instances.map((d: any) => d.__id__)
-                this.instance_subsets[feature] = new Set(ids)
+                if (size > Constants.min_subset_absolute) {
+                    this.main_effects[feature] = {value: instance_value, average: sum / size - center, size: size}
+                    //also create set of ids for each feature
+                    const ids = similar_instances.map((d: any) => d.__id__)
+                    this.instance_subsets[feature] = new Set(ids)
+                }
+                else {
+                    this.excluded_features.push(feature)
+                }
+
             }
         }
 
@@ -673,7 +680,7 @@ class Influence {
         calculate_groups() {
             const dataStore = useDataStore()
             let groups = [] as Group[]
-            let features = dataStore.interacting_features
+            let features = dataStore.interacting_features.filter(f => !this.excluded_features.includes(f))
 
             let main_players = [] as (Feature | Group)[]
 
@@ -742,7 +749,8 @@ class Influence {
                 let boundary = dataStore.data_summary.std * 0.05
                 groups = groups.filter(g => Math.abs(g.get_score()) > boundary)
             }
-            dataStore.shown_features = groups.map(g => g.get_features()).flat()
+            //dataStore.shown_features = groups.map(g => g.get_features()).flat()
+            dataStore.shown_features = dataStore.interacting_features
 
             return groups
         }
@@ -764,6 +772,7 @@ class Influence {
 
         calculate_influences() {
             useDataStore().storyIsVisible = true
+            this.excluded_features = []
             this.calculate_main_effects()
             this.groups = this.calculate_groups()
             this.calculate_explanation_prediction()

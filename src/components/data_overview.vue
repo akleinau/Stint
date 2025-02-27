@@ -35,9 +35,13 @@ watch(() => dataStore.storyIsVisible, () => {
   update()
 })
 
-watch(() => dataStore.shown_features, () => {
+watch(() => dataStore.interacting_features, () => {
   update()
-})
+},{deep:true})
+
+watch(() => dataStore.instance, () => {
+  update()
+}, {deep:true})
 
 // also watch dataStore.instance
 watch(() => dataStore.instance, () => {
@@ -55,7 +59,7 @@ const update = () => {
 
   dataStore.calculate_abnormality()
 
-  for (let feature of dataStore.shown_features) {
+  for (let feature of dataStore.interacting_features) {
     if (dataStore.feature_abnormality[feature] < constants.abnormal_boundary) {
       focus_features.value.push(feature)
     } else {
@@ -69,7 +73,7 @@ const get_bin_percent = (feature: string) => {
   const bins = featureStore.get_feature_bins(feature)
   const bin_nr = featureStore.get_instance_bin_index(feature, dataStore.instance[feature])
   const bin_size = bins[bin_nr].count
-  return ((bin_size / dataset_size) * 100).toFixed(0) + "%"
+  return ((bin_size / dataset_size) * 100).toFixed(1) + "%"
 }
 
 </script>

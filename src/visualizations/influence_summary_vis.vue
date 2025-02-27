@@ -95,7 +95,7 @@ const update_vis = async (isSlow:boolean=true) => {
           let rect = layers[1].append("rect")
             .attr("x", prediction < 0 ? scale.value(to_percent(prediction)) : scale.value(0))
             .attr("y", padding_top + padding_bar)
-            .attr("width", scale.value(Math.abs(to_percent(prediction))) - scale.value(0))
+            .attr("width", Math.abs(scale.value(to_percent(prediction)) - (scale.value(0))))
             .attr("fill", prediction < 0 ? Constants.overview_color_negative : Constants.overview_color_positive)
 
         //optionally animate
