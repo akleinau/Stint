@@ -90,7 +90,7 @@ const update_vis = async () => {
 
   // add name of scale
   svg.append("text")
-      .attr("x", 400)
+      .attr("x", influenceStore.svg_width / 2)
       .attr("y", 80 + padding)
       .attr("text-anchor", "middle")
       .text(lbl(dataStore.target_feature))

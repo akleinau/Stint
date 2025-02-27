@@ -25,6 +25,11 @@ watch(() => props.feature_name, () => {
   update_vis()
 })
 
+watch( () => dataStore.instance[props.feature_name], () => {
+  instance_value.value = dataStore.instance[props.feature_name]
+  update_vis()
+})
+
 const get_value = (value, full_count) => {
   return ((value/full_count)*100)
 }

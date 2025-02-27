@@ -290,7 +290,10 @@ const add_feature = (_: any) => {
 
 }
 
-
+const clear_feature = (key: string) => {
+  dataStore.interacting_features = dataStore.interacting_features.filter(f => f !== key)
+  interacting_features_updated()
+}
 
 const interacting_features_updated = () => {
   dataStore.calculate_correlations()
@@ -417,7 +420,7 @@ const interacting_features_updated = () => {
               </div>
 
               <!-- clear button -->
-              <v-btn @click="dataStore.interacting_features = dataStore.interacting_features.filter(a => a != key) "
+              <v-btn @click="clear_feature(key)"
                      icon size="2" class="mb-2 text-grey">
                 <v-icon>mdi-close</v-icon>
               </v-btn>

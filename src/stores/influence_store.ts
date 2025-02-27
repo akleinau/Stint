@@ -578,11 +578,12 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
 }
 
 const get_value_text = (value:number, mean: any) => {
-  //absolute
-  //return Math.abs(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean).toFixed(0)
+    //absolute
+    //return Math.abs(influenceStore.influence.explanation_prediction - dataStore.data_summary.mean).toFixed(0)
 
-  //percentage
-  return (value > 0 ? "+" : "") + (value / mean * 100).toFixed(0) + "%"
+    //percentage
+    let percentage = (value / Math.abs(mean) * 100)
+    return (percentage > 0 ? "+" : "") + percentage.toFixed(0) + "%"
 
 
 }

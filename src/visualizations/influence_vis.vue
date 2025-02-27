@@ -170,7 +170,7 @@ const get_value_text = (value:number) => {
 }
 
 const to_percent = (value:number) => {
-  return value / dataStore.data_summary.mean * 100
+  return value / Math.abs(dataStore.data_summary.mean) * 100
 }
 
 
