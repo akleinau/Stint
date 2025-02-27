@@ -56,7 +56,23 @@ const get_feature_name = () => {
 
 const update_vis = () => {
 
-  let values = detailStore.change_impacts
+  let values = JSON.parse(JSON.stringify(detailStore.change_impacts))
+
+  // add values when crossing zero
+  let new_values = []
+  for (let i = 0; i < values.length; i++) {
+    new_values.push(values[i])
+    if (i < values.length - 1) {
+      if (values[i].impact * values[i+1].impact < 0) {
+        let percentage = Math.abs(values[i].impact) / (Math.abs(values[i].impact) + Math.abs(values[i+1].impact))
+        new_values.push({
+          x: values[i].x + percentage * (values[i+1].x - values[i].x),
+          impact: 0
+        })
+      }
+    }
+  }
+  values = new_values
 
   // save NAN values extra and replace them in "values" with 0
   let nan_values = values.filter(d => isNaN(d.impact))

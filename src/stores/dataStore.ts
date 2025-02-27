@@ -105,10 +105,10 @@ export const useDataStore = defineStore({
             return [min, max]
         },
 
-        get_label(feature: string|number, value: number = null): string|number {
+        get_label(feature: string|number, value: any = "__undefined__"): string|number {
             const catalogue_feature = this.feature_catalogue[feature]
 
-            if (value == null) {
+            if (value == "__undefined__") {
                 if (catalogue_feature === undefined) {
                     return feature
                 }
@@ -118,6 +118,11 @@ export const useDataStore = defineStore({
                 return this.feature_catalogue[feature].label
             }
             else {
+
+                if (value === null) {
+                    value = "null"
+                }
+
                 if (catalogue_feature === undefined) {
                     return value.toString()
                 }

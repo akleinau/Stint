@@ -756,18 +756,26 @@ class Influence {
         }
 
         calculate_explanation_prediction() {
-            let mean = useDataStore().data_summary.mean
-            let prediction = mean
-            for (const group of this.groups) {
-                prediction += group.get_score()
+
+            if (this.groups.length == 0) {
+                this.explanation_prediction = NaN
             }
+            else {
 
-            // but restrict to the range of the target feature
-            const range = useDataStore().get_subset_influence_range()
-            prediction = Math.min(prediction, range[1] + mean)
-            prediction = Math.max(prediction, range[0] + mean)
 
-            this.explanation_prediction = prediction
+                let mean = useDataStore().data_summary.mean
+                let prediction = mean
+                for (const group of this.groups) {
+                    prediction += group.get_score()
+                }
+
+                // but restrict to the range of the target feature
+                const range = useDataStore().get_subset_influence_range()
+                prediction = Math.min(prediction, range[1] + mean)
+                prediction = Math.max(prediction, range[0] + mean)
+
+                this.explanation_prediction = prediction
+            }
         }
 
         calculate_influences() {

@@ -35,7 +35,7 @@ watch(() => dataStore.instance, () => {
 
     </div>
     <div class="story_text d-flex flex-column align-center" v-else>
-      <h3 class="pt-5">No data available</h3>
+      <h3 class="pt-5">Not enough data available</h3>
       <span>Please check if there are any inconsistencies or impossible value combinations.</span>
     </div>
 

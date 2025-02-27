@@ -125,6 +125,7 @@ export const useDetailStore = defineStore({
             }
 
             // also sort values
+            pretty_bins = pretty_bins.filter(d => !isNaN(d.value) && d.value != null)
             pretty_bins.sort((a, b) => +a.value - +b.value)
 
             // calculate impact for each value
