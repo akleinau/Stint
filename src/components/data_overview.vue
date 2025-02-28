@@ -11,6 +11,7 @@ import AbnormalVis from "../visualizations/abnormal-vis.vue";
 import {ref, watch} from "vue";
 import DetailedFeatureView from "./detailed_feature_view.vue";
 import constants from "../stores/constants.ts";
+import * as d3 from "d3";
 
 let show_details = ref<string>("")
 let show_details_background = ref<string>("")
@@ -69,8 +70,8 @@ const update = () => {
 }
 
 const get_bin_percent = (feature: string) => {
-  const dataset_size = dataStore.data.length
   const bins = featureStore.get_feature_bins(feature)
+  const dataset_size = d3.sum(bins.map(d => d.count))
   const bin_nr = featureStore.get_instance_bin_index(feature, dataStore.instance[feature])
   const bin_size = bins[bin_nr].count
   return ((bin_size / dataset_size) * 100).toFixed(1) + "%"

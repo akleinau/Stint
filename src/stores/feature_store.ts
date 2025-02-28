@@ -52,7 +52,8 @@ export const useFeatureStore = defineStore({
             let target_feature = useDataStore().target_feature
 
             for (let feature of this.feature_names) {
-                const data_view = data.filter((d) => !isNaN(d[feature]))
+                const data_clean = data.filter((d) => d[feature] !== null)
+                const data_view = data_clean.filter((d) => !isNaN(d[feature]))
                 const values = data_view.map((d) => d[feature])
 
                 const unique_values = Array.from(new Set(values)).sort()
@@ -84,7 +85,7 @@ export const useFeatureStore = defineStore({
                         }
                     })
 
-                    data.forEach((d) => {
+                    data_clean.forEach((d) => {
                         const bin_index = Math.floor((d[feature] - min) / bin_size)
                         if (bin_index === bin_number) {
                             bins[bin_number - 1].count += 1
@@ -128,7 +129,7 @@ export const useFeatureStore = defineStore({
                         }
                     })
 
-                    data.forEach((d) => {
+                    data_clean.forEach((d) => {
                         const bin_index = bins.findIndex((bin) => bin.value === d[feature])
                         bins[bin_index].count += 1
                         bins[bin_index].prediction_sum += d[target_feature]

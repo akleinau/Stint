@@ -5,6 +5,7 @@ import {useDataStore} from "../stores/dataStore.ts";
 import {useFeatureStore} from "../stores/feature_store.ts";
 import {ref, watch} from "vue";
 import constants from "../stores/constants.ts";
+import * as d3 from "d3";
 
 
 const props = defineProps(['show_abnormal'])
@@ -36,8 +37,8 @@ const get_bin_percent = (feature: string) => {
     return ""
   }
 
-  const dataset_size = dataStore.data.length
   const bins = featureStore.get_feature_bins(feature)
+  const dataset_size = d3.sum(bins.map(d => d.count))
   const bin_nr = featureStore.get_instance_bin_index(feature, dataStore.instance[feature])
   const bin_size = bins[bin_nr].count
   return ((bin_size / dataset_size) * 100).toFixed(1) + "%"
