@@ -526,19 +526,26 @@ const add_value_line = (crawler: any, d: any, isLast: boolean, group_elements: a
 
 const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: boolean) => {
 
-    let x_position = 0
-    if (d.value * (d.value-d.score) < 0) {
-        x_position += (d.value - d.score)
-    }
+    // for negative scores
+    let bar_begin = d.score >= 0? d.value - d.score : d.value
+    let bar_end = d.score >= 0? d.value : d.value - d.score
 
-    let padding = d.value >= 0 ? 5 : -5
+    const space_left_of_bar = crawler.get_value(bar_begin)
+    const space_right_of_bar = crawler.width - crawler.get_value(bar_end)
+    const text_side = space_left_of_bar < space_right_of_bar ? "right" : "left"
+
+
+    let x_position = text_side == "left"? bar_begin : bar_end
+
+    let padding = text_side == "left" ? 5 : -5
     padding = isFirst ? padding : 2*padding
 
     let prefix = isFirst ? "" : " when "
 
+    const available_space = text_side == "left" ? space_left_of_bar : space_right_of_bar
     let name = d.get_name()
-    if (name.length > 22) {
-        name = name.slice(0, 20) + "..."
+    if (name.length > available_space / 8) {
+        name = name.slice(0, available_space / 8 - 2) + "..."
     }
 
     // add feature names
@@ -549,7 +556,7 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
             .attr("class", "text_feature_names" + crawler.offset)
             .style("font-size", "14px")
             .style("font-family", "Verdana")
-            .style("text-anchor", d.value >= 0 ? "end": "start")
+            .style("text-anchor", text_side == "left" ? "end": "start")
             .style("fill", "black")
             .style("pointer-events", "none")
     text_element
@@ -560,7 +567,7 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
             .append("tspan")
             .text(name)
 
-    x_position = d.value < 0 ? Math.min(d.value, d.value - d.score) : Math.max(d.value, d.value - d.score)
+    x_position = text_side == "right"? bar_begin : bar_end
 
     // add feature values
     group_elements.append("text")
@@ -571,7 +578,7 @@ const add_feature_names = (crawler: any, d: any, group_elements: any, isFirst: b
         .attr("class", "text_feature_names" + crawler.offset)
         .style("font-size", "14px")
         .style("font-family", "Verdana")
-        .style("text-anchor", d.value < 0 ? "end": "start")
+        .style("text-anchor", text_side == "right" ? "end": "start")
         .style("fill", "grey")
         .style("pointer-events", "none")
 
