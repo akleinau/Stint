@@ -88,18 +88,13 @@ export const useDataStore = defineStore({
             }
         },
 
-        get_min_subset_size(): number {
-            return Math.max(constants.min_subset_absolute, this.data.length * constants.min_subset_percent)
-        },
-
         get_subset_influence_range(): [number, number]{
-            const min_subset_size = this.get_min_subset_size()
 
             // now get the smallest n values from dataStore.data
             let data = this.data.map(d => d[this.target_feature])
             let sorted_data = data.sort((a, b) => a - b)
-            let min_items = sorted_data.slice(0, min_subset_size)
-            let max_items = sorted_data.slice(-min_subset_size)
+            let min_items = sorted_data.slice(0, constants.min_subset_absolute)
+            let max_items = sorted_data.slice(-constants.min_subset_absolute)
             let min = d3.mean(min_items) - this.data_summary.mean
             let max = d3.mean(max_items) - this.data_summary.mean
             return [min, max]

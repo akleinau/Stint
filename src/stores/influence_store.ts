@@ -639,11 +639,6 @@ class Influence {
         return range * constants.similarity_margin_percent
     }
 
-    // how strong the (pure) interaction effect has to be for the feature to be grouped in an interaction group
-    get_interaction_boundary() {
-        return useDataStore().data_summary.range * constants.interaction_effect_percent // at least 2% of the range
-    }
-
     calculate_main_effects() {
             const dataStore = useDataStore()
             const center = dataStore.data_summary.mean
