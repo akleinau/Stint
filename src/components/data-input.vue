@@ -20,7 +20,7 @@ const isCustomDataset = ref(false)
 const added_feature = ref(null)
 const target = ref("")
 const target_is_categorical = ref(false)
-const target_categorical_value = ref("")
+const target_categorical_value = ref(null)
 const original_data = ref(null)
 
 const make_numeric = (data: any) => {
@@ -334,12 +334,12 @@ const interacting_features_updated = () => {
 
             <!-- if categorical, optionally select a class -->
               <v-select v-if="target_is_categorical" v-model="target_categorical_value"
-                        class="w-100 mt-3" :label="target" clearable
+                        class="w-100 mt-3" clearable
                         :items="get_discrete_select_list(target)"
-                        item-value="value"
-                        item-title="title"
+                        item-value="value" item-title="title"
+                        label="(optionally) select a class to focus on"
                         @update:modelValue="set_categorical_target_class"
-                        variant="underlined" hide-details density="compact" single-line>
+                        variant="underlined" hide-details density="compact" >
                 <template v-slot:prepend-inner>
                   <div class="d-flex text-grey-darken-1">
                     <span> {{ target }} </span>
