@@ -5,7 +5,6 @@ import {useDataStore} from "../stores/dataStore";
 import {useInfluenceStore} from "../stores/influence_store.ts";
 import {watch} from "vue";
 import TargetVis from "../visualizations/target_vis.vue";
-import {da} from "vuetify/locale";
 
 const dataStore = useDataStore()
 const lbl = dataStore.get_label

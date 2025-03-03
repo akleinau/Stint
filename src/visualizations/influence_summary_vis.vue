@@ -75,7 +75,7 @@ const update_vis = async (isSlow:boolean=true) => {
   const range = dataStore.get_subset_influence_range()
   min.value = to_percent(range[0])
   max.value = to_percent(range[1])
-  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([100, width-100]).nice()
+  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([55, width-55]).nice()
 
   let layers = []
   for (let i = 0; i < 3; i++) {

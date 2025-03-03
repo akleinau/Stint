@@ -59,6 +59,11 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
   let svg = d3.create("svg")
       .attr("width", width)
       .attr("height", height)
+      .on("mouseleave", () => {
+        console.log("svg close")
+        influenceStore.close_all()
+        updater.value += 1
+      })
 
   let data = influenceStore.influence.groups.flat()
   if (data.length === 0) {
@@ -68,26 +73,13 @@ const update_vis = async (isSlow:boolean=true, areChangesSlow:boolean=true) => {
   const range = dataStore.get_subset_influence_range()
   min.value = to_percent(range[0])
   max.value = to_percent(range[1])
-  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([100, width-100]).nice()
+  scale.value = d3.scaleLinear().domain([min.value, max.value]).range([55, width-55]).nice()
 
   let layers = []
   for (let i = 0; i < 3; i++) {
     layers.push(svg.append("g"))
   }
 
-  // add background rectangle for capturing leave events
-  layers[0].append("rect")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "white")
-      .on("mouseover", () => {
-        influenceStore.close_all()
-        updater.value += 1
-      })
-      .on("touchstart", () => {
-        influenceStore.close_all()
-        updater.value += 1
-      })
 
 
   // add axis and add a "+" in front of positive values
