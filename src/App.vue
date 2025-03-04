@@ -62,7 +62,7 @@ const explain = async () => {
         <div class="d-flex flex-column align-center story_text px-0 mt-0" style="text-align:center">
           <i>
 
-            STINT shows you interactions in your data set relevant for predictions, <br>
+            STINT shows you interactions of attributes in your data set relevant for predictions, <br>
             <span
                 style="color:#6a6c75"> eg. the interplay of hour and weekday when predicting bike rentals. </span>
             <br>
