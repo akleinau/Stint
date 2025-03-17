@@ -39,7 +39,7 @@ watch(() => detailStore.selected_feature, () => {
 
 watch( () => dataStore.interacting_features, () => {
   detailStore.selected_feature = null
-})
+}, {deep:true})
 
 const slider_changed = (() => {
 
