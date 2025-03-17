@@ -155,7 +155,7 @@ export const useFeatureStore = defineStore({
         get_instance_bin_index(feature: string, value: number): number {
             if (this.feature_types[feature] === "continuous") {
                 const bins = this.feature_bins[feature] as bin_continuous[]
-                return bins.findIndex((bin) => bin.min <= value && bin.max > value)
+                return bins.findIndex((bin) => bin.min <= +value && bin.max > +value)
             } else {
                 const bins = this.feature_bins[feature] as bin_discrete[]
                 return bins.findIndex((bin) => bin.value === value)
