@@ -370,7 +370,8 @@ const interacting_features_updated = () => {
             <div v-if="dataStore.target_feature !== ''" class="mt-1 w-100">
               <v-autocomplete v-model="added_feature" class="px-5 w-100" density="compact" hide-details single-line
                               label="Add" variant="outlined" id="attribute_add_component"
-                              :items="dataStore.non_target_features.filter(f => !dataStore.interacting_features.includes(f))"
+                              :items="get_feature_select_list().filter(f => !dataStore.interacting_features.includes(f.value))"
+                              item-value="value" item-title="title"
                               @update:modelValue="add_feature">
                 <template v-slot:prepend>
                   <v-icon>mdi-plus</v-icon>
@@ -411,7 +412,7 @@ const interacting_features_updated = () => {
                           variant="underlined" hide-details density="compact" single-line>
                   <template v-slot:prepend-inner>
                     <div class="d-flex text-grey-darken-1">
-                      <span> {{ key }} </span>
+                      <span> {{ lbl(key) }} </span>
                       <span> : </span>
                     </div>
                   </template>
