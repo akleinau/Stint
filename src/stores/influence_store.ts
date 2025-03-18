@@ -669,8 +669,8 @@ class Influence {
             if (feature_type === "continuous") {
                 // get similar instances in some margin around the instance value
                 const margin = this.get_similarity_margin(feature)
-                const min = instance_value - margin
-                const max = instance_value + margin
+                const min = +instance_value - margin
+                const max = +instance_value + margin
                 return dataStore.data.filter((d) => d[feature] >= min && d[feature] <= max)
             }
 
