@@ -31,7 +31,7 @@ curdata <- data %>%
   pivot_longer(cols=columns, names_to="question", values_to="answer")
 
 curdata <- curdata %>% group_by(question, answer) %>% summarize("nr"=n())
-curdata$answer <- factor(curdata$answer)
+curdata$answer <- factor(curdata$answer, levels=c(1,2,3,4,5))
 curdata <- curdata %>% mutate(nr= if_else(answer == 3, nr/2, as.double(nr)))
 curdata <- curdata %>% mutate(question = case_match(question, 
                                                     "QU01_01" ~ "I think that I would like to use this system frequently.",
@@ -53,19 +53,21 @@ ggplot(curdata, aes(x="", y=nr, fill=answer)) +
   coord_flip() + 
   theme(panel.background = element_blank(), 
         legend.position="bottom", legend.justification = "left", legend.margin = margin(t = 0, r = 0, b = 0, l = -25, unit = "mm"),
-        text=element_text(size=15),
+        text=element_text(size=11),
         axis.line.x.bottom = element_line(color = 'black'),
-        axis.text = element_text(size=12),
-        axis.title = element_text(size=14),
-        strip.text = element_text(size=14),
+        axis.text = element_text(size=11),
+        axis.title = element_text(size=12),
+        strip.text = element_text(size=12),
         strip.background = element_rect(fill = "white")) +
   scale_fill_manual(values=c('#d7191c','#fdae61','#c0c0c0','#abd9e9','#2c7bb6'), 
                     breaks=c(1,2,3,4,5),
-                    labels=answer_labels) +
+                    labels=answer_labels,
+                    drop = FALSE) +
   labs(fill="", x="")+
   scale_y_continuous("number of participants", breaks_participants, labels=labels_participants, limits=c(-nr_participants,nr_participants)) +
-  facet_wrap("question", nrow=10, labeller = label_wrap_gen(width=80), scales="free")
-  ggsave("images/SUS.jpg", height=11, width=8)
+  facet_wrap("question", nrow=10, labeller = label_wrap_gen(width=200), scales="free")+
+  theme(legend.justification ="center")
+  ggsave("images/SUS.jpg", height=8, width=8)
   
 ```
 
