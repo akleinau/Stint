@@ -17,9 +17,9 @@ data %>% pull(QU03_01)
 SUS
 
 ```{r}
-nr_participants = 5
-breaks_participants = c(-5,-4, -3, -2, -1,0, 1, 2, 3, 4, 5)
-labels_participants = c("5", "4", "3", "2", "1", "0", "1", "2", "3", "4", "5")
+nr_participants = 8
+breaks_participants = c(-8,-6, -4, -2 ,0, 2, 4, 6, 8)
+labels_participants = c("8", "6", "4", "2", "0", "2", "4", "6", "8")
 columns = c("QU01_01", "QU01_02", "QU01_03", "QU01_04", "QU01_05", "QU01_06", "QU01_07", "QU01_08", "QU01_09", "QU01_10")
 answer_labels=c("Strongly disagree", "Disagree", "neither agree nor disagree", "Agree", "Strongly agree")
 
@@ -89,9 +89,9 @@ curdata %>% ungroup() %>% summarise(mean(SUS))
 
 ESG
 ```{r}
-nr_participants = 5
-breaks_participants = c(-5,-4, -3, -2, -1,0, 1, 2, 3, 4, 5)
-labels_participants = c("5", "4", "3", "2", "1", "0", "1", "2", "3", "4", "5")
+nr_participants = 8
+breaks_participants = c(-8,-6, -4, -2 ,0, 2, 4, 6, 8)
+labels_participants = c("8", "6", "4", "2", "0", "2", "4", "6", "8")
 columns = c("QU07_01", "QU07_02", "QU07_03", "QU07_04", "QU07_05", "QU07_06", "QU07_07", "QU07_08", "QU07_09")
 answer_labels=c("Strongly disagree", "Disagree", "neither agree nor disagree", "Agree", "Strongly agree")
 

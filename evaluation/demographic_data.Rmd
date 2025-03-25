@@ -24,7 +24,7 @@ previous experience
 ```{r}
 ggplot(data, aes(x=PI03_01)) + geom_bar() # Machine Learning
 ggplot(data, aes(x=PI03_02)) + geom_bar() # xAI
-ggplot(data, aes(x=PI03_03)) + geom_bar() # PDP
+ggplot(data, aes(x=PI03_03)) + geom_bar() # bike sharing systems
 ```
 Jobs
 ```{r}
